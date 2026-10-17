@@ -53,13 +53,15 @@ const woodFloorTex = makeTexture(256, 256, (ctx, w, h) => {
     }
   }
 });
-const doorTex = makeTexture(128, 256, (ctx, w, h) => {
-  ctx.fillStyle = '#7a3b1f'; ctx.fillRect(0, 0, w, h);
+const doorTex = makeTexture(128, 256, (ctx, w, h) => {   // teak, with vertical grooves like the render's main door
+  ctx.fillStyle = '#92521f'; ctx.fillRect(0, 0, w, h);
   for (let i = 0; i < 70; i++) {
-    ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '30,10,0' : '200,120,60'},0.12)`;
+    ctx.strokeStyle = `rgba(${Math.random() < 0.5 ? '30,10,0' : '220,150,80'},0.13)`;
     const x = Math.random() * w;
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + rand(-5, 5), h); ctx.stroke();
   }
+  ctx.fillStyle = 'rgba(40,15,0,0.45)';
+  for (let x = 14; x < w; x += 18) ctx.fillRect(x, 10, 2, h - 20);
 });
 const grassTex = makeTexture(256, 256, (ctx, w, h) => {
   ctx.fillStyle = '#1d3b20'; ctx.fillRect(0, 0, w, h);
@@ -193,7 +195,7 @@ function scaleUV(geo, w, h, d, tile) {
 function box(size, pos, color, parent = scene, material) {
   const mat = material || paint(color);
   const geo = new THREE.BoxGeometry(...size);
-  if (mat.map && mat.userData.tile) scaleUV(geo, ...size, mat.userData.tile);
+  if (!Array.isArray(mat) && mat.map && mat.userData.tile) scaleUV(geo, ...size, mat.userData.tile);
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(...pos);
   mesh.castShadow = mesh.receiveShadow = true;
@@ -210,13 +212,14 @@ function glow(size, pos, color = 0xffd9a0, parent = scene) {
 }
 
 // Soft light spill on a wall around a lamp
-function wallGlow(x, y, z) {
+function wallGlow(x, y, z, parent = scene, rotY = 0) {
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(1.5, 3),
     new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
   );
   m.position.set(x, y, z);
-  scene.add(m);
+  m.rotation.y = rotY;
+  parent.add(m);
 }
 
 // Things the player cannot walk through: [centerX, centerZ, width, depth, bottomY, topY]
@@ -235,13 +238,14 @@ function wallMaterial(color) {
 }
 const cream = wallMaterial('#f5f4f0');   // white walls
 const taupe = wallMaterial('#efece6');
+const facade = wallMaterial('#d3c9bd');   // warm beige-grey on the OUTSIDE faces of the outer walls (white is kept for slabs and frames)
 // Frames and trims fade with the walls so nothing floats in mid-air when you are inside
 const frameMat = new THREE.MeshStandardMaterial({ color: col(0x24282c), roughness: 0.4, metalness: 0.5, transparent: true });   // dark aluminium frames
 const sillMat = new THREE.MeshStandardMaterial({ color: col(0x9a9a98), roughness: 0.8, metalness: 0, transparent: true });       // grey stone sill
 const doorFrameMat = new THREE.MeshStandardMaterial({ color: col(0x4a2e1a), roughness: 0.5, metalness: 0, transparent: true });
 const frameWhite = new THREE.MeshStandardMaterial({ color: col(0xf4f3ef), roughness: 0.7, metalness: 0, transparent: true });   // white window surround
 wallMats.push(frameMat, doorFrameMat, sillMat, frameWhite);
-// Dark reflective window glass that mirrors the garden: dusk sky, trees, hedges and lawn (shared so it can fade too)
+// Dark reflective window glass that mirrors the garden: dusk sky, hedges and lawn (shared so it can fade too)
 const reflectionTex = makeTexture(512, 384, (ctx, w, h) => {
   const sky = ctx.createLinearGradient(0, 0, 0, h * 0.58);
   sky.addColorStop(0, '#16213d'); sky.addColorStop(0.6, '#3d5079'); sky.addColorStop(1, '#8a93ad');
@@ -251,13 +255,6 @@ const reflectionTex = makeTexture(512, 384, (ctx, w, h) => {
   const sun = ctx.createRadialGradient(w * 0.86, h * 0.34, 0, w * 0.86, h * 0.34, 50);
   sun.addColorStop(0, 'rgba(255,225,170,0.9)'); sun.addColorStop(1, 'rgba(255,225,170,0)');
   ctx.fillStyle = sun; ctx.fillRect(w * 0.6, 0, w * 0.4, h * 0.7);
-  ctx.fillStyle = '#18301d';                                             // distant tree line and tall trees
-  for (let x = 0; x < w; x += 22) { ctx.beginPath(); ctx.arc(x + rand(-6, 6), h * 0.55, rand(24, 40), 0, 7); ctx.fill(); }
-  [[70, 0.5, 70], [330, 0.52, 60], [400, 0.5, 55]].forEach(([x, y, r]) => {
-    ctx.fillStyle = '#12261a';
-    for (let k = 0; k < 7; k++) { ctx.beginPath(); ctx.arc(x + rand(-r * 0.7, r * 0.7), h * y - rand(0, r * 1.2), rand(r * 0.35, r * 0.6), 0, 7); ctx.fill(); }
-    ctx.fillRect(x - 4, h * y, 8, h * 0.12);
-  });
   ctx.fillStyle = '#1f3b24'; ctx.fillRect(0, h * 0.6, w, h * 0.12);      // hedge
   const lawn = ctx.createLinearGradient(0, h * 0.7, 0, h);
   lawn.addColorStop(0, '#2b5030'); lawn.addColorStop(1, '#16301b');
@@ -370,8 +367,14 @@ function furn(x1, z1, x2, z2, h, color, y0 = FLOOR_Y, solid = true) {
 
 // A straight wall along the plan. horiz: wall runs along x at z = c; otherwise along z at x = c.
 // openings: [from, to, type] where type is 'door' | 'open' | 'win' | 'vent'
-function wallLine(horiz, c, a1, a2, openings = [], mat = cream) {
+// out (outer walls only): +1 / -1 = which side faces outside; that face gets the beige facade colour.
+function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
   const ext = T / 2 / S;
+  if (out) {   // box faces: +x, -x, +y, -y, +z, -z
+    const faces = Array(6).fill(mat);
+    faces[(horiz ? 4 : 0) + (out > 0 ? 0 : 1)] = facade;
+    mat = faces;
+  }
   const piece = (s, e, y0, y1, { mesh = true, solid = true } = {}) => {
     if (e - s < 0.01 || y1 - y0 < 0.01) return;
     const s2 = s === a1 ? s - ext : s, e2 = e === a2 ? e + ext : e;
@@ -404,7 +407,7 @@ function wallLine(horiz, c, a1, a2, openings = [], mat = cream) {
     m.position.set(horiz ? fx(mid) : fx(c), (y0 + y1) / 2, horiz ? fz(c) : fz(mid));
     scene.add(m);
     // Sliding window: dark aluminium frame, a centre divider between the two sashes and a grey stone sill
-    trim(s - 0.3, e + 0.3, y0 - 0.12, y1 + 0.12, frameWhite, 0.12, T + 0.1, true);   // thick white border round the window
+    trim(s - 0.35, e + 0.35, y0 - 0.16, y1 + 0.16, frameWhite, 0.16, T + 0.22, true);   // thick white box frame round the window, standing out from the wall
     const f = trim(s, e, y0, y1, frameMat, 0.07, T + 0.06, true);
     f.put(0.07, y1 - y0, 0, (y0 + y1) / 2);
     box(horiz ? [(e - s) * S + 0.18, 0.06, T + 0.2] : [T + 0.2, 0.06, (e - s) * S + 0.18], [horiz ? fx(mid) : fx(c), y0 - 0.03, horiz ? fz(c) : fz(mid)], 0, scene, sillMat);
@@ -445,13 +448,14 @@ function wallLine(horiz, c, a1, a2, openings = [], mat = cream) {
 // Swinging door that opens when the player walks up to it. Purely visual: the gap is always walkable.
 const doors = [];
 const doorWood = textured(doorTex, 1, 0.55);
-function door(horiz, c, a1, a2, hingeAtStart, swing) {
+function door(horiz, c, a1, a2, hingeAtStart, swing, handle = false) {
   const len = (a2 - a1) * S;
   const hinge = hingeAtStart ? a1 : a2;
   const pivot = new THREE.Group();
   pivot.position.set(horiz ? fx(hinge) : fx(c), FLOOR_Y, horiz ? fz(c) : fz(hinge));
   const leaf = box([len, 2.0, 0.06], [len / 2, 1.0, 0], 0, pivot, doorWood);
   leaf.receiveShadow = false;
+  if (handle) [-1, 1].forEach((side) => box([0.03, 0.9, 0.03], [len - 0.12, 1.05, side * 0.06], 0, pivot, steel));   // long steel bar handle on both faces
   const base = horiz ? (hingeAtStart ? 0 : Math.PI) : (hingeAtStart ? -Math.PI / 2 : Math.PI / 2);
   pivot.rotation.y = base;
   scene.add(pivot);
@@ -508,11 +512,11 @@ rect(17.2, 28.6, 35, 37, 0, 0.1, 0xb9b0a0);           // porch
 
 // ---------- Walls (see the ground floor plan) ----------
 // Outer walls
-wallLine(true, 0, 0, 35, [[4.5, 9.5, 'win'], [14.4, 16, 'vent'], [19, 20.5, 'vent'], [25.7, 30.7, 'win']]);
-wallLine(false, 0, 0, 33, [[5.3, 11.4, 'win'], [14.55, 18.55, 'tall'], [21.6, 24.6, 'door'], [25.2, 30.2, 'win']]);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
-wallLine(false, 35, 0, 28, [[4.7, 9.7, 'win'], [19, 24.5, 'win']]);
-wallLine(true, 28, 17.5, 35, [[17.9, 21.2, 'door'], [24, 29.9, 'win'], [32.3, 34.7, 'door']], taupe);   // living hall front, main door
-wallLine(true, 33, 0, 17.5, [[4.7, 9.7, 'win']], taupe);      // kitchen + devghar back
+wallLine(true, 0, 0, 35, [[4.5, 9.5, 'win'], [14.4, 16, 'vent'], [19, 20.5, 'vent'], [25.7, 30.7, 'win']], cream, -1);
+wallLine(false, 0, 0, 33, [[5.3, 11.4, 'win'], [14.55, 18.55, 'tall'], [21.6, 24.6, 'door'], [25.2, 30.2, 'win']], cream, -1);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
+wallLine(false, 35, 0, 28, [[4.7, 9.7, 'win'], [19, 24.5, 'win']], cream, 1);
+wallLine(true, 28, 17.5, 35, [[17.9, 21.2, 'door'], [24, 29.9, 'win'], [32.3, 34.7, 'door']], taupe, 1);   // living hall front, main door
+wallLine(true, 33, 0, 17.5, [[4.7, 9.7, 'win']], taupe, 1);      // kitchen + devghar back
 // Bedrooms, bath, wc
 wallLine(false, 13, 0, 13.3, [[9.8, 12.8, 'door']]);          // bedroom-1 east wall
 wallLine(false, 21.7, 0, 13.3, [[9.8, 12.8, 'door']]);        // bedroom-2 west wall
@@ -530,8 +534,8 @@ door(false, 13, 9.8, 12.8, true, -1);       // bedroom-1 D1
 door(false, 21.7, 9.8, 12.8, true, 1);      // bedroom-2 D1
 door(true, 9.3, 15.7, 17.6, false, -1);     // bath D2
 door(true, 6.2, 17.9, 20.1, true, 1);       // wc D2
-door(false, 0, 21.6, 24.6, true, 1);        // kitchen -> dry balcony D1
-door(true, 28, 17.9, 21.2, true, 1);        // MAIN DOOR
+door(false, 0, 21.6, 24.6, true, 1, true);  // kitchen -> dry balcony D1
+door(true, 28, 17.9, 21.2, true, 1, true);  // MAIN DOOR
 
 // ---------- Roof / terrace ----------
 // One flat roof over the whole house, with a hole above the staircase. Everything here hides when you are inside.
@@ -542,7 +546,7 @@ slab(-0.6, 19.8, 13.2, 33.6);
 slab(13.2, 28.6, 17.9, 33.6);
 slab(17.9, 28.6, 35.6, 37.6);          // roof over the porch, level with the rest of the terrace
 // Thick white fascia (0.7 m deep, projecting past the walls) over the porch and along the front of the left block, like the render
-// Two-layer white canopy slabs (kitchen side and porch), like the render: a slightly projecting upper layer, a dark shadow groove, then the lower layer
+// Two-layer white canopy slab over the porch, like the render (no slab in front of the kitchen): a slightly projecting upper layer, a dark shadow groove, then the lower layer
 function canopySlab(x1, z1, x2, z2) {
   const top = H + 0.03;
   rect(x1, z1, x2, z2, top - 0.36, 0.36, white, upper);                         // upper layer, projects a little further
@@ -550,7 +554,7 @@ function canopySlab(x1, z1, x2, z2) {
   rect(x1 + 0.05, z1, x2 - 0.05, z2 - 0.14, top - 0.4, 0.05, 0x3a3a38, upper);  // shadow groove between them
 }
 canopySlab(17.9, 28.6, 36.3, 38.3);       // porch
-canopySlab(-1.1, 33.0, 17.9, 38.3);       // kitchen side: the same 2 m deep projection as the porch, continuing its front line
+rect(10.0, 33.05, 17.9, 33.65, H - 0.5, 0.53, white, upper);   // plain white roof edge between the tower and the porch
 slab(-0.6, 13.3, 0, 14.55);                 // west edge strip, with a gap for the tall stairwell window
 slab(-0.6, 18.55, 0, 19.8);
 
@@ -576,12 +580,14 @@ const claddingTex = (color) => makeTexture(128, 128, (ctx, w, h) => {
 const mumtyLower = textured(claddingTex('#a39c86'), 0.7, 0.9);
 const mumtyUpper = textured(claddingTex('#7b7a6e'), 0.7, 0.9);
 {
-  // Planter-style edge wall above the kitchen-side canopy: darker olive on the left, lighter grey-olive on the right, white coping on top
-  const olive = textured(claddingTex('#74775f'), 0.9, 0.9), grey = textured(claddingTex('#8d8a79'), 0.9, 0.9);
-  rect(-0.6, 33.1, 6.5, 33.6, H, 0.9, 0, upper, olive);
-  rect(6.5, 33.1, 17.9, 33.6, H, 0.9, 0, upper, grey);
+  // Front edge of the terrace: a grey balcony parapet in front of the kitchen (with a planter behind it), white beyond the tower
+  const grey = textured(claddingTex('#8b8a84'), 0.9, 0.9);
+  rect(-0.6, 33.1, 10.0, 33.6, H, 0.9, 0, upper, grey);
+  rect(10.0, 33.1, 17.9, 33.6, H, 0.9, white, upper);
   rect(-0.7, 33.0, 17.9, 33.7, H + 0.9, 0.07, white, upper);
+  rect(-0.6, 32.2, 10.0, 33.1, H, 0.75, 0x6f6d66, upper);   // balcony planter box
   obstacle(fx(8.65), fz(33.35), 18.5 * S, 0.5 * S, H, H + 0.9);
+  obstacle(fx(4.7), fz(32.65), 10.6 * S, 0.9 * S, H, H + 0.75);
 }
 parapet(-0.6, -0.1, -0.1, 11.55);          // the west edge wall stops where the stairwell tower comes through
 function mumtyWall(x1, z1, x2, z2, y0 = H, solid = true, y1 = TW.top) {
@@ -627,24 +633,34 @@ rect(TW.x1 + 1.3, TW.z1 + 0.6, TW.x2 - 1.3, TW.z2 - 0.6, TW.top + 0.75, 0.08, wh
 
 // ---------- Front facade details (from the reference render) ----------
 const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
+
+// ---------- Terrace front-left (from the render) ----------
+// The mumty is the only room on the terrace and the only roof up there (no window on its road side). In front of it, over the
+// kitchen, the terrace is open up to the balcony.
 {
-  // Tall charcoal accent panel with grooves, rising above the roof, with warm wall lamps
-  const px1 = 10.3, px2 = 14.1, pz1 = 33.4, pz2 = 34.0;
-  rect(px1, pz1, px2, pz2, 0, H, 0, scene, charcoalClad);
-  rect(px1, pz1, px2, pz2, H, 1.4, 0, upper, charcoalClad);
-  rect(px1 - 0.3, pz1 - 0.2, px2 + 0.3, pz2 + 0.3, H + 1.4, 0.12, white, upper);   // thin white cap
-  obstacle(fx((px1 + px2) / 2), fz((pz1 + pz2) / 2), (px2 - px1) * S, (pz2 - pz1) * S, 0, H + 1.4);
-  [[11.2, 2.3], [13.2, 2.3]].forEach(([xf, y]) => {
-    box([0.2, 0.2, 0.12], [fx(xf), y, fz(pz2) + 0.06], 0x2a2a2a, scene);
-    glow([0.14, 0.14, 0.04], [fx(xf), y, fz(pz2) + 0.13], 0xffe8b8, scene);
-    wallGlow(fx(xf), y, fz(pz2) + 0.15);
+  // Charcoal block with two small lit vents, standing on the outer edge of the kitchen porch canopy (in its railing line),
+  // in the middle of the porch (z 21..33)
+  const kb = { x1: -3.45, x2: -1.9, z1: 25.6, z2: 28.4, y0: 3.12, y1: H + 0.9 };
+  rect(kb.x1, kb.z1, kb.x2, kb.z2, kb.y0, kb.y1 - kb.y0, 0, upper, charcoalClad);
+  rect(kb.x1 - 0.1, kb.z1 - 0.1, kb.x2 + 0.1, kb.z2 + 0.1, kb.y1, 0.08, white, upper);
+  [26.5, 27.5].forEach((zf) => {
+    box([0.04, 0.6, 0.22], [fx(kb.x1) - 0.02, (kb.y0 + kb.y1) / 2, fz(zf)], white, upper);
+    glow([0.04, 0.5, 0.14], [fx(kb.x1) - 0.035, (kb.y0 + kb.y1) / 2, fz(zf)], 0xffd08a, upper);
   });
-  [[11.2], [13.2]].forEach(([xf]) => {   // two slim white-framed windows on the upper part of the dark block
-    const wy = H + 0.72, ww = 0.34, wh = 0.9, wz = fz(pz2);
-    box([ww + 0.12, wh + 0.12, 0.08], [fx(xf), wy, wz + 0.04], white, upper);
-    glow([ww, wh, 0.05], [fx(xf), wy, wz + 0.085], 0xffd08a, upper);
-    box([ww, 0.04, 0.07], [fx(xf), wy + 0.12, wz + 0.1], white, upper);
-    box([0.04, wh * 0.45, 0.07], [fx(xf), wy - 0.2, wz + 0.1], white, upper);
+}
+
+{
+  // Tall charcoal accent tower with grooves, from the plinth up past the roof, with a column of warm wall lamps
+  // (no window on it: the kitchen has only one front window)
+  const px1 = 10.3, px2 = 14.1, pz1 = 33.4, pz2 = 34.0, top = H + 1.2;
+  rect(px1, pz1, px2, pz2, 0, H, 0, scene, charcoalClad);
+  rect(px1, pz1, px2, pz2, H, top - H, 0, upper, charcoalClad);
+  rect(px1 - 0.3, pz1 - 0.2, px2 + 0.3, pz2 + 0.3, top, 0.12, white, upper);   // thin white cap
+  obstacle(fx((px1 + px2) / 2), fz((pz1 + pz2) / 2), (px2 - px1) * S, (pz2 - pz1) * S, 0, top);
+  [[3.15, scene], [4.25, upper]].forEach(([y, parent]) => {   // lamps stacked up the middle of the tower, washing light up and down
+    box([0.2, 0.2, 0.12], [fx(12.2), y, fz(pz2) + 0.06], 0x2a2a2a, parent);
+    glow([0.14, 0.14, 0.04], [fx(12.2), y, fz(pz2) + 0.13], 0xffe8b8, parent);
+    wallGlow(fx(12.2), y, fz(pz2) + 0.15, parent);
   });
 }
 {
@@ -656,6 +672,20 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
   rect(22.1, 37.4, 24.9, 37.75, H + 0.3, h - 0.6, 0x3b3a38, upper);                    // recessed square
   rect(34.3, 36.9, 35.6, 37.7, H, h, 0xd9a63a, upper);                                 // golden strips
   for (let i = 0; i < 3; i++) rect(34.55 + i * 0.35, 37.65, 34.6 + i * 0.35, 37.75, H, h, 0xa87a1f, upper);
+  // Name plate on the charcoal panel
+  const NAME_PLATE = ['NAME', 'HERE'];   // put the family name here (two lines)
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 256;
+  const g = cv.getContext('2d');
+  g.fillStyle = '#f2f0ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = 'bold 96px Georgia, serif';
+  g.fillText(NAME_PLATE[0], 256, 74); g.fillText(NAME_PLATE[1], 256, 184);
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.0, 1.0),
+    new THREE.MeshBasicMaterial({ map: Object.assign(new THREE.CanvasTexture(cv), { encoding: THREE.sRGBEncoding }), transparent: true })
+  );
+  plate.position.set(fx(30.4), H + 0.75, fz(37.7) + 0.01);
+  upper.add(plate);
   obstacle(fx(28.6), fz(37.3), 14.1 * S, 0.8 * S, H, H + h);
 }
 {
@@ -663,7 +693,6 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
   const spot = new THREE.MeshBasicMaterial({ color: col(0xfff3d8) });
   const spotsAt = [];
   for (let xf = 20; xf <= 33; xf += 3.25) for (const zf of [30.8, 34.8]) spotsAt.push([xf, zf]);
-  for (let xf = 1.5; xf <= 17; xf += 3.1) for (const zf of [35, 37]) spotsAt.push([xf, zf]);   // under the kitchen-side canopy too
   for (const [xf, zf] of spotsAt) {
     const c = new THREE.Mesh(new THREE.CircleGeometry(0.07, 14), spot);
     c.rotation.x = Math.PI / 2;
@@ -673,9 +702,9 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
 }
 
 {
-  // Front-left of the terrace: a horizontal-slat railing above the edge wall (no planter, no plants: the terrace stays plain)
-  [1.05, 1.28, 1.51, 1.74].forEach((y) => rect(-0.5, 33.15, 17.5, 33.4, H + y, 0.1, white, upper));   // four slats
-  for (let xf = -0.4; xf <= 17.5; xf += 3) rect(xf, 33.15, xf + 0.25, 33.4, H + 0.97, 0.87, white, upper);
+  // Balcony: a horizontal-slat railing above the grey parapet along its whole front, and the planter
+  [1.05, 1.28, 1.51].forEach((y) => rect(-0.5, 33.15, 10.0, 33.4, H + y, 0.1, white, upper));   // three slats
+  for (let xf = -0.5; xf <= 10; xf += 2.6) rect(xf, 33.15, xf + 0.25, 33.4, H + 0.97, 0.64, white, upper);
   // Cladding panels on the front walls: tan beside the window, a vine strip, warm brown beside the porch window
   const tanClad = textured(claddingTex('#a89c88'), 0.7, 0.9);
   const porchClad = textured(claddingTex('#8f8579'), 0.7, 0.9);
@@ -692,6 +721,11 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
 
 // Corner pilasters on the west face (the slim columns at both ends of the left-side elevation)
 [[-0.4, 1.3], [31.7, 33.0]].forEach(([za, zb]) => rect(-0.5, za, 0, zb, 0, H, 0, scene, frameWhite));
+// Wall-washer lamps on those pilasters, throwing light up and down the side wall
+[0.45, 32.35].forEach((zf) => {
+  glow([0.1, 0.2, 0.18], [fx(-0.5) - 0.05, 1.9, fz(zf)], 0xffe8b8);
+  wallGlow(fx(-0.5) - 0.07, 1.9, fz(zf), scene, -Math.PI / 2);
+});
 
 // ---------- Staircase (U-shaped, 6'6" x 16'6" room) ----------
 // Enter from the open passage on the east side, climb west along the south lane to the landing, turn, and climb east to the terrace.
@@ -896,7 +930,7 @@ brickMat.transparent = true;
 wallMats.push(brickMat);
 [[21.5, 23.9], [30.0, 32.2]].forEach(([a, b]) => box([(b - a) * S, 2.6, 0.06], [fx((a + b) / 2), 1.3, fz(28) + T / 2 + 0.03], 0, scene, brickMat));
 
-// ---------- Garden: hedges, palms, trees ----------
+// ---------- Garden: hedges ----------
 scene = realScene;   // back to ground level
 buildOff = 0;
 const hedgeMat = textured(leafTex, 0.8, 1);
@@ -911,47 +945,10 @@ function hedge(cx, cz, w, d) {
   }
   obstacle(cx, cz, w, d, 0, 0.9);
 }
-hedge(-3.6, 10, 6.4, 0.9);
-hedge(fx(35) + 0.2, 10, 1.4, 0.9);
+hedge(-3.04, 10, 8.3, 0.9);    // along the whole left block, up to the porch steps
+hedge(7.05, 10, 2.1, 0.9);      // right of the porch steps
 
-const trunkMat = paint(0x6a4a2c, 1);
-const frondMat = new THREE.MeshStandardMaterial({ color: col(0x3f8f3a), roughness: 0.8, side: THREE.DoubleSide });
-
-// A palm frond: three leaf segments that rise and then droop
-function frond(yaw) {
-  const root = new THREE.Group();
-  root.rotation.y = yaw;
-  root.position.y = 1.6;
-  let parent = root;
-  for (let k = 0; k < 3; k++) {
-    const seg = new THREE.Group();
-    seg.rotation.z = k === 0 ? 0.55 : -0.55;
-    const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.02, 0.26 - k * 0.07), frondMat);
-    leaf.position.x = 0.275;
-    leaf.castShadow = true;
-    seg.add(leaf);
-    const next = new THREE.Group();
-    next.position.x = 0.55;
-    seg.add(next);
-    parent.add(seg);
-    parent = next;
-  }
-  return root;
-}
-
-function palm(x, z, y = 0) {
-  const g = new THREE.Group();
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 1.6, 6), trunkMat);
-  trunk.position.y = 0.8;
-  trunk.castShadow = true;
-  g.add(trunk);
-  for (let i = 0; i < 9; i++) g.add(frond((i / 9) * Math.PI * 2 + rand(-0.2, 0.2)));
-  g.position.set(x, y, z);
-  (y ? upper : scene).add(g);
-  glow([0.2, 0.1, 0.2], [x, y + 0.05, z + 0.3], 0xffcf70, y ? upper : scene); // uplight
-}
-
-// (no big trees around the house: the plot is kept clear)
+// (no trees or palms around the house: the plot is kept clear)
 
 // Stainless-steel handrails up the porch steps (like the render)
 function rod(a, b, r, mat = steel) {
@@ -1043,7 +1040,6 @@ warmLight(fx(26), 2.4, fz(21), 1.1, 11, true); // living hall
 warmLight(fx(7), 2.4, fz(26.5), 1.0, 10);     // kitchen
 warmLight(fx(6.5), 2.4, fz(16.5), 0.8, 8);    // stairs
 warmLight(fx(26), 2.6, fz(33), 1.0, 9, true); // porch
-warmLight(fx(9), H - 0.9, fz(36), 0.7, 7);      // under the kitchen-side canopy
 warmLight(fx(17), 5.5, fz(16), 0.6, 14);      // terrace
 warmLight(0, 1.2, 10.5, 0.6, 9);              // garden
 scene = realScene;
