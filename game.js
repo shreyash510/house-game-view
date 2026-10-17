@@ -297,15 +297,49 @@ for (let j = 0; j < PORCH_STEPS.count; j++) {
   const z1 = PORCH_STEPS.z0 + j * PORCH_STEPS.tread;
   rect(PORCH_STEPS.x1, z1, PORCH_STEPS.x2, z1 + PORCH_STEPS.tread, 0, (PLINTH + 0.1) * (PORCH_STEPS.count - j) / (PORCH_STEPS.count + 1), 0xd8d6d0);
 }
-// Kitchen steps (left side, outside the kitchen door): three steps that get wider as they go down, like the left-side elevation
+// Small kitchen porch (the dry balcony): 7 ft long along the wall and 3 ft out from it, level with the house floor,
+// running up to the front corner of the house. The kitchen door opens onto it and the steps go down on the FRONT side.
+const KITCHEN_PORCH = { x1: -3, x2: 0, z1: 21, z2: 30 };   // the flat deck: 9 ft, then 3 ft of steps (all inside the porch, 12 ft in total up to the front corner at 33)
+const kp = KITCHEN_PORCH;
+rect(kp.x1, kp.z1, kp.x2, kp.z2, 0, PLINTH + 0.1, 0xd8d6d0);
+obstacle(fx(-1.5), fz(kp.z1), 3 * S, 0.2, 0, 1.0);                        // the north and west edges are solid;
+obstacle(fx(kp.x1), fz((kp.z1 + 33) / 2), 0.2, (33 - kp.z1) * S, 0, 1.0);   // you get on by the front steps or the door
+{
+  // Design of the kitchen porch roof (from the reference): a thick white fascia in two tiers split by a thin groove,
+  // warm recessed spot lights underneath, and a grey planter wall with white horizontal slats on top
+  const yb = PLINTH + 2.55;   // underside of the canopy
+  rect(-3.4, 20.9, 0, 33.3, yb, 0.34, white);
+  rect(-3.42, 20.88, 0.02, 33.32, yb + 0.34, 0.03, 0x9a9a98);                  // groove between the two tiers
+  rect(-3.4, 20.9, 0, 33.3, yb + 0.37, 0.2, white);
+  [-2.5, -1.0].forEach((x) => [22.6, 25.3, 28.0, 30.7].forEach((z) =>
+    glow([0.14, 0.02, 0.14], [fx(x), yb - 0.012, fz(z)], 0xfff0c8)));           // recessed spot lights
+  warmLight(fx(-1.5), yb - 0.3, fz(24), 0.8, 5);
+  warmLight(fx(-1.5), yb - 0.3, fz(30), 0.8, 5);
+  rect(-3.2, 21.1, -0.3, 33.1, yb + 0.57, 0.5, 0x8a8b7f);                       // planter wall
+  [0.62, 0.8, 0.98].forEach((h) => rect(-3.3, 21.0, -3.1, 33.2, yb + 0.57 + h - 0.05, 0.07, white));   // horizontal slats
+  [21.0, 27.0, 33.0].forEach((z) => rect(-3.3, z, -3.1, z + 0.2, yb + 0.57, 1.0, white));             // slat posts
+}
+// Three steps going down from the front of the porch to the garden (a little wider each step)
 const KITCHEN_STEPS = [   // [x from, x to, z from, z to], top step first; heights follow the porch steps
-  [-1.5, 0, 19.9, 23.6], [-2.7, -1.5, 19.6, 23.9], [-3.9, -2.7, 19.3, 24.2],
+  [-3, 0, 30, 31], [-3, 0, 31, 32], [-3, 0, 32, 33],   // inside the porch, going down toward the front corner
 ];
 KITCHEN_STEPS.forEach(([x1, x2, z1, z2], i) => {
-  rect(x1, z1, x2, z2, 0, (PLINTH + 0.1) * (3 - i) / 4, 0xd8d6d0);
-  obstacle(fx((x1 + x2) / 2), fz(z1), (x2 - x1) * S, 0.2, 0, 1.0);    // side faces are solid: you can only step on from the west
-  obstacle(fx((x1 + x2) / 2), fz(z2), (x2 - x1) * S, 0.2, 0, 1.0);
+  // Open staircase: a thin tread and a riser for each step, carried by stringers (see below) instead of solid blocks
+  const top = (PLINTH + 0.1) * (3 - i) / 4, rise = (PLINTH + 0.1) / 4;
+  box([(x2 - x1) * S, 0.05, (z2 - z1) * S], [fx((x1 + x2) / 2), top - 0.025, fz((z1 + z2) / 2)], 0xd8d6d0);
+  box([(x2 - x1) * S, rise, 0.03], [fx((x1 + x2) / 2), top - rise / 2, fz(z2)], 0xd8d6d0);
+  obstacle(fx(x1), fz((z1 + z2) / 2), 0.2, (z2 - z1) * S, 0, 1.0);    // side faces are solid: you can only step on from the front (south)
+  obstacle(fx(x2), fz((z1 + z2) / 2), 0.2, (z2 - z1) * S, 0, 1.0);
 });
+{
+  // Stringers: the sloping side beams under the treads (left, middle and right), running from the porch edge down to the last step
+  const topY = PLINTH + 0.1, endY = (PLINTH + 0.1) / 4, runM = 3 * S;   // 3 ft of steps in front of the porch
+  const len = Math.hypot(runM, topY - endY), ang = Math.atan2(topY - endY, runM);
+  [-2.9, -1.5, -0.1].forEach((xf) => {
+    const s = box([0.1, 0.22, len], [fx(xf), (topY + endY) / 2 - 0.1, fz(31.5)], 0xbdbdb8);
+    s.rotation.x = ang;   // the far (south) end is the low one
+  });
+}
 // Edges of the porch steps are solid too
 obstacle(fx(PORCH_STEPS.x1), fz(38.8), 0.2, 3.6 * S, 0, 1.0);
 obstacle(fx(PORCH_STEPS.x2), fz(38.8), 0.2, 3.6 * S, 0, 1.0);
@@ -475,10 +509,10 @@ rect(17.2, 28.6, 35, 37, 0, 0.1, 0xb9b0a0);           // porch
 // ---------- Walls (see the ground floor plan) ----------
 // Outer walls
 wallLine(true, 0, 0, 35, [[4.5, 9.5, 'win'], [14.4, 16, 'vent'], [19, 20.5, 'vent'], [25.7, 30.7, 'win']]);
-wallLine(false, 0, 0, 33, [[5.3, 11.4, 'win'], [14.55, 18.55, 'tall'], [20.2, 23.3, 'door'], [25.2, 30.2, 'win']]);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
+wallLine(false, 0, 0, 33, [[5.3, 11.4, 'win'], [14.55, 18.55, 'tall'], [21.6, 24.6, 'door'], [25.2, 30.2, 'win']]);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
 wallLine(false, 35, 0, 28, [[4.7, 9.7, 'win'], [19, 24.5, 'win']]);
 wallLine(true, 28, 17.5, 35, [[17.9, 21.2, 'door'], [24, 29.9, 'win'], [32.3, 34.7, 'door']], taupe);   // living hall front, main door
-wallLine(true, 33, 0, 17.5, [[4.7, 9.7, 'win'], [14.4, 16, 'vent']], taupe);      // kitchen + devghar back
+wallLine(true, 33, 0, 17.5, [[4.7, 9.7, 'win']], taupe);      // kitchen + devghar back
 // Bedrooms, bath, wc
 wallLine(false, 13, 0, 13.3, [[9.8, 12.8, 'door']]);          // bedroom-1 east wall
 wallLine(false, 21.7, 0, 13.3, [[9.8, 12.8, 'door']]);        // bedroom-2 west wall
@@ -496,7 +530,7 @@ door(false, 13, 9.8, 12.8, true, -1);       // bedroom-1 D1
 door(false, 21.7, 9.8, 12.8, true, 1);      // bedroom-2 D1
 door(true, 9.3, 15.7, 17.6, false, -1);     // bath D2
 door(true, 6.2, 17.9, 20.1, true, 1);       // wc D2
-door(false, 0, 20.2, 23.3, true, 1);        // kitchen -> dry balcony D1
+door(false, 0, 21.6, 24.6, true, 1);        // kitchen -> dry balcony D1
 door(true, 28, 17.9, 21.2, true, 1);        // MAIN DOOR
 
 // ---------- Roof / terrace ----------
@@ -508,8 +542,15 @@ slab(-0.6, 19.8, 13.2, 33.6);
 slab(13.2, 28.6, 17.9, 33.6);
 slab(17.9, 28.6, 35.6, 37.6);          // roof over the porch, level with the rest of the terrace
 // Thick white fascia (0.7 m deep, projecting past the walls) over the porch and along the front of the left block, like the render
-rect(17.9, 28.6, 36.3, 38.3, H - 0.7, 0.73, white, upper);
-rect(-1.1, 33.0, 18.5, 34.3, H - 0.7, 0.73, white, upper);
+// Two-layer white canopy slabs (kitchen side and porch), like the render: a slightly projecting upper layer, a dark shadow groove, then the lower layer
+function canopySlab(x1, z1, x2, z2) {
+  const top = H + 0.03;
+  rect(x1, z1, x2, z2, top - 0.36, 0.36, white, upper);                         // upper layer, projects a little further
+  rect(x1 + 0.05, z1, x2 - 0.05, z2 - 0.18, top - 0.74, 0.35, white, upper);   // lower layer
+  rect(x1 + 0.05, z1, x2 - 0.05, z2 - 0.14, top - 0.4, 0.05, 0x3a3a38, upper);  // shadow groove between them
+}
+canopySlab(17.9, 28.6, 36.3, 38.3);       // porch
+canopySlab(-1.1, 33.0, 17.9, 38.3);       // kitchen side: the same 2 m deep projection as the porch, continuing its front line
 slab(-0.6, 13.3, 0, 14.55);                 // west edge strip, with a gap for the tall stairwell window
 slab(-0.6, 18.55, 0, 19.8);
 
@@ -521,8 +562,6 @@ parapet(-0.6, -0.6, 35.6, -0.1);
 parapet(35.1, -0.1, 35.6, 37.6);       // the porch roof is part of the terrace: one edge wall runs all the way round
 parapet(17.4, 37.1, 35.1, 37.6);
 parapet(17.4, 33.6, 17.9, 37.1);
-parapet(-0.6, 33.1, 17.9, 33.6);
-parapet(-0.6, -0.1, -0.1, 11.55);          // the west edge wall stops where the stairwell tower comes through
 parapet(-0.6, 21.55, -0.1, 33.1);
 
 // Mumty (staircase headroom) on the terrace: 15 ft long x 10 ft wide, 0.6 ft thick walls, white roof slab, door on the east side.
@@ -536,6 +575,15 @@ const claddingTex = (color) => makeTexture(128, 128, (ctx, w, h) => {
 });
 const mumtyLower = textured(claddingTex('#a39c86'), 0.7, 0.9);
 const mumtyUpper = textured(claddingTex('#7b7a6e'), 0.7, 0.9);
+{
+  // Planter-style edge wall above the kitchen-side canopy: darker olive on the left, lighter grey-olive on the right, white coping on top
+  const olive = textured(claddingTex('#74775f'), 0.9, 0.9), grey = textured(claddingTex('#8d8a79'), 0.9, 0.9);
+  rect(-0.6, 33.1, 6.5, 33.6, H, 0.9, 0, upper, olive);
+  rect(6.5, 33.1, 17.9, 33.6, H, 0.9, 0, upper, grey);
+  rect(-0.7, 33.0, 17.9, 33.7, H + 0.9, 0.07, white, upper);
+  obstacle(fx(8.65), fz(33.35), 18.5 * S, 0.5 * S, H, H + 0.9);
+}
+parapet(-0.6, -0.1, -0.1, 11.55);          // the west edge wall stops where the stairwell tower comes through
 function mumtyWall(x1, z1, x2, z2, y0 = H, solid = true, y1 = TW.top) {
   if (y1 <= y0) return;
   const split = H + 1.4;   // tone changes 1.4 m above the terrace floor
@@ -591,6 +639,13 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
     glow([0.14, 0.14, 0.04], [fx(xf), y, fz(pz2) + 0.13], 0xffe8b8, scene);
     wallGlow(fx(xf), y, fz(pz2) + 0.15);
   });
+  [[11.2], [13.2]].forEach(([xf]) => {   // two slim white-framed windows on the upper part of the dark block
+    const wy = H + 0.72, ww = 0.34, wh = 0.9, wz = fz(pz2);
+    box([ww + 0.12, wh + 0.12, 0.08], [fx(xf), wy, wz + 0.04], white, upper);
+    glow([ww, wh, 0.05], [fx(xf), wy, wz + 0.085], 0xffd08a, upper);
+    box([ww, 0.04, 0.07], [fx(xf), wy + 0.12, wz + 0.1], white, upper);
+    box([0.04, wh * 0.45, 0.07], [fx(xf), wy - 0.2, wz + 0.1], white, upper);
+  });
 }
 {
   // Decorative facade on the porch edge of the terrace: charcoal panel, recessed square frame, golden strips (no text)
@@ -606,7 +661,10 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
 {
   // Recessed ceiling lights under the porch fascia
   const spot = new THREE.MeshBasicMaterial({ color: col(0xfff3d8) });
-  for (let xf = 20; xf <= 33; xf += 3.25) for (const zf of [30.8, 34.8]) {
+  const spotsAt = [];
+  for (let xf = 20; xf <= 33; xf += 3.25) for (const zf of [30.8, 34.8]) spotsAt.push([xf, zf]);
+  for (let xf = 1.5; xf <= 17; xf += 3.1) for (const zf of [35, 37]) spotsAt.push([xf, zf]);   // under the kitchen-side canopy too
+  for (const [xf, zf] of spotsAt) {
     const c = new THREE.Mesh(new THREE.CircleGeometry(0.07, 14), spot);
     c.rotation.x = Math.PI / 2;
     c.position.set(fx(xf), H - 0.71, fz(zf));
@@ -616,14 +674,18 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
 
 {
   // Front-left of the terrace: a horizontal-slat railing above the edge wall (no planter, no plants: the terrace stays plain)
-  [1.15, 1.4].forEach((y) => rect(-0.5, 33.2, 17.5, 33.36, H + y, 0.06, white, upper));
-  for (let xf = -0.4; xf <= 17.5; xf += 3) rect(xf, 33.15, xf + 0.25, 33.4, H + 0.9, 0.55, white, upper);
+  [1.05, 1.28, 1.51, 1.74].forEach((y) => rect(-0.5, 33.15, 17.5, 33.4, H + y, 0.1, white, upper));   // four slats
+  for (let xf = -0.4; xf <= 17.5; xf += 3) rect(xf, 33.15, xf + 0.25, 33.4, H + 0.97, 0.87, white, upper);
   // Cladding panels on the front walls: tan beside the window, a vine strip, warm brown beside the porch window
   const tanClad = textured(claddingTex('#a89c88'), 0.7, 0.9);
-  const brownClad = textured(claddingTex('#9a7b5c'), 0.7, 0.9);
+  const porchClad = textured(claddingTex('#8f8579'), 0.7, 0.9);
   rect(-0.4, 33.4, 3.3, 33.7, 0, 2.3, 0, scene, tanClad);
   rect(3.4, 33.4, 4.3, 33.65, 0.3, 2.5, 0, scene, textured(leafTex, 0.45, 1));
-  rect(30.5, 28.4, 34.7, 28.62, 0.1, 2.7, 0, scene, brownClad);
+  // The whole porch wall is styled: a grooved cladding band across the top, and panels under the window (brick strips are added with the porch)
+  rect(17.9, 28.38, 35, 28.55, 2.25, 0.65, 0, scene, porchClad);
+  rect(24, 28.38, 29.9, 28.55, 0.1, 0.8, 0, scene, porchClad);
+  rect(21.2, 28.38, 21.5, 28.55, 0.1, 2.15, 0, scene, porchClad); rect(23.9, 28.38, 24, 28.55, 0.1, 2.15, 0, scene, porchClad);
+  rect(29.9, 28.38, 30, 28.55, 0.1, 2.15, 0, scene, porchClad);
   // Porch columns: darker grey lower part, white above
   [[17.9, 36.6], [34.5, 36.6]].forEach(([x, z]) => rect(x - 0.65, z - 0.65, x + 0.65, z + 0.65, 0, 1.5, 0x6a665f, scene));
 }
@@ -806,9 +868,10 @@ scene.add(kalash);
 for (let x = DX1 + 0.3; x < DX2; x += 0.45) glow([0.1, 0.08, 0.1], [fx(x), FLOOR_Y + 0.93, fz(DZ1 + 0.1)], 0xff9f1a); // marigold garland
 const diyaLight = warmLight(fx(DXC), FLOOR_Y + 1.6, fz(DZ1 - 0.2), 0.8, 4.5);   // flickers like a real lamp
 // Walls of the little room, and the opening into the living hall
-wallLine(false, 35, 28, 31.8, [], taupe);
-wallLine(false, 32, 28, 31.8, [], taupe);
-wallLine(true, 31.8, 32, 35, [[33.1, 34.5, 'vent']], taupe);   // small window on the porch side of the devghar
+const devgharPaint = textured(claddingTex('#85766a'), 0.7, 0.9);   // brown-grey paint with horizontal lines
+wallLine(false, 35, 28, 31.8, [], devgharPaint);
+wallLine(false, 32, 28, 31.8, [], devgharPaint);
+wallLine(true, 31.8, 32, 35, [[33.1, 34.5, 'vent']], devgharPaint);   // small window on the porch side of the devghar
 tile(32, 28, 35, 31.8, tileFloor('#e8d9a8'));
 
 // Room names painted on the floor
@@ -908,6 +971,33 @@ function rod(a, b, r, mat = steel) {
   rod(new THREE.Vector3(x, 0, zBot), bot, 0.03);
 });
 
+// Stainless-steel railing for the kitchen porch: along its west and north edges, and up both sides of its front steps
+{
+  const deck = PLINTH + 0.1, rail = 0.95;   // porch floor height, railing height above it
+  const V = (xf, y, zf) => new THREE.Vector3(fx(xf), y, fz(zf));
+  // A straight run on the porch deck: handrail, two lower rods and a post about every 3 ft
+  const deckRail = (x1, z1, x2, z2) => {
+    const a = V(x1, deck + rail, z1), b = V(x2, deck + rail, z2);
+    rod(a, b, 0.03);
+    [0.3, 0.6].forEach((drop) => rod(a.clone().setY(a.y - drop), b.clone().setY(b.y - drop), 0.015));
+    const posts = Math.max(1, Math.round(Math.hypot(x2 - x1, z2 - z1) / 3));
+    for (let i = 0; i <= posts; i++) {
+      const t = i / posts, px = x1 + (x2 - x1) * t, pz = z1 + (z2 - z1) * t;
+      rod(V(px, deck, pz), V(px, deck + rail, pz), 0.03);
+    }
+  };
+  deckRail(-3.1, 21, -3.1, 30);   // west edge of the flat deck
+  deckRail(-3.1, 21, 0, 21);      // north edge (the door and wall close the east side)
+  // Down the steps: a sloping handrail on each side, from the porch edge to the bottom step, with posts at both ends
+  [-3.1].forEach((xf) => {   // (the east side of the steps is the house wall)
+    const top = V(xf, deck + rail, 30), bot = V(xf, (PLINTH + 0.1) / 4 + rail, 33);
+    rod(top, bot, 0.03);
+    [0.3, 0.6].forEach((drop) => rod(top.clone().setY(top.y - drop), bot.clone().setY(bot.y - drop), 0.015));
+    rod(V(xf, deck, 30), top, 0.03);
+    rod(V(xf, 0, 33), bot, 0.03);
+  });
+}
+
 // Street lamps along the pavement: warm head, light pool on the ground (a cheap glow instead of a real light)
 [-30, -14, 14, 30].forEach((x) => {
   const z = 12.2;
@@ -953,6 +1043,7 @@ warmLight(fx(26), 2.4, fz(21), 1.1, 11, true); // living hall
 warmLight(fx(7), 2.4, fz(26.5), 1.0, 10);     // kitchen
 warmLight(fx(6.5), 2.4, fz(16.5), 0.8, 8);    // stairs
 warmLight(fx(26), 2.6, fz(33), 1.0, 9, true); // porch
+warmLight(fx(9), H - 0.9, fz(36), 0.7, 7);      // under the kitchen-side canopy
 warmLight(fx(17), 5.5, fz(16), 0.6, 14);      // terrace
 warmLight(0, 1.2, 10.5, 0.6, 9);              // garden
 scene = realScene;
@@ -1284,13 +1375,46 @@ const touchSwitch = document.getElementById('touchSwitch');
 const touchPad = document.getElementById('touchPad');
 touchSwitch.addEventListener('change', () => {
   touchPad.style.display = touchSwitch.checked ? 'grid' : 'none';
-  if (!touchSwitch.checked) Object.keys(keys).forEach((k) => (keys[k] = false));
+  if (!touchSwitch.checked) { Object.keys(keys).forEach((k) => (keys[k] = false)); joyReset(); }
 });
-touchPad.querySelectorAll('button').forEach((btn) => {
-  const press = (down) => (e) => { e.preventDefault(); keys[btn.dataset.key] = down; btn.classList.toggle('down', down); };
-  btn.addEventListener('pointerdown', press(true));
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => btn.addEventListener(ev, press(false)));
+// Virtual joystick (touch): press the round pad and drag in the direction you want to walk; push to the edge to run.
+// Direction and strength follow the thumb, and everything resets the moment the finger lifts or the browser takes the touch away.
+const joy = { x: 0, y: 0, id: null };   // x: right(+)/left(-), y: forward(+)/back(-), both in -1..1
+const joyBase = document.getElementById('joyBase'), joyKnob = document.getElementById('joyKnob');
+function joyReset() {
+  joy.x = joy.y = 0; joy.id = null;
+  joyKnob.style.transform = 'translate(0px, 0px)';
+  joyBase.classList.remove('active');
+}
+function joyMove(e) {
+  const r = joyBase.getBoundingClientRect();
+  const radius = r.width / 2;
+  let dx = e.clientX - (r.left + radius), dy = e.clientY - (r.top + radius);
+  const len = Math.hypot(dx, dy), max = radius * 0.8;
+  if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+  const dead = 0.12;   // tiny movements near the centre are ignored
+  const nx = dx / max, ny = -dy / max, mag = Math.hypot(nx, ny);
+  if (mag < dead) { joy.x = joy.y = 0; return; }
+  const scale = (mag - dead) / (1 - dead) / mag;
+  joy.x = nx * scale; joy.y = ny * scale;
+}
+['contextmenu', 'selectstart', 'dragstart', 'touchstart', 'touchmove'].forEach((ev) => joyBase.addEventListener(ev, (e) => e.preventDefault(), { passive: false }));
+joyBase.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  if (joy.id !== null) return;
+  joy.id = e.pointerId;
+  try { joyBase.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+  joyBase.classList.add('active');
+  joyMove(e);
 });
+joyBase.addEventListener('pointermove', (e) => { if (e.pointerId === joy.id) { e.preventDefault(); joyMove(e); } });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => joyBase.addEventListener(ev, (e) => { if (e.pointerId === joy.id) joyReset(); }));
+// Safety nets: all fingers lifted, page hidden or focus lost
+addEventListener('touchend', (e) => { if (e.touches.length === 0) joyReset(); });
+addEventListener('touchcancel', joyReset);
+addEventListener('blur', joyReset);
+document.addEventListener('visibilitychange', joyReset);
 
 // ---------- Helpers ----------
 const RADIUS = 0.22;
@@ -1310,6 +1434,7 @@ function groundHeight(x, z, currentY) {
   if (onPorchTerrace && currentY > ROOF_REACH + PLINTH) return H + PLINTH;
   if (inHouse(xf, zf)) return currentY > ROOF_REACH + PLINTH ? H + PLINTH : PLINTH + FLOOR_Y;
   if ((xf > 17.2 && xf < 35 && zf > 28.6 && zf < 37)) return PLINTH + 0.1;
+  if (xf > KITCHEN_PORCH.x1 && xf <= KITCHEN_PORCH.x2 && zf > KITCHEN_PORCH.z1 && zf < KITCHEN_PORCH.z2) return PLINTH + 0.1;   // the small kitchen porch
   for (let i = 0; i < KITCHEN_STEPS.length; i++) {
     const [x1, x2, z1, z2] = KITCHEN_STEPS[i];
     if (xf > x1 && xf <= x2 && zf > z1 && zf < z2) return (PLINTH + 0.1) * (3 - i) / 4;
@@ -1416,16 +1541,18 @@ function blocked(x, y, z) {
 
 function update(dt) {
   elapsed += dt;
-  const right = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
-  const forward = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-  const sprint = !!(keys.ShiftLeft || keys.ShiftRight);
+  const clampAxis = (v) => Math.max(-1, Math.min(1, v));
+  const right = clampAxis((keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0) + joy.x);
+  const forward = clampAxis((keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0) + joy.y);
+  const stick = Math.hypot(joy.x, joy.y);
+  const sprint = !!(keys.ShiftLeft || keys.ShiftRight) || stick > 0.9;   // push the joystick to the edge to run
 
-  // Walk / sprint with acceleration, relative to where the camera looks
+  // Walk / sprint with acceleration, relative to where the camera looks. The joystick gives analog speed.
   let wantX = 0, wantZ = 0;
   if (right || forward) {
     const sin = Math.sin(cam.yaw), cos = Math.cos(cam.yaw);
     const dx = right * cos - forward * sin, dz = -right * sin - forward * cos;
-    const len = Math.hypot(dx, dz), top = sprint ? RUN : WALK;
+    const len = Math.hypot(dx, dz), top = (sprint ? RUN : WALK) * Math.min(1, Math.hypot(right, forward));
     wantX = (dx / len) * top; wantZ = (dz / len) * top;
   }
   const ease = 1 - Math.exp(-(right || forward ? 9 : 13) * dt);
