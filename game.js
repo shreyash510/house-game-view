@@ -366,7 +366,7 @@ function furn(x1, z1, x2, z2, h, color, y0 = FLOOR_Y, solid = true) {
 }
 
 // A straight wall along the plan. horiz: wall runs along x at z = c; otherwise along z at x = c.
-// openings: [from, to, type] where type is 'door' | 'open' | 'win' | 'vent'
+// openings: [from, to, type] where type is 'door' | 'open' | 'win' | 'plain' | 'vent'
 // out (outer walls only): +1 / -1 = which side faces outside; that face gets the beige facade colour.
 function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
   const ext = T / 2 / S;
@@ -398,7 +398,7 @@ function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
     if (bars) put(len, jamb, 0, y0 + jamb / 2);
     return { put, len };
   };
-  const glass = (s, e, y0, y1) => {
+  const glass = (s, e, y0, y1, boxFrame = true) => {
     const mid = (s + e) / 2, len = (e - s) * S;
     const m = new THREE.Mesh(
       new THREE.BoxGeometry(horiz ? len : 0.04, y1 - y0, horiz ? 0.04 : len),
@@ -407,10 +407,10 @@ function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
     m.position.set(horiz ? fx(mid) : fx(c), (y0 + y1) / 2, horiz ? fz(c) : fz(mid));
     scene.add(m);
     // Sliding window: dark aluminium frame, a centre divider between the two sashes and a grey stone sill
-    trim(s - 0.35, e + 0.35, y0 - 0.16, y1 + 0.16, frameWhite, 0.16, T + 0.22, true);   // thick white box frame round the window, standing out from the wall
+    if (boxFrame) trim(s - 0.35, e + 0.35, y0 - 0.16, y1 + 0.16, frameWhite, 0.16, T + 0.22, true);   // thick white box frame round the window, standing out from the wall
     const f = trim(s, e, y0, y1, frameMat, 0.07, T + 0.06, true);
     f.put(0.07, y1 - y0, 0, (y0 + y1) / 2);
-    box(horiz ? [(e - s) * S + 0.18, 0.06, T + 0.2] : [T + 0.2, 0.06, (e - s) * S + 0.18], [horiz ? fx(mid) : fx(c), y0 - 0.03, horiz ? fz(c) : fz(mid)], 0, scene, sillMat);
+    if (boxFrame) box(horiz ? [(e - s) * S + 0.18, 0.06, T + 0.2] : [T + 0.2, 0.06, (e - s) * S + 0.18], [horiz ? fx(mid) : fx(c), y0 - 0.03, horiz ? fz(c) : fz(mid)], 0, scene, sillMat);
   };
   let cursor = a1;
   [...openings].sort((p, q) => p[0] - q[0]).forEach(([a, b, type]) => {
@@ -419,13 +419,13 @@ function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
       piece(a, b, 2.1, H, { solid: false });
       trim(a, b, 0, 2.1, doorFrameMat, 0.08, T + 0.05);   // timber door frame
     }
-    if (type === 'win' || type === 'vent') {
-      const sill = type === 'win' ? 0.9 : 1.5, top = type === 'win' ? 2.2 : 2.3;
+    if (type === 'win' || type === 'vent' || type === 'plain') {   // plain: a window without its own white box frame
+      const sill = type === 'vent' ? 1.5 : 0.9, top = type === 'vent' ? 2.3 : 2.2;
       piece(a, b, 0, sill, { solid: false });
       piece(a, b, top, H, { solid: false });
       piece(a, b, 0, H, { mesh: false });   // you cannot walk through a window
       planWalls.push([horiz, c, a, b]);
-      glass(a, b, sill, top);
+      glass(a, b, sill, top, type !== 'plain');
     }
     if (type === 'tall') {   // stairwell window: one tall pane from the usual sill up to the roof, carried on above the roof by the mumty
       const mid = (a + b) / 2, len = (b - a) * S, y0 = 0.9, midY = (y0 + H) / 2;
@@ -513,10 +513,10 @@ rect(17.2, 28.6, 35, 37, 0, 0.1, 0xb9b0a0);           // porch
 // ---------- Walls (see the ground floor plan) ----------
 // Outer walls
 wallLine(true, 0, 0, 35, [[4.5, 9.5, 'win'], [14.4, 16, 'vent'], [19, 20.5, 'vent'], [25.7, 30.7, 'win']], cream, -1);
-wallLine(false, 0, 0, 33, [[5.3, 11.4, 'win'], [14.55, 18.55, 'tall'], [21.6, 24.6, 'door'], [25.2, 30.2, 'win']], cream, -1);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
+wallLine(false, 0, 0, 33, [[5.3, 10.35, 'plain'], [14.55, 18.55, 'tall'], [21.6, 24.6, 'door'], [25.2, 30.2, 'win']], cream, -1);   // west side: bedroom window, tall stairwell window (4 ft wide), kitchen door, kitchen window
 wallLine(false, 35, 0, 28, [[4.7, 9.7, 'win'], [19, 24.5, 'win']], cream, 1);
 wallLine(true, 28, 17.5, 35, [[17.9, 21.2, 'door'], [24, 29.9, 'win'], [32.3, 34.7, 'door']], taupe, 1);   // living hall front, main door
-wallLine(true, 33, 0, 17.5, [[4.7, 9.7, 'win']], taupe, 1);      // kitchen + devghar back
+wallLine(true, 33, 0, 17.5, [[5.2, 9.2, 'plain']], taupe, 1);      // kitchen + devghar back
 // Bedrooms, bath, wc
 wallLine(false, 13, 0, 13.3, [[9.8, 12.8, 'door']]);          // bedroom-1 east wall
 wallLine(false, 21.7, 0, 13.3, [[9.8, 12.8, 'door']]);        // bedroom-2 west wall
@@ -633,6 +633,44 @@ rect(TW.x1 + 1.3, TW.z1 + 0.6, TW.x2 - 1.3, TW.z2 - 0.6, TW.top + 0.75, 0.08, wh
 
 // ---------- Front facade details (from the reference render) ----------
 const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
+const towerClad = textured(claddingTex('#64625e'), 0.45, 0.9);
+
+// Window design from the render: a wide white U-frame (two jambs from the ground and a lintel) round the window,
+// a grey panel under the glass, and a grooved grey tower standing on the lintel, running up past the roof.
+// The wall runs along x at z = c (horiz) or along z at x = c; out = which side is outside (+1 / -1).
+// f1..f2 = frame edges along the wall, w1..w2 = window edges (the wall opening must be type 'plain'), all in feet.
+// lamps: extra up/down wall lamps as [a, d] (along the wall, out from its face), at the height of the porch lamps
+function towerWindow(horiz, c, out, f1, f2, w1, w2, { ledge = false, lamps = [] } = {}) {
+  const ext = T / 2 / S, depth = 0.675;   // the frame and tower stand 0.675 ft out from the wall face
+  const lintel = 2.2, lintelTop = 2.55, top = H + 1.0, mid = (f1 + f2) / 2;
+  // Box from distances along the wall (a) and out from its face (d), in feet
+  const R = (a1, a2, d1, d2, y0, h, color, parent = scene, mat) => {
+    const p1 = c + out * (ext + d1), p2 = c + out * (ext + d2), lo = Math.min(p1, p2), hi = Math.max(p1, p2);
+    return horiz ? rect(a1, lo, a2, hi, y0, h, color, parent, mat) : rect(lo, a1, hi, a2, y0, h, color, parent, mat);
+  };
+  // Point at a along the wall, d feet out from its face (plus m metres further out), in game coordinates
+  const P = (a, d, m = 0) => { const n = fx(c + out * (ext + d)) + out * m; return horiz ? [fx(a), fz(c + out * (ext + d)) + out * m] : [n, fz(a)]; };
+  const solid = (y0, y1) => { const [x, z] = P(mid, depth / 2); obstacle(x, z, horiz ? (f2 - f1) * S : depth * S, horiz ? depth * S : (f2 - f1) * S, y0, y1); };
+  const lamp = (a, y, d, parent = scene) => {   // square wall lamp washing light up and down
+    const [bx, bz] = P(a, d, 0.06), [gx, gz] = P(a, d, 0.13), [wx, wz] = P(a, d, 0.15);
+    box(horiz ? [0.2, 0.2, 0.12] : [0.12, 0.2, 0.2], [bx, y, bz], 0x2a2a2a, parent);
+    glow(horiz ? [0.14, 0.14, 0.04] : [0.04, 0.14, 0.14], [gx, y, gz], 0xffe8b8, parent);
+    wallGlow(wx, y, wz, parent, horiz ? (out > 0 ? 0 : Math.PI) : out * Math.PI / 2);
+  };
+  R(f1, w1, 0, depth, 0, lintelTop, 0, scene, frameWhite);               // jambs
+  R(w2, f2, 0, depth, 0, lintelTop, 0, scene, frameWhite);
+  R(w1, w2, 0, depth, lintel, lintelTop - lintel, 0, scene, frameWhite);  // lintel
+  R(w1, w2, 0, 0.35, 0, 0.9, 0, scene, towerClad);                         // grey panel below the window, set back inside the frame
+  solid(0, lintelTop);
+  R(f1, f2, 0, depth, lintelTop, H - lintelTop, 0, scene, towerClad);     // tower
+  R(f1, f2, 0, depth, H, top - H, 0, upper, towerClad);
+  R(f1 - 0.15, f2 + 0.15, 0, depth + 0.15, top, 0.12, white, upper);       // thin white cap
+  solid(H, top);
+  lamp(mid, 3.1, depth);
+  if (ledge) R(f1 - 0.3, f2 + 0.3, 0, depth + 1.0, lintelTop - 0.02, 0.12, 0, scene, frameWhite);   // white ledge sticking out over the window
+  lamps.forEach(([a, d]) => lamp(a, 1.9, d));
+  return { R };
+}
 
 // ---------- Terrace front-left (from the render) ----------
 // The mumty is the only room on the terrace and the only roof up there (no window on its road side). In front of it, over the
@@ -650,18 +688,12 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
 }
 
 {
-  // Tall charcoal accent tower with grooves, from the plinth up past the roof, with a column of warm wall lamps
-  // (no window on it: the kitchen has only one front window)
-  const px1 = 10.3, px2 = 14.1, pz1 = 33.4, pz2 = 34.0, top = H + 1.2;
-  rect(px1, pz1, px2, pz2, 0, H, 0, scene, charcoalClad);
-  rect(px1, pz1, px2, pz2, H, top - H, 0, upper, charcoalClad);
-  rect(px1 - 0.3, pz1 - 0.2, px2 + 0.3, pz2 + 0.3, top, 0.12, white, upper);   // thin white cap
-  obstacle(fx((px1 + px2) / 2), fz((pz1 + pz2) / 2), (px2 - px1) * S, (pz2 - pz1) * S, 0, top);
-  [[3.15, scene], [4.25, upper]].forEach(([y, parent]) => {   // lamps stacked up the middle of the tower, washing light up and down
-    box([0.2, 0.2, 0.12], [fx(12.2), y, fz(pz2) + 0.06], 0x2a2a2a, parent);
-    glow([0.14, 0.14, 0.04], [fx(12.2), y, fz(pz2) + 0.13], 0xffe8b8, parent);
-    wallGlow(fx(12.2), y, fz(pz2) + 0.15, parent);
-  });
+  // Kitchen front window: the white U-frame and grey tower, with thin grooves across the plain beige wall on both sides
+  const k = towerWindow(true, 33, 1, 4.0, 10.4, 5.2, 9.2);
+  [[-0.4, 4.0], [10.4, 17.9]].forEach(([g1, g2]) => [1.2, 2.4].forEach((y) => k.R(g1, g2, 0, 0.04, y, 0.025, 0x8f887d)));
+  // Bedroom window on the west side: the same design, plus a white ledge over the window and up/down lamps on both sides
+  // (the frame stops where the stairwell tower's face starts, at z 11.55; the right lamp sits on that face)
+  towerWindow(false, 0, -1, 4.1, 11.55, 5.3, 10.35, { ledge: true, lamps: [[3.2, 0], [12.3, 0.53]] });
 }
 {
   // Decorative facade on the porch edge of the terrace: charcoal panel, recessed square frame, golden strips (no text)
@@ -705,11 +737,8 @@ const charcoalClad = textured(claddingTex('#55534f'), 0.7, 0.9);
   // Balcony: a horizontal-slat railing above the grey parapet along its whole front, and the planter
   [1.05, 1.28, 1.51].forEach((y) => rect(-0.5, 33.15, 10.0, 33.4, H + y, 0.1, white, upper));   // three slats
   for (let xf = -0.5; xf <= 10; xf += 2.6) rect(xf, 33.15, xf + 0.25, 33.4, H + 0.97, 0.64, white, upper);
-  // Cladding panels on the front walls: tan beside the window, a vine strip, warm brown beside the porch window
-  const tanClad = textured(claddingTex('#a89c88'), 0.7, 0.9);
+  // Cladding panels on the porch wall: warm brown beside the porch window
   const porchClad = textured(claddingTex('#8f8579'), 0.7, 0.9);
-  rect(-0.4, 33.4, 3.3, 33.7, 0, 2.3, 0, scene, tanClad);
-  rect(3.4, 33.4, 4.3, 33.65, 0.3, 2.5, 0, scene, textured(leafTex, 0.45, 1));
   // The whole porch wall is styled: a grooved cladding band across the top, and panels under the window (brick strips are added with the porch)
   rect(17.9, 28.38, 35, 28.55, 2.25, 0.65, 0, scene, porchClad);
   rect(24, 28.38, 29.9, 28.55, 0.1, 0.8, 0, scene, porchClad);
