@@ -30,7 +30,7 @@
 //   }
 import {
   scene, realScene, useScene, obstacle, walkables, H, setH, T, S, fx, fz, rect, wallLine, door, label, warmLight, furn, paint, textured, makeTexture, plasterTex,
-  scaleUV, speckle, rand, hex,
+  scaleUV, speckle, rand, hex, rod,
 } from './core.js';
 
 export const buildings = [];   // every house made by makeHouse(): used for floors and for hiding roofs when you walk inside
@@ -144,10 +144,33 @@ export function makeHouse(cfg) {
     sheet.castShadow = sheet.receiveShadow = true;
     roof.add(sheet);
   } else if (roofCfg.type === 'flat') {
-    const slab = new THREE.Mesh(new THREE.BoxGeometry(lenX + 0.5, 0.2, lenZ + 0.5), paint(0xe6e3dc));
-    slab.position.set(cx, wallH + 0.1, cz); slab.castShadow = slab.receiveShadow = true; roof.add(slab);
-    [lenZ / 2 + 0.05, -lenZ / 2 - 0.05].forEach((z) => {
-      const p = new THREE.Mesh(new THREE.BoxGeometry(lenX + 0.5, 0.4, 0.4), paint(0xe6e3dc)); p.position.set(cx, wallH + 0.4, cz + z); roof.add(p);
+    // A slab over each room (so an outside staircase beside the house stays open to the sky), a walkable terrace on top,
+    // and a parapet along the outer edges only, with a gap where the outside stairs arrive
+    const slabMat = paint(0xe6e3dc), lip = 0.25, pt = 0.5, ph = roofCfg.parapet ?? 0.9;   // overhang (ft), parapet thickness (ft) and height (m)
+    rooms.forEach((r, i) => rect(r.x1 - lip, r.z1 - lip, r.x2 + lip, r.z2 + lip, wallH + i * 0.002, 0.2, 0, roof, slabMat));
+    const st = cfg.stairs, stairTop = st && {   // the edge of the roof where the stairs come up
+      horiz: (st.up ?? 'N') === 'N' || st.up === 'S',
+      c: { N: oz + st.z, S: oz + st.z + st.d, W: ox + st.x, E: ox + st.x + st.w }[st.up ?? 'N'],
+      a: (st.up ?? 'N') === 'N' || st.up === 'S' ? ox + st.x : oz + st.z, b: (st.up ?? 'N') === 'N' || st.up === 'S' ? ox + st.x + st.w : oz + st.z + st.d,
+    };
+    const minus = (segs, a, b) => segs.flatMap(([p, q]) => (b <= p || a >= q ? [[p, q]] : [[p, a], [b, q]].filter(([u, v]) => v - u > 0.01)));
+    rooms.forEach((r) => {
+      [['N', true, r.z1, r.x1, r.x2, -1], ['S', true, r.z2, r.x1, r.x2, 1], ['W', false, r.x1, r.z1, r.z2, -1], ['E', false, r.x2, r.z1, r.z2, 1]].forEach(([, horiz, c, a1, a2, out]) => {
+        let segs = [[a1, a2]];
+        rooms.forEach((q) => {   // parts shared with a neighbouring room are not an outer edge
+          if (q === r) return;
+          const qc = horiz ? (out < 0 ? q.z2 : q.z1) : (out < 0 ? q.x2 : q.x1);
+          if (Math.abs(qc - c) < 1e-6) segs = minus(segs, horiz ? q.x1 : q.z1, horiz ? q.x2 : q.z2);
+        });
+        if (stairTop && stairTop.horiz === horiz && Math.abs(stairTop.c - c) < 1e-6) segs = minus(segs, stairTop.a, stairTop.b);
+        const o1 = c + out * lip, o2 = o1 - out * pt;   // parapet between the slab edge and half a foot in
+        segs.forEach(([a, b]) => {
+          const [p1, p2] = [Math.min(o1, o2), Math.max(o1, o2)], aa = a - lip, bb = b + lip;
+          if (horiz) rect(aa, p1, bb, p2, wallH + 0.2, ph, 0, roof, slabMat); else rect(p1, aa, p2, bb, wallH + 0.2, ph, 0, roof, slabMat);
+          const [qx1, qz1, qx2, qz2] = horiz ? [aa, p1, bb, p2] : [p1, aa, p2, bb];
+          obstacle(fx((qx1 + qx2) / 2), fz((qz1 + qz2) / 2), (qx2 - qx1) * S, (qz2 - qz1) * S, wallH + 0.2, wallH + 0.2 + ph);
+        });
+      });
     });
   } else {
     const alongX = (roofCfg.ridge || (lenX >= lenZ ? 'x' : 'z')) === 'x';
@@ -188,9 +211,39 @@ export function makeHouse(cfg) {
   // While you stand inside, or on the ota under its roof, the roof sheets lift off so you can see
   const hideAreas = [...rooms];
   if (ota) hideAreas.push({ x1: bounds.x1 - 0.25, z1: bounds.z2, x2: bounds.x2 + 0.25, z2: bounds.z2 + (ota.depth ?? 5) });
-  const house = { name: cfg.name, rooms, bounds, roof, covers, hideAreas, wall: P + wallH, floor: P + 0.1 };
+  if (cfg.stairs) buildStairs(cfg, cfg.stairs, P + wallH + 0.2);   // outside staircase up to the flat roof
+  const terrace = roofCfg.type === 'flat' ? P + wallH + 0.2 : null;   // top of a flat roof: you can walk on it once you are up there
+  const house = { name: cfg.name, rooms, bounds, roof, covers, hideAreas, wall: P + wallH, floor: P + 0.1, terrace };
   buildings.push(house);
   return house;
+}
+
+// Outside staircase against the house, up to the flat roof: solid concrete steps on a filled base, a steel railing on the
+// open side. { "x", "z", "w", "d" (relative to "at", ft), "up": "N" | "S" (which end is the top), "steps", "rail": "E" | "W" }
+function buildStairs(cfg, s, topY) {
+  const [ox, oz] = cfg.at, x1 = ox + s.x, z1 = oz + s.z, x2 = x1 + s.w, z2 = z1 + s.d;
+  const upN = (s.up ?? 'N') === 'N', n = s.steps ?? Math.ceil(topY / 0.19), tread = s.d / n;
+  const mat = textured(plasterTex('#b3ada3'), 1.2, 0.9), nose = paint(0x8f8a82, 0.8);
+  const span = (i) => (upN ? [z2 - (i + 1) * tread, z2 - i * tread] : [z1 + i * tread, z1 + (i + 1) * tread]);   // step i from the bottom
+  for (let i = 0; i < n; i++) {
+    const [a, b] = span(i), h = topY * (i + 1) / n;
+    rect(x1, a, x2, b, 0, h, 0, realScene, mat);
+    rect(x1, upN ? a : b - 0.12, x2, upN ? a + 0.12 : b, h - 0.03, 0.035, 0, realScene, nose);   // worn nosing on each step
+  }
+  walkables.push((xf, zf) => {
+    if (!(xf > x1 && xf < x2 && zf > z1 && zf < z2)) return null;
+    const i = Math.min(n - 1, Math.floor((upN ? z2 - zf : zf - z1) / tread));
+    return topY * (i + 1) / n;
+  });
+  // Railing on the open side, and a solid side so you only get on at the bottom
+  const xr = (s.rail ?? 'E') === 'E' ? x2 - 0.15 : x1 + 0.15, zLow = upN ? z2 : z1, zTop = upN ? z1 : z2;
+  const V = (z, y) => new THREE.Vector3(fx(xr), y, fz(z)), first = topY / n;
+  const a = V(zLow - (upN ? 0.5 : -0.5), first + 0.95), b = V(zTop, topY + 0.95);
+  rod(a, b, 0.03);
+  [0.3, 0.6].forEach((d) => rod(a.clone().setY(a.y - d), b.clone().setY(b.y - d), 0.015));
+  for (let k = 0; k <= 4; k++) { const p = a.clone().lerp(b, k / 4); rod(p.clone().setY(p.y - 0.95), p, 0.03); }
+  const zs = upN ? [z1, z2 - 1.5] : [z1 + 1.5, z2];
+  obstacle(fx(xr), fz((zs[0] + zs[1]) / 2), 0.15, (zs[1] - zs[0]) * S, 0, topY + 1);
 }
 
 // Cement plaster that has seen a few monsoons: damp patches and faint rain streaks over the usual speckle

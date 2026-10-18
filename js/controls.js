@@ -70,9 +70,14 @@ addEventListener('keydown', (e) => { if (e.code === 'Escape') openSettings(false
 
 // ---------- Switches (inside the settings panel) ----------
 export const transparentSwitch = document.getElementById('transparentSwitch');
-export const servicesSwitch = document.getElementById('servicesSwitch');
-if (query('xray') === '1') servicesSwitch.checked = true;   // debug: ?xray=1 starts with Services on
-addEventListener('keydown', (e) => { if (e.code === 'KeyX') servicesSwitch.checked = !servicesSwitch.checked; });
+// Two X-ray switches: "Electrical" (key X) shows the wiring layers, "Plumbing" (key Z) the water and drain layers
+export const electricalSwitch = document.getElementById('electricalSwitch');
+export const plumbingSwitch = document.getElementById('plumbingSwitch');
+if (query('xray') === '1') electricalSwitch.checked = plumbingSwitch.checked = true;   // debug: ?xray=1 starts with both on
+addEventListener('keydown', (e) => {
+  if (e.code === 'KeyX') electricalSwitch.checked = !electricalSwitch.checked;
+  if (e.code === 'KeyZ') plumbingSwitch.checked = !plumbingSwitch.checked;
+});
 export const devicesSwitch = document.getElementById('devicesSwitch');
 if (query('devices') === '1') devicesSwitch.checked = true;   // debug: ?devices=1 starts with the devices shown
 addEventListener('keydown', (e) => { if (e.code === 'KeyE') devicesSwitch.checked = !devicesSwitch.checked; });
@@ -145,13 +150,14 @@ addEventListener('touchcancel', joyReset);
 addEventListener('blur', joyReset);
 document.addEventListener('visibilitychange', joyReset);
 
-// Legend for the Services layers: one checkbox per layer
+// Legend for the Services layers: one checkbox per layer; only the rows of the switched-on kinds show
 export function buildLegend(layers) {
   const legendEl = document.getElementById('legend');
   Object.values(layers).forEach((l) => {
     const row = document.createElement('label');
     row.innerHTML = `<input type="checkbox" checked><i style="background:#${new THREE.Color(l.color).getHexString()}"></i>${l.name}`;
-    row.firstChild.addEventListener('change', (e) => (l.group.visible = e.target.checked));
+    row.firstChild.addEventListener('change', (e) => { l.on = e.target.checked; l.group.visible = l.on && l.kindOn; });
+    l.row = row;
     legendEl.appendChild(row);
   });
   return legendEl;

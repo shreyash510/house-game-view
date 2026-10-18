@@ -19,7 +19,9 @@ export function buildServices(svc, houseG) {
   Object.entries(svc.layers || {}).forEach(([key, l]) => {
     const color = hex(l.color);
     layers[key] = {
-      name: l.name || key, color, group: new THREE.Group(),
+      name: l.name || key, color, group: new THREE.Group(), on: true,
+      // which switch shows it: "electrical" (key X) or "plumbing" (key Z); water and drain layers default to plumbing
+      kind: l.kind || (['cold', 'hot', 'drain'].includes(key) ? 'plumbing' : 'electrical'),
       mat: new THREE.MeshStandardMaterial({ color: col(color), emissive: col(color), emissiveIntensity: 0.5, roughness: 0.5 }),
     };
     group.add(layers[key].group);

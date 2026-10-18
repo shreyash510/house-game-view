@@ -240,7 +240,7 @@ const cream = wallMaterial('#f5f4f0');   // white walls
 const taupe = wallMaterial('#efece6');
 const facade = wallMaterial('#d3c9bd');   // warm beige-grey on the OUTSIDE faces of the outer walls (white is kept for slabs and frames)
 // Wall materials by the name used in house.json
-export const wallMaterials = { cream, taupe };
+export const wallMaterials = { cream, taupe, facade };   // "facade" = the outside-face colour, for pieces that continue an outer wall
 // Frames and trims fade with the walls so nothing floats in mid-air when you are inside
 export const frameMat = new THREE.MeshStandardMaterial({ color: col(0x24282c), roughness: 0.4, metalness: 0.5, transparent: true });   // dark aluminium frames
 export const sillMat = new THREE.MeshStandardMaterial({ color: col(0x9a9a98), roughness: 0.8, metalness: 0, transparent: true });       // grey stone sill
@@ -287,6 +287,7 @@ export function furn(x1, z1, x2, z2, h, color, y0 = FLOOR_Y, solid = true) {
 
 // A straight wall along the plan. horiz: wall runs along x at z = c; otherwise along z at x = c.
 // openings: [from, to, type] where type is 'door' | 'open' | 'arch' | 'win' | 'plain' | 'vent' | 'tall'
+//   [from, to, 'open', headY]: an opening with the wall carried on above it from headY (m) up to the ceiling
 // out (outer walls only): +1 / -1 = which side faces outside; that face gets the beige facade colour.
 export function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
   const ext = T / 2 / S;
@@ -347,6 +348,7 @@ export function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) 
   let cursor = a1;
   [...openings].sort((p, q) => p[0] - q[0]).forEach(([a, b, type, sillY, topY]) => {
     piece(cursor, a, 0, H);
+    if (type === 'open' && sillY != null) piece(a, b, sillY, H, { solid: false });   // wall over the opening
     if (type === 'arch') {   // open doorway with a rounded (semicircular) top and no door leaf
       const len = (b - a) * S, r = len / 2, apex = Math.min(2.4, H - 0.15), spring = apex - r, mid = (a + b) / 2;
       piece(a, b, apex, H, { solid: false });
