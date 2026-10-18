@@ -11,6 +11,10 @@ export function buildServices(svc, houseG) {
   const group = new THREE.Group();
   group.visible = false;
   houseG.add(group);
+  // Things you can see in a real house (switchboards, sockets, main board, geyser...) stay visible all the time;
+  // only the conduits and pipes hidden in the walls, slab and ground need X-ray
+  const fixtures = new THREE.Group();
+  houseG.add(fixtures);
   const layers = {};   // one group per layer, so each can be switched on its own from the legend
   Object.entries(svc.layers || {}).forEach(([key, l]) => {
     const color = hex(l.color);
@@ -44,14 +48,15 @@ export function buildServices(svc, houseG) {
   }
   // A fitting (board, socket, geyser...) as a box at plan point (xf, y, zf)
   const matFor = (f) => (f.material === 'steel' ? steel : f.glow ? new THREE.MeshBasicMaterial({ color: col(hex(f.color)) }) : paint(hex(f.color ?? '#f2f2ee'), 0.5));
-  function fitting(key, size, [xf, y, zf], mat) {
+  function fitting(key, size, [xf, y, zf], mat, always = false) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(...size), mat);
     m.position.copy(V3(xf, Y(y), zf));
-    layer(key).group.add(m);
+    m.castShadow = always;
+    (always ? fixtures : layer(key).group).add(m);
     return m;
   }
-  // A plate flat on a wall: wall 'x' = a wall running along z (plate faces x), 'z' = a wall running along x
-  const plate = (key, xf, y, zf, n, w, h, color = 0xf2f2ee) => fitting(key, n === 'x' ? [0.03, h, w] : [w, h, 0.03], [xf, y, zf], paint(color, 0.5));
+  // A plate flat on a wall (always visible): wall 'x' = a wall running along z (plate faces x), 'z' = a wall running along x
+  const plate = (key, xf, y, zf, n, w, h, color = 0xf2f2ee) => fitting(key, n === 'x' ? [0.03, h, w] : [w, h, 0.03], [xf, y, zf], paint(color, 0.5), true);
   // Floating name tag, always drawn on top
   function tag(key, text, [xf, y, zf]) {
     const cv = document.createElement('canvas');
@@ -109,7 +114,8 @@ export function buildServices(svc, houseG) {
 
   // ---------- Pipes, fittings, tanks, chambers, pits and tags ----------
   (svc.pipes || []).forEach((p) => pipe(p.layer, p.points, p.r ?? 0.018));
-  (svc.fittings || []).forEach((f) => fitting(f.layer, f.size, f.at, matFor(f)));
+  // "always": true = a fitting you can see in the house (board, geyser, mixer); otherwise it shows only in X-ray
+  (svc.fittings || []).forEach((f) => fitting(f.layer, f.size, f.at, matFor(f), !!f.always));
   // Cylindrical tank standing on y0: { "at": [xf, zf], "y0", "radius", "height" }
   (svc.tanks || []).forEach((t) => {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(t.radius, t.radius, t.height, 24), paint(hex(t.color ?? '#1f2a30'), 0.5));

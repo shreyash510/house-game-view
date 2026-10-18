@@ -8,7 +8,13 @@
     canvas { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
     #coords { position: fixed; left: 10px; bottom: 250px; color: #fff; background: #000a; padding: 6px 10px; border-radius: 6px; font: 13px/1.45 monospace; pointer-events: none; white-space: pre; }
     #minimap { position: fixed; left: 10px; bottom: 10px; width: 220px; height: 230px; border-radius: 8px; border: 1px solid #fff4; pointer-events: none; }
-    #toggles { position: fixed; top: 10px; right: 10px; display: flex; gap: 8px; }
+    #settings { position: fixed; top: 10px; right: 10px; z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #settingsBtn { width: 44px; height: 44px; border: 0; border-radius: 50%; background: #0008; color: #fff; font-size: 24px; line-height: 44px; cursor: pointer; transition: transform .2s, background .2s; }
+    #settingsBtn:hover { background: #000b; }
+    #settingsBtn.open { background: #3aa655; transform: rotate(60deg); }
+    #settingsPanel { display: flex; flex-direction: column; gap: 6px; min-width: 190px; padding: 8px; border-radius: 8px; background: #101420f2; box-shadow: 0 4px 16px #0008; }
+    #settingsPanel[hidden] { display: none; }
+    #settingsPanel .toggle { justify-content: space-between; }
     .toggle { color: #fff; background: #0008; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; user-select: none; }
     button.toggle { border: 0; font: inherit; cursor: pointer; }
     button.toggle.on { background: #3aa655; }
@@ -21,7 +27,7 @@
     #joyBase { position: relative; width: 150px; height: 150px; border-radius: 50%; background: #0005; border: 2px solid #fff5; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     #joyBase.active { background: #0007; border-color: #7be08f; }
     #joyKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: #ffffffcc; box-shadow: 0 2px 8px #0008; pointer-events: none; }
-    #legend { position: fixed; top: 56px; right: 10px; display: none; color: #fff; background: #000b; padding: 10px 12px; border-radius: 6px; font: 13px sans-serif; }
+    #legend { display: none; color: #fff; background: #000b; padding: 10px 12px; border-radius: 6px; font: 13px sans-serif; }
     #legend b { display: block; margin-bottom: 6px; }
     #legend label { display: flex; align-items: center; gap: 8px; margin: 5px 0; cursor: pointer; }
     #legend i { display: inline-block; width: 20px; height: 6px; border-radius: 3px; }
@@ -29,13 +35,16 @@
   </style>
 </head>
 <body>
-  <div id="toggles">
+  <div id="settings">
+    <button id="settingsBtn" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel">&#9881;</button>
+    <div id="settingsPanel" hidden>
     <label class="toggle"><span>Transparent</span><input type="checkbox" id="transparentSwitch" checked><span class="track"></span></label>
     <label class="toggle" title="X-ray: see the wiring, light points, water pipes and drains inside the walls (key X)"><span>Services</span><input type="checkbox" id="servicesSwitch"><span class="track"></span></label>
     <button class="toggle" id="roomViewBtn" title="Inside a room: see the whole room in 3D with its slab">Room view</button>
     <label class="toggle"><span>Touch</span><input type="checkbox" id="touchSwitch" checked><span class="track"></span></label>
+    </div>
+    <div id="legend"><b>Services (X-ray) — key X</b></div>
   </div>
-  <div id="legend"><b>Services (X-ray) — key X</b></div>
   <div id="touchPad">
     <div id="joyBase"><div id="joyKnob"></div></div>
   </div>

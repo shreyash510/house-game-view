@@ -198,6 +198,7 @@ export function towerWindow(c, ctx) {
   const frameWhite = material('frameWhite'), towerClad = material('towerClad');
   const ext = T / 2 / S, depth = 0.675;   // the frame and tower stand 0.675 ft out from the wall face
   const lintel = 2.2, lintelTop = 2.55, top = H + 1.0, mid = (f1 + f2) / 2, at = c.at;
+  const base = scene === ctx.houseG ? -PLINTH : 0;   // the house group sits on the plinth: the jambs and grey panel reach down to the ground
   // Box from distances along the wall (a) and out from its face (d), in feet
   const R = (a1, a2, d1, d2, y0, h, color, parent = scene, mat) => {
     const p1 = at + out * (ext + d1), p2 = at + out * (ext + d2), lo = Math.min(p1, p2), hi = Math.max(p1, p2);
@@ -212,11 +213,11 @@ export function towerWindow(c, ctx) {
     glow(horiz ? [0.14, 0.14, 0.04] : [0.04, 0.14, 0.14], [gx, y, gz], 0xffe8b8, parent);
     wallGlow(wx, y, wz, parent, horiz ? (out > 0 ? 0 : Math.PI) : out * Math.PI / 2);
   };
-  R(f1, w1, 0, depth, 0, lintelTop, 0, scene, frameWhite);               // jambs
-  R(w2, f2, 0, depth, 0, lintelTop, 0, scene, frameWhite);
+  R(f1, w1, 0, depth, base, lintelTop - base, 0, scene, frameWhite);     // jambs
+  R(w2, f2, 0, depth, base, lintelTop - base, 0, scene, frameWhite);
   R(w1, w2, 0, depth, lintel, lintelTop - lintel, 0, scene, frameWhite);  // lintel
-  R(w1, w2, 0, 0.35, 0, 0.9, 0, scene, towerClad);                         // grey panel below the window, set back inside the frame
-  solidPart(0, lintelTop);
+  R(w1, w2, 0, 0.35, base, 0.9 - base, 0, scene, towerClad);              // grey panel below the window, set back inside the frame
+  solidPart(base, lintelTop);
   R(f1, f2, 0, depth, lintelTop, H - lintelTop, 0, scene, towerClad);     // tower
   R(f1, f2, 0, depth, H, top - H, 0, upper, towerClad);
   R(f1 - 0.15, f2 + 0.15, 0, depth + 0.15, top, 0.12, white, upper);       // thin white cap

@@ -52,7 +52,20 @@ canvasEl.addEventListener('touchmove', (e) => {
 }, { passive: false });
 canvasEl.addEventListener('touchend', () => { lastTouch = null; });
 
-// ---------- Switches (top right) ----------
+// ---------- Settings (gear, top right): opens the panel with all the switches ----------
+const settingsBtn = document.getElementById('settingsBtn'), settingsPanel = document.getElementById('settingsPanel');
+const openSettings = (open) => {
+  settingsPanel.hidden = !open;
+  settingsBtn.classList.toggle('open', open);
+  settingsBtn.setAttribute('aria-expanded', open);
+};
+settingsBtn.addEventListener('click', () => openSettings(settingsPanel.hidden));
+if (query('settings') === '1') openSettings(true);   // debug: ?settings=1 starts with the panel open
+// Close it when clicking anywhere else, or with Esc
+addEventListener('pointerdown', (e) => { if (!settingsPanel.hidden && !e.target.closest('#settings')) openSettings(false); });
+addEventListener('keydown', (e) => { if (e.code === 'Escape') openSettings(false); });
+
+// ---------- Switches (inside the settings panel) ----------
 export const transparentSwitch = document.getElementById('transparentSwitch');
 export const servicesSwitch = document.getElementById('servicesSwitch');
 if (query('xray') === '1') servicesSwitch.checked = true;   // debug: ?xray=1 starts with Services on
