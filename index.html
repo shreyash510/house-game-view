@@ -21,15 +21,21 @@
     #joyBase { position: relative; width: 150px; height: 150px; border-radius: 50%; background: #0005; border: 2px solid #fff5; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     #joyBase.active { background: #0007; border-color: #7be08f; }
     #joyKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: #ffffffcc; box-shadow: 0 2px 8px #0008; pointer-events: none; }
+    #legend { position: fixed; top: 56px; right: 10px; display: none; color: #fff; background: #000b; padding: 10px 12px; border-radius: 6px; font: 13px sans-serif; }
+    #legend b { display: block; margin-bottom: 6px; }
+    #legend label { display: flex; align-items: center; gap: 8px; margin: 5px 0; cursor: pointer; }
+    #legend i { display: inline-block; width: 20px; height: 6px; border-radius: 3px; }
     #joyBase.active #joyKnob { background: #7be08fe6; }
   </style>
 </head>
 <body>
   <div id="toggles">
     <label class="toggle"><span>Transparent</span><input type="checkbox" id="transparentSwitch" checked><span class="track"></span></label>
+    <label class="toggle" title="X-ray: see the wiring, light points, water pipes and drains inside the walls (key X)"><span>Services</span><input type="checkbox" id="servicesSwitch"><span class="track"></span></label>
     <button class="toggle" id="roomViewBtn" title="Inside a room: see the whole room in 3D with its slab">Room view</button>
-    <label class="toggle"><span>Touch</span><input type="checkbox" id="touchSwitch"><span class="track"></span></label>
+    <label class="toggle"><span>Touch</span><input type="checkbox" id="touchSwitch" checked><span class="track"></span></label>
   </div>
+  <div id="legend"><b>Services (X-ray) — key X</b></div>
   <div id="touchPad">
     <div id="joyBase"><div id="joyKnob"></div></div>
   </div>

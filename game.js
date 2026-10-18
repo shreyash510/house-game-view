@@ -484,9 +484,13 @@ function label(lines, xft, zft, width = 3.6) {
 }
 
 // ---------- Ground, road ----------
-box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, textured(grassTex, 3, 0.95, 0.5));
-box([240, 0.1, 1.6], [0, 0.05, 12.8], 0, realScene, textured(tileTex('#a3a29d'), 1.2, 0.8, 1.0));   // pavement
-box([240, 0.06, 6], [0, 0.03, 16.6], 0, realScene, textured(asphaltTex, 3, 0.85, 1.0));              // road
+// Ground, floors and plinth turn to a ghost in Services (X-ray) mode, so the pipes buried under them show
+const ghostMats = [paint(0x8f897c), paint(0xd8d6d0), paint(0xcfc8b8), paint(0xb9b0a0), paint(0x2b2420)];   // plinth, kitchen porch, base slab, porch, kitchen cabinets
+const groundMats = [textured(grassTex, 3, 0.95, 0.5), textured(tileTex('#a3a29d'), 1.2, 0.8, 1.0), textured(asphaltTex, 3, 0.85, 1.0)];
+ghostMats.push(...groundMats);
+box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, groundMats[0]);
+box([240, 0.1, 1.6], [0, 0.05, 12.8], 0, realScene, groundMats[1]);   // pavement
+box([240, 0.06, 6], [0, 0.03, 16.6], 0, realScene, groundMats[2]);    // road
 for (let x = -50; x <= 50; x += 6) box([2.5, 0.07, 0.18], [x, 0.04, 16.6], 0xe8e8e8, realScene);
 
 // ---------- Floors ----------
@@ -498,6 +502,7 @@ const marbleTex = makeTexture(256, 256, (ctx, w, h) => {
   ctx.strokeRect(1, 1, w - 2, h - 2);
 });
 const marbleFloor = textured(marbleTex, 1.2, 0.2, 1.0);
+ghostMats.push(marbleFloor);
 const woodFloor = marbleFloor;
 const tileFloor = () => marbleFloor;
 const tile = (x1, z1, x2, z2, material) => rect(x1, z1, x2, z2, 0.1, 0.01, 0, scene, material);
@@ -1357,11 +1362,13 @@ const diamondTex = makeTexture(256, 256, (ctx, w, h) => {
 const popMat = textured(diamondTex, 1.3, 0.9);
 const coveMat = new THREE.MeshBasicMaterial({ color: col(0xffd9a0), transparent: true, opacity: 0.9, side: THREE.DoubleSide });
 const spotMat = new THREE.MeshBasicMaterial({ color: col(0xfff3d8) });
+const ceilingG = new THREE.Group();   // all ceilings, hidden in Services (X-ray) mode
+realScene.add(ceilingG);
 const flat = (w, d, mat, x, y, z) => {            // a rectangle facing downwards
   const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat);
   m.rotation.x = Math.PI / 2;
   m.position.set(x, y, z);
-  realScene.add(m);
+  ceilingG.add(m);
   return m;
 };
 function ceiling(x1, z1, x2, z2, y) {
@@ -1376,7 +1383,7 @@ function ceiling(x1, z1, x2, z2, y) {
   const band = (bwid, bdep, x, z) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(bwid, drop, bdep), ceilMat);
     m.position.set(x, y - drop / 2, z);
-    realScene.add(m);
+    ceilingG.add(m);
   };
   band(w, bw, cx, cz - d / 2 + bw / 2); band(w, bw, cx, cz + d / 2 - bw / 2);
   band(bw, d - 2 * bw, cx - w / 2 + bw / 2, cz); band(bw, d - 2 * bw, cx + w / 2 - bw / 2, cz);
@@ -1388,7 +1395,7 @@ function ceiling(x1, z1, x2, z2, y) {
     const s = new THREE.Mesh(new THREE.CircleGeometry(0.07, 14), spotMat);
     s.rotation.x = Math.PI / 2;
     s.position.set(cx + a * sx, y - 0.008, cz + b * sz);
-    realScene.add(s);
+    ceilingG.add(s);
   });
 }
 const slabBottom = PLINTH + H - 0.2 - 0.005;
@@ -1396,12 +1403,210 @@ rooms.forEach((r) => ceiling(r.x1, r.z1, r.x2, r.z2, r.name === 'Stairs' ? PLINT
 ceiling(17.7, 6.2, 21.7, 13.3, slabBottom);   // passage areas between the rooms
 ceiling(13, 9.3, 17.7, 13.3, slabBottom);
 ceiling(13.2, 13.3, 17.5, 19.8, slabBottom);
+
+// ---------- Services (X-ray): wiring, light points, water supply and drainage ----------
+// Hidden inside the walls, the roof slab and the plinth. The "Services" switch (or key X) turns the building into a ghost
+// and shows them. Plan feet for x / z, metres for y, measured from the plinth top like the rest of the house.
+const services = new THREE.Group();
+services.visible = false;
+houseG.add(services);
+const SVC = {   // one group per layer, so each can be switched on its own from the legend
+  light: { color: 0xffc23a, name: 'Lighting circuit + switches' },
+  power: { color: 0xff5fb0, name: 'Power sockets + main board' },
+  cold: { color: 0x3ea0ff, name: 'Cold water (tank supply)' },
+  hot: { color: 0xff5a2a, name: 'Hot water (geyser)' },
+  drain: { color: 0xa89a84, name: 'Drainage + vent pipe' },
+};
+Object.values(SVC).forEach((l) => {
+  l.group = new THREE.Group();
+  services.add(l.group);
+  l.mat = new THREE.MeshStandardMaterial({ color: col(l.color), emissive: col(l.color), emissiveIntensity: 0.5, roughness: 0.5 });
+});
+const V3 = (xf, y, zf) => new THREE.Vector3(fx(xf), y, fz(zf));
+const UP = new THREE.Vector3(0, 1, 0);
+const ballGeos = {};
+// A run of pipe or conduit through the points [xf, y, zf], with a small ball at every bend
+function pipe(layer, pts, r = 0.018) {
+  const L = SVC[layer];
+  pts.forEach((p, i) => {
+    const a = V3(...p);
+    const ball = new THREE.Mesh(ballGeos[r] ||= new THREE.SphereGeometry(r * 1.3, 8, 6), L.mat);
+    ball.position.copy(a);
+    L.group.add(ball);
+    if (!i) return;
+    const b = V3(...pts[i - 1]), dir = new THREE.Vector3().subVectors(a, b), len = dir.length();
+    if (len < 1e-4) return;
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8), L.mat);
+    m.position.copy(a).add(b).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(UP, dir.normalize());
+    L.group.add(m);
+  });
+}
+// A fitting (board, socket, geyser...) as a box at plan point (xf, y, zf)
+function fitting(layer, size, xf, y, zf, mat) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(...size), typeof mat === 'number' ? paint(mat, 0.5) : mat);
+  m.position.copy(V3(xf, y, zf));
+  SVC[layer].group.add(m);
+  return m;
+}
+// A plate flat on a wall: n = 'x' for a wall running along z, 'z' for a wall running along x
+const plate = (layer, xf, y, zf, n, w, h, color = 0xf2f2ee) => fitting(layer, n === 'x' ? [0.03, h, w] : [w, h, 0.03], xf, y, zf, color);
+// Floating name tag, always drawn on top
+function tag(layer, text, xf, y, zf) {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 96;
+  const g = cv.getContext('2d');
+  g.font = 'bold 38px sans-serif';
+  const w = Math.min(500, g.measureText(text).width + 44), x0 = (512 - w) / 2;
+  g.fillStyle = 'rgba(10,14,24,0.82)'; g.fillRect(x0, 12, w, 72);
+  g.fillStyle = '#' + new THREE.Color(SVC[layer].color).getHexString(); g.fillRect(x0, 12, 8, 72);
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 256 + 4, 49);
+  const tex = Object.assign(new THREE.CanvasTexture(cv), { encoding: THREE.sRGBEncoding });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true, toneMapped: false }));
+  s.scale.set(2.4, 0.45, 1);
+  s.renderOrder = 10;
+  s.position.copy(V3(xf, y, zf));
+  SVC[layer].group.add(s);
+}
+const bulbMat = new THREE.MeshBasicMaterial({ color: col(0xfff0c0) });
+{
+  // --- Electrical: main board by the porch, conduits in the roof slab to a light point in every room,
+  //     drops in the walls to the switchboards beside the doors and to the sockets ---
+  const Hc = H - 0.1, Hp = H - 0.16;   // lighting and power conduits, both cast inside the slab
+  // L-shaped run in the slab between two plan points, along x first (or along z first)
+  const lPath = (a, b, y, zFirst = false) => zFirst
+    ? [[a[0], y, a[1]], [a[0], y, b[1]], [b[0], y, b[1]]]
+    : [[a[0], y, a[1]], [b[0], y, a[1]], [b[0], y, b[1]]];
+  const J = {   // junction boxes (= ceiling light points) in plan feet
+    DB: [31, 27.6], LH: [26.2, 20.6], PS: [15.35, 16.5], LB: [17.4, 10.5], BA: [15.35, 4.65], WC: [19.7, 3.1],
+    B1: [6.5, 6.65], B2: [28.35, 6.65], KI: [6.5, 26.4], PO: [26.2, 32.8],
+  };
+  const JP = Object.fromEntries(Object.entries(J).map(([k, [x, z]]) => [k, [x + 0.3, z + (k === 'DB' ? 0 : 0.3)]]));   // power runs beside the lighting
+  // Main distribution board inside the living hall (on the pier between the window and the devghar door), meter outside on the porch
+  fitting('power', [0.5, 0.6, 0.12], 31, 1.75, 27.62, 0x3a3f45);
+  fitting('power', [0.42, 0.04, 0.02], 31, 1.95, 27.48, new THREE.MeshBasicMaterial({ color: col(0x7be08f) }));   // breaker row
+  fitting('power', [0.35, 0.45, 0.15], 31, 1.6, 28.6, 0xe6e6e0);                                                // energy meter
+  pipe('power', [[31, 1.6, 28.5], [31, 1.6, 27.7]]);
+  pipe('power', [[31, 1.38, 28.6], [31, -1.0, 28.6], [31, -1.0, 46]], 0.03);                                    // supply cable from the street
+  tag('power', 'Main board (DB)', 31, 2.5, 27.4);
+  tag('power', 'Meter + cable from street', 31, -0.4, 44);
+  pipe('light', [[31, 2.05, 27.6], [31, Hc, 27.6]]);
+  pipe('power', [[31.3, 2.05, 27.6], [31.3, Hp, 27.6]]);
+  // Conduit tree through the slab
+  [['DB', 'LH'], ['LH', 'PS'], ['PS', 'LB'], ['LB', 'BA'], ['LB', 'WC'], ['LB', 'B1'], ['LB', 'B2'], ['PS', 'KI', true], ['DB', 'PO']]
+    .forEach(([a, b, zFirst]) => pipe('light', lPath(J[a], J[b], Hc, zFirst)));
+  [['DB', 'LH'], ['LH', 'PS'], ['PS', 'LB'], ['LB', 'BA'], ['LB', 'B1'], ['LB', 'B2'], ['PS', 'KI', true]]
+    .forEach(([a, b, zFirst]) => pipe('power', lPath(JP[a], JP[b], Hp, zFirst)));
+  // Light points: a short drop from the junction box to the fitting (the porch ones sit under the thick fascia)
+  Object.entries(J).forEach(([k, [x, z]]) => {
+    if (k === 'DB') return;
+    const y = k === 'PO' ? H - 0.73 : H - 0.24;
+    pipe('light', [[x, Hc, z], [x, y, z]]);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), bulbMat);
+    bulb.position.copy(V3(x, y - 0.04, z));
+    SVC.light.group.add(bulb);
+    fitting('light', [0.3, 0.03, 0.3], x, y, z, 0xf2f2ee);
+  });
+  tag('light', 'Ceiling light point', J.LH[0], H - 0.6, J.LH[1]);
+  // Switchboards beside the doors, 1.2 m up
+  [['LH', 21.75, 27.72, 'z'], ['B1', 12.72, 9.4, 'x'], ['B2', 21.98, 9.4, 'x'], ['BA', 15.2, 9.58, 'z'], ['WC', 20.6, 6.48, 'z'], ['KI', 17.22, 20.4, 'x']]
+    .forEach(([k, x, z, n]) => {
+      pipe('light', [...lPath(J[k], [x, z], Hc), [x, 1.28, z]]);
+      plate('light', x, 1.2, z, n, 0.28, 0.16);
+      [-0.07, 0, 0.07].forEach((o) => plate('light', n === 'x' ? x : x + o / S, 1.2, n === 'x' ? z + o / S : z, n, 0.035, 0.07, 0x55595e));   // switches
+    });
+  tag('light', 'Switchboard', 12.72, 1.65, 9.4);
+  // Sockets: [junction, x, y, z, wall, big (AC / geyser)]
+  [['B1', 3.8, 0.35, 0.28, 'z'], ['B1', 10.7, 0.35, 0.28, 'z'], ['B1', 11.8, 2.5, 0.28, 'z', true],
+    ['B2', 25.6, 0.35, 0.28, 'z'], ['B2', 32.5, 0.35, 0.28, 'z'], ['B2', 33.5, 2.5, 0.28, 'z', true],
+    ['LH', 27, 0.5, 13.58, 'z'], ['LH', 34.72, 0.35, 21.5, 'x'],
+    ['KI', 3.5, 1.15, 32.72, 'z'], ['KI', 0.28, 1.15, 31.5, 'x'], ['KI', 11.7, 0.5, 32.72, 'z'], ['KI', 9.8, 2.3, 32.72, 'z'],
+    ['BA', 13.28, 2.65, 5.3, 'x', true],
+  ].forEach(([k, x, y, z, n, big]) => {
+    pipe('power', [...lPath(JP[k], [x, z], Hp), [x, y + 0.05, z]]);
+    plate('power', x, y, z, n, big ? 0.16 : 0.1, big ? 0.14 : 0.1);
+  });
+  tag('power', 'AC point', 11.8, 2.85, 0.28);
+}
+{
+  // --- Water: overhead tank on the mumty, down-take into the slab, drops in the walls to every tap and cistern ---
+  const Hw = H - 0.3, Tt = TW.top + 0.3;
+  const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 1.1, 24), paint(0x1f2a30, 0.5));
+  tank.position.copy(V3(7.5, TW.top + 0.7, 16.5));
+  SVC.cold.group.add(tank);
+  tag('cold', 'Overhead tank 1000 L', 7.5, TW.top + 1.75, 16.5);
+  // Mains inlet from the street: underground, up the front wall, over the terrace and up the mumty into the top of the tank
+  pipe('cold', [[14.6, -1.0, 46], [14.6, -1.0, 33.8], [14.6, H + 0.25, 33.8], [14.6, H + 0.25, 21.8], [14.6, TW.top + 1.4, 21.8], [14.6, TW.top + 1.4, 16.5], [8.0, TW.top + 1.4, 16.5], [8.0, TW.top + 1.25, 16.5]], 0.02);
+  tag('cold', 'Mains water inlet', 14.6, -0.4, 44);
+  // Down-take from the tank through the stair head-room into the slab
+  pipe('cold', [[9.1, Tt, 16.5], [13.3, Tt, 16.5], [13.3, Tt, 19.6], [13.3, Hw, 19.6]], 0.024);
+  // North header to the bath, WC and wash basin
+  pipe('cold', [[13.3, Hw, 19.6], [13.3, Hw, 0.35], [19.7, Hw, 0.35]], 0.022);
+  pipe('cold', [[14.75, Hw, 0.35], [14.75, 0.6, 0.35]]);                                       // bath WC cistern
+  pipe('cold', [[19.7, Hw, 0.35], [19.7, 0.6, 0.35]]);                                         // WC cistern
+  pipe('cold', [[17.7, Hw, 0.35], [17.7, Hw, 8.4], [17.7, 0.95, 8.4], [18.1, 0.95, 8.4]]);     // wash basin
+  pipe('cold', [[13.3, Hw, 4.2], [13.3, 2.0, 4.2]]);                                           // geyser inlet
+  pipe('cold', [[13.3, Hw, 8.3], [13.3, 1.05, 8.3]]);                                          // shower mixer, cold side
+  pipe('cold', [[13.35, 1.05, 8.1], [13.35, 2.05, 8.1], [13.9, 2.05, 8.1]]);                   // shower riser and arm
+  fitting('cold', [0.06, 0.08, 0.2], 13.35, 1.05, 8.1, steel);                                 // mixer
+  fitting('cold', [0.18, 0.03, 0.18], 13.9, 2.02, 8.1, steel);                                 // shower head
+  // South branch to the kitchen sink: along the front wall, down beside the window, under the counter to the tap
+  pipe('cold', [[13.3, Hw, 19.6], [13.3, Hw, 32.8], [4.9, Hw, 32.8], [4.9, 0.7, 32.8], [7.1, 0.7, 32.8], [7.1, 1.0, 32.8]]);
+  // Geyser on the bath wall, hot line down to the shower mixer
+  fitting('hot', [0.32, 0.5, 0.42], 13.625, 2.25, 4.5, 0xf4f4f2);
+  fitting('hot', [0.02, 0.05, 0.05], 14.05, 2.35, 4.5, new THREE.MeshBasicMaterial({ color: col(0xff3020) }));
+  pipe('hot', [[13.3, 2.0, 4.8], [13.3, 1.05, 4.8], [13.3, 1.05, 7.9]]);
+  tag('hot', 'Geyser', 13.6, 2.8, 4.5);
+}
+{
+  // --- Drainage: traps under the floor in the plinth, out to an inspection chamber, a septic tank and the street drain ---
+  const Y = -0.35, soil = 0.05, waste = 0.032;
+  const chamber = (xf, zf) => {   // brick chamber in the ground with a lid (ground level is -PLINTH here)
+    fitting('drain', [0.6, 0.5, 0.6], xf, -PLINTH - 0.2, zf, 0x8a8780);
+    fitting('drain', [0.66, 0.04, 0.66], xf, -PLINTH + 0.06, zf, 0x5c5a55);
+  };
+  pipe('drain', [[16.5, Y, 8.4], [16.5, Y, -0.75], [16.5, -1.0, -4]], soil);                     // main soil line under the bath block
+  pipe('drain', [[16.5, Y, -0.75], [16.5, H + 1.3, -0.75]], waste);                              // vent pipe up the back wall
+  pipe('drain', [[14.75, 0.15, 1.2], [14.75, Y, 1.2], [16.5, Y, 1.2]], soil);                    // bath WC
+  pipe('drain', [[19.7, 0.15, 1.6], [19.7, Y, 1.6], [16.5, Y, 1.6]], soil);                      // WC
+  pipe('drain', [[15.3, 0.12, 8.1], [15.3, Y, 8.1], [16.5, Y, 8.1]], waste);                     // shower floor trap
+  pipe('drain', [[18.7, 0.85, 8.4], [18.7, Y, 8.4], [16.5, Y, 8.4]], waste);                     // wash basin
+  fitting('drain', [0.12, 0.012, 0.12], 15.3, 0.12, 8.1, 0x2a2a2a);                              // floor trap grille
+  chamber(16.5, -4);
+  pipe('drain', [[16.5, -1.0, -4], [16.5, -1.1, -7]], soil);
+  const septic = new THREE.Mesh(new THREE.BoxGeometry(9 * S, 1.45, 5 * S),
+    new THREE.MeshStandardMaterial({ color: col(0x8a8780), roughness: 0.9, transparent: true, opacity: 0.6 }));
+  septic.position.copy(V3(16.5, -PLINTH - 0.7, -9.5));
+  SVC.drain.group.add(septic);
+  tag('drain', 'Septic tank', 16.5, -0.2, -9.5);
+  tag('drain', 'Vent pipe', 16.5, H + 1.6, -0.75);
+  // Kitchen sink: waste down through the cabinet, under the floor and out to a chamber in the front garden, then to the street drain
+  pipe('drain', [[7.1, 0.6, 31.7], [7.1, Y, 31.7], [7.1, Y, 33.8], [7.1, -1.0, 36.5]], waste);
+  chamber(7.1, 36.5);
+  pipe('drain', [[7.1, -1.0, 36.5], [7.1, -1.4, 50]], soil);
+  pipe('drain', [[-40, -1.4, 50], [60, -1.4, 50]], 0.09);                                        // municipal drain under the road
+  tag('drain', 'Municipal drain', 2, -0.6, 50);
+}
+// Legend with one switch per layer
+const servicesSwitch = document.getElementById('servicesSwitch');
+if (/[?&]xray=1/.test(location.search)) servicesSwitch.checked = true;   // debug: ?xray=1 starts with Services on
+const legendEl = document.getElementById('legend');
+Object.values(SVC).forEach((l) => {
+  const row = document.createElement('label');
+  row.innerHTML = `<input type="checkbox" checked><i style="background:#${new THREE.Color(l.color).getHexString()}"></i>${l.name}`;
+  row.firstChild.addEventListener('change', (e) => (l.group.visible = e.target.checked));
+  legendEl.appendChild(row);
+});
+addEventListener('keydown', (e) => { if (e.code === 'KeyX') servicesSwitch.checked = !servicesSwitch.checked; });
+let xrayWas = false;
+
 const touchSwitch = document.getElementById('touchSwitch');
 const touchPad = document.getElementById('touchPad');
 touchSwitch.addEventListener('change', () => {
   touchPad.style.display = touchSwitch.checked ? 'grid' : 'none';
   if (!touchSwitch.checked) { Object.keys(keys).forEach((k) => (keys[k] = false)); joyReset(); }
 });
+touchPad.style.display = touchSwitch.checked ? 'grid' : 'none';   // touch mode is on by default
 // Virtual joystick (touch): press the round pad and drag in the direction you want to walk; push to the edge to run.
 // Direction and strength follow the thumb, and everything resets the moment the finger lifts or the browser takes the touch away.
 const joy = { x: 0, y: 0, id: null };   // x: right(+)/left(-), y: forward(+)/back(-), both in -1..1
@@ -1628,7 +1833,16 @@ function update(dt) {
   const inside = inHouse(toFtX(p.x), toFtZ(p.z)) && p.y < H - 0.2 + PLINTH;
   // Top view (looking steeply down from far away): lift the roof off so the whole plan of the house is visible
   const topView = cam.pitch > 1.1 && cam.distance > 12;
-  upper.visible = !inside && !topView;
+  // Services (X-ray): roof and ceilings off, floors and ground turn to a ghost, pipes and wiring appear
+  const xray = servicesSwitch.checked;
+  if (xray !== xrayWas) {
+    xrayWas = xray;
+    services.visible = xray;
+    ceilingG.visible = !xray;
+    legendEl.style.display = xray ? 'block' : 'none';
+    ghostMats.forEach((m) => { m.transparent = xray; m.opacity = xray ? 0.25 : 1; m.depthWrite = !xray; m.needsUpdate = true; });
+  }
+  upper.visible = !inside && !topView && !xray;
   const xf = toFtX(p.x), zf = toFtZ(p.z);
   const room = inside ? rooms.find((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2) : null;
   const roomView = roomViewOn && !!room;
@@ -1639,8 +1853,8 @@ function update(dt) {
     roomSlab.position.set(fx((room.x1 + room.x2) / 2), PLINTH + H - 0.1, fz((room.z1 + room.z2) / 2));
   }
   const seeThrough = roomView || !transparentSwitch || transparentSwitch.checked;   // "Transparent" switch, top right
-  wallMats.forEach((m) => (m.opacity = inside && seeThrough ? 0.3 : 1));
-  glassMat.opacity = inside && seeThrough ? 0.12 : 0.95;
+  wallMats.forEach((m) => (m.opacity = xray ? 0.12 : inside && seeThrough ? 0.3 : 1));
+  glassMat.opacity = xray ? 0.06 : inside && seeThrough ? 0.12 : 0.95;
 
   // Little life in the scene
   diyaLight.intensity = 0.32 * (0.85 + 0.15 * Math.sin(elapsed * 9) * Math.sin(elapsed * 3.7) + rand(-0.04, 0.04));
@@ -1661,7 +1875,7 @@ function update(dt) {
     camWant.set(aimX + Math.sin(cam.yaw) * horiz, aimY + Math.sin(pitch) * dist, aimZ + Math.cos(cam.yaw) * horiz);
   }
   // The camera is stopped by walls outdoors, and also indoors when Transparent is off (solid walls)
-  if ((!inside || !seeThrough) && !topView) {
+  if ((!inside || !seeThrough) && !topView && !xray) {
     let free = 1;
     for (let k = 0.06; k <= 1; k += 0.04) {
       if (blocked(lookX + (camWant.x - lookX) * k, headY + (camWant.y - headY) * k, lookZ + (camWant.z - lookZ) * k)) { free = Math.max(0.12, k - 0.08); break; }
