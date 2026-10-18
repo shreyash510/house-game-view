@@ -105,18 +105,36 @@ export function sidePorch(c) {
 export function staircase(c) {
   const ST = c, STEP_LEN = (ST.x2 - ST.landing) / ST.steps;
   for (let i = 0; i < ST.steps; i++) {
-    const lowH = (H / 2) * (i + 1) / ST.steps;
-    rect(ST.x2 - (i + 1) * STEP_LEN, ST.zMid, ST.x2 - i * STEP_LEN, ST.z2, 0, lowH, 0xe9e9e6);                       // lower flight
-    // Upper flight is hollow: thin tread + riser + the partition wall below it (storeroom underneath)
+    // Lower flight (climbs west): thin tread + riser on its own sloping waist slab (added below), open underneath like the upper one
+    const lowH = (H / 2) * (i + 1) / ST.steps, prevLow = (H / 2) * i / ST.steps;
+    const la = ST.x2 - (i + 1) * STEP_LEN, lb = la + STEP_LEN;
+    rect(la, ST.zMid, lb, ST.z2, lowH - 0.12, 0.12, 0xe9e9e6);
+    rect(lb - 0.3, ST.zMid, lb, ST.z2, prevLow, lowH - prevLow - 0.12, 0xe9e9e6);
+    // Upper flight: thin tread + riser on a sloping concrete waist slab (added below), open underneath
     const upH = H / 2 + (H / 2) * (i + 1) / ST.steps;
     const xa = ST.landing + i * STEP_LEN, xb = xa + STEP_LEN, prevH = H / 2 + (H / 2) * i / ST.steps;
     rect(xa, ST.z1, xb, ST.zMid, upH - 0.12, 0.12, 0xe9e9e6);
     rect(xa, ST.z1, xa + 0.3, ST.zMid, prevH, upH - prevH - 0.12, 0xe9e9e6);
-    rect(xa, ST.zMid - 0.15, xb, ST.zMid + 0.15, 0, upH - 0.12, 0xd8d4c8);
   }
   rect(ST.x1, ST.z1, ST.landing, ST.z2, 0, H / 2, 0xe9e9e6);                                                       // landing
-  // Rail between the two flights, and a block that stops people stepping onto the upper flight from the ground
-  rect(ST.landing, ST.zMid - 0.12, ST.x2, ST.zMid + 0.12, H / 2, 1.0, white);
+  {
+    // Waist slab under the upper flight: its top runs through the inner corners of the steps, from the landing up to the terrace
+    const run = (ST.x2 - ST.landing) * S, rise = H / 2, len = Math.hypot(run, rise), ang = Math.atan2(rise, run), t = 0.15;
+    const slab = box([len, t, (ST.zMid - ST.z1) * S], [fx((ST.landing + ST.x2) / 2), H * 0.75 - t / 2 / Math.cos(ang), fz((ST.z1 + ST.zMid) / 2)], 0xe9e9e6);
+    slab.rotation.z = ang;   // the east end is the high one
+    // ...and under the lower flight, from the floor at the east end up to the landing
+    const lower = box([len, t, (ST.z2 - ST.zMid) * S], [fx((ST.landing + ST.x2) / 2), H * 0.25 - t / 2 / Math.cos(ang), fz((ST.zMid + ST.z2) / 2)], 0xe9e9e6);
+    lower.rotation.z = -ang;   // the west end is the high one
+  }
+  // No wall between the two flights: a steel railing along the inner edge of each flight, following its slope.
+  // The obstacle stops people stepping across from one flight to the other.
+  const stairRail = (zf, xa, ya, xb, yb) => {
+    const a = V(xa, ya + 0.9, zf), b = V(xb, yb + 0.9, zf);
+    railRun(a, b);
+    for (let k = 0; k <= 4; k++) { const p = a.clone().lerp(b, k / 4); rod(p.clone().setY(p.y - 0.9), p, 0.025); }   // posts
+  };
+  stairRail(ST.zMid + 0.15, ST.x2, H / 2 / ST.steps, ST.landing, H / 2);   // lower flight
+  stairRail(ST.zMid - 0.15, ST.landing, H / 2, ST.x2, H);                  // upper flight
   obstacle(fx((ST.landing + ST.x2) / 2), fz(ST.zMid), (ST.x2 - ST.landing) * S, 0.12, 0, H - 0.2);
   // Storeroom under the upper flight: closed on the west by the landing (its door is a wall + door in house.json)
   obstacle(fx(ST.landing), fz((ST.z1 + ST.zMid) / 2), 0.15, (ST.zMid - ST.z1) * S, 0, H / 2);

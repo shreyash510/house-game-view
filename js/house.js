@@ -1,7 +1,7 @@
 // Builds one house from its JSON description (see house.json and README.md for the format):
 // plinth, floors, walls with their openings, doors, roof slab and parapets, floor labels, lamps, then every component.
 import {
-  realScene, useScene, setH, setPlinth, H, PLINTH, S, fx, fz, rect, wallLine, door, label, warmLight, obstacle,
+  realScene, useScene, setH, setPlinth, H, PLINTH, S, fx, fz, rect, wallLine, door, label, warmLight, obstacle, obstacles,
   paint, textured, makeTexture, white, hex, ghost,
 } from './core.js';
 import { material } from './materials.js';
@@ -73,9 +73,16 @@ export function buildHouse(data) {
   // Lamp records: only the 4 nearest really light up (see warmLight in core.js)
   (data.lights || []).forEach((l) => warmLight(fx(l.at[0]), l.y ?? 2.4, fz(l.at[1]), l.intensity ?? 1, l.distance ?? 10));
   buildComponents(data.components, ctx);
+  buildComponents(data.fixtures, ctx);   // built-in fittings (counters, sink, WC, wash basin): always there
+  // Movable furniture goes in its own group, so the "Furniture" switch can take it out, together with its obstacles
+  const furnitureG = new THREE.Group();
+  houseG.add(furnitureG);
+  const firstObstacle = obstacles.length;
+  useScene(furnitureG, PLINTH);
   buildComponents(data.furniture, ctx);
+  obstacles.slice(firstObstacle).forEach((o) => (o.furniture = true));
 
   useScene(realScene, 0);
   const rooms = (data.rooms || []).map((r) => ({ ...r, x1: r.rect[0], z1: r.rect[1], x2: r.rect[2], z2: r.rect[3] }));
-  return { ...ctx, rooms };
+  return { ...ctx, rooms, furnitureG };
 }

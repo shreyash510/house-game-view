@@ -114,14 +114,22 @@
     { "name": "storeroom", "at": [9, 15], "y": 2.5, "intensity": 0.8, "distance": 6 }
   ],
 
-  "furniture": [
-    { "type": "bed", "x": 7.1 },
-    { "type": "bed", "x": 28.9 },
+  "fixtures": [
     { "type": "counter", "rect": [0.4, 24.4, 2.5, 32.8] },
     { "type": "counter", "rect": [2.5, 30.6, 5.4, 32.8] },
     { "type": "counter", "rect": [8.8, 30.6, 10.6, 32.8] },
     { "type": "sink", "rect": [5.4, 30.6, 8.8, 32.8] },
     { "type": "stove", "at": [9.1, 31.1] },
+    { "type": "item", "name": "WC cistern", "rect": [19.1, 0.5, 20.3, 1.1], "h": 0.7, "color": "#f4f4f2" },
+    { "type": "item", "name": "WC pan", "rect": [19.1, 1.1, 20.3, 2.8], "h": 0.4, "color": "#f4f4f2" },
+    { "type": "item", "name": "bath WC", "rect": [14, 0.7, 15.5, 1.7], "h": 0.9, "color": "#f4f4f2" },
+    { "type": "item", "name": "shower tray", "rect": [14, 7.4, 16.6, 8.8], "h": 0.04, "color": "#7fa6c0", "solid": false },
+    { "type": "washBasin", "x": 18.0, "z": 8.4 }
+  ],
+
+  "furniture": [
+    { "type": "bed", "x": 7.1 },
+    { "type": "bed", "x": 28.9 },
     { "type": "item", "name": "fridge", "rect": [10.8, 30.6, 12.7, 32.8], "h": 1.8, "color": "#cfd4d8" },
     { "type": "item", "name": "sofa", "rect": [32.6, 18.3, 34.0, 25.2], "h": 0.5, "color": "#a0627f" },
     { "type": "item", "name": "sofa back", "rect": [34.0, 18.3, 34.6, 25.2], "h": 1.0, "color": "#86506a" },
@@ -129,15 +137,7 @@
     { "type": "item", "name": "sofa back", "rect": [22.2, 27.0, 29.2, 27.6], "h": 1.0, "color": "#86506a" },
     { "type": "item", "name": "coffee table", "rect": [28.6, 22.4, 31, 23.8], "h": 0.4, "color": "#3b2a22" },
     { "type": "item", "name": "TV console", "rect": [24.5, 13.8, 29.5, 15.3], "h": 0.5, "color": "#3a2a22" },
-    { "type": "item", "name": "TV", "rect": [25.9, 14.2, 28.1, 14.5], "h": 0.7, "color": "#0e0e12", "y0": 0.61, "solid": false },
-    { "type": "item", "name": "WC cistern", "rect": [19.1, 0.5, 20.3, 1.1], "h": 0.7, "color": "#f4f4f2" },
-    { "type": "item", "name": "WC pan", "rect": [19.1, 1.1, 20.3, 2.8], "h": 0.4, "color": "#f4f4f2" },
-    { "type": "item", "name": "bath WC", "rect": [14, 0.7, 15.5, 1.7], "h": 0.9, "color": "#f4f4f2" },
-    { "type": "item", "name": "shower tray", "rect": [14, 7.4, 16.6, 8.8], "h": 0.04, "color": "#7fa6c0", "solid": false },
-    { "type": "washBasin", "x": 18.0, "z": 8.4 },
-    { "type": "item", "name": "storeroom shelves", "rect": [5, 13.7, 11, 14.5], "h": 1.5, "color": "#7a5a3a" },
-    { "type": "item", "name": "boxes", "rect": [5, 15.7, 6.6, 16.5], "h": 0.5, "color": "#b08a5a" },
-    { "type": "item", "name": "boxes", "rect": [7.2, 15.9, 8.6, 16.5], "h": 0.4, "color": "#a07a4a" }
+    { "type": "item", "name": "TV", "rect": [25.9, 14.2, 28.1, 14.5], "h": 0.7, "color": "#0e0e12", "y0": 0.61, "solid": false }
   ],
 
   "components": [
@@ -206,6 +206,20 @@
   "spawn": { "at": [26, 43.75] },
   "mapOutlines": [[17.2, 28.6, 35, 37], [21.5, 37, 31.5, 40.6]],
 
+  "devices": [
+    { "type": "fan", "name": "bedroom 1", "at": [6.5, 6.65] },
+    { "type": "fan", "name": "bedroom 2", "at": [28.35, 6.65] },
+    { "type": "fan", "name": "living hall", "at": [26.2, 20.6] },
+    { "type": "fan", "name": "kitchen", "at": [6.5, 26.4] },
+    { "type": "tubeLight", "name": "bedroom 1, east wall", "at": [12.775, 2.3, 5.0], "face": "-x" },
+    { "type": "tubeLight", "name": "bedroom 2, west wall", "at": [21.925, 2.3, 5.0], "face": "+x" },
+    { "type": "tubeLight", "name": "living hall, north wall", "at": [30.5, 2.3, 13.525], "face": "+z" },
+    { "type": "tubeLight", "name": "kitchen, north wall", "at": [6.5, 2.3, 20.025], "face": "+z" },
+    { "type": "ceilingLight", "name": "bath", "at": [15.35, 4.65] },
+    { "type": "ceilingLight", "name": "WC", "at": [19.7, 3.1] },
+    { "type": "exhaustFan", "name": "kitchen, over the stove", "at": [11.5, 2.4, 32.775], "face": "-z" },
+    { "type": "exhaustFan", "name": "bath, back wall, beside the vent", "at": [16.9, 2.5, 0.225], "face": "+z" }
+  ],
   "services": {
     "layers": {
       "light": { "color": "#ffc23a", "name": "Lighting circuit + switches" },
@@ -232,7 +246,8 @@
         { "from": "B2", "at": [21.98, 9.4], "wall": "x" },
         { "from": "BA", "at": [15.2, 9.58], "wall": "z" },
         { "from": "WC", "at": [20.6, 6.48], "wall": "z" },
-        { "from": "KI", "at": [17.22, 20.4], "wall": "x" }
+        { "from": "KI", "at": [17.22, 20.4], "wall": "x" },
+        { "from": "PS", "name": "storeroom, north wall inside the opening", "at": [12.3, 13.58], "wall": "z" }
       ],
       "sockets": [
         { "from": "B1", "at": [3.8, 0.35, 0.28], "wall": "z" },
