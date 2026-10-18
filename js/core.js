@@ -246,7 +246,9 @@ export const frameMat = new THREE.MeshStandardMaterial({ color: col(0x24282c), r
 export const sillMat = new THREE.MeshStandardMaterial({ color: col(0x9a9a98), roughness: 0.8, metalness: 0, transparent: true });       // grey stone sill
 export const doorFrameMat = new THREE.MeshStandardMaterial({ color: col(0x4a2e1a), roughness: 0.5, metalness: 0, transparent: true });
 export const frameWhite = new THREE.MeshStandardMaterial({ color: col(0xf4f3ef), roughness: 0.7, metalness: 0, transparent: true });   // white window surround
-wallMats.push(frameMat, doorFrameMat, sillMat, frameWhite);
+export const woodWinMat = new THREE.MeshStandardMaterial({ color: col(0x6b4423), roughness: 0.6, metalness: 0, transparent: true });   // painted timber window
+export const grillMat = new THREE.MeshStandardMaterial({ color: col(0x2a2b2d), roughness: 0.5, metalness: 0.6, transparent: true });   // iron window grill
+wallMats.push(frameMat, doorFrameMat, sillMat, frameWhite, woodWinMat, grillMat);
 // Dark reflective window glass that mirrors the garden: dusk sky, hedges and lawn (shared so it can fade too)
 const reflectionTex = makeTexture(512, 384, (ctx, w, h) => {
   const sky = ctx.createLinearGradient(0, 0, 0, h * 0.58);
@@ -284,7 +286,7 @@ export function furn(x1, z1, x2, z2, h, color, y0 = FLOOR_Y, solid = true) {
 }
 
 // A straight wall along the plan. horiz: wall runs along x at z = c; otherwise along z at x = c.
-// openings: [from, to, type] where type is 'door' | 'open' | 'win' | 'plain' | 'vent' | 'tall'
+// openings: [from, to, type] where type is 'door' | 'open' | 'arch' | 'win' | 'plain' | 'vent' | 'tall'
 // out (outer walls only): +1 / -1 = which side faces outside; that face gets the beige facade colour.
 export function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) {
   const ext = T / 2 / S;
@@ -330,30 +332,63 @@ export function wallLine(horiz, c, a1, a2, openings = [], mat = cream, out = 0) 
     f.put(0.07, y1 - y0, 0, (y0 + y1) / 2);
     if (boxFrame) box(horiz ? [(e - s) * S + 0.18, 0.06, T + 0.2] : [T + 0.2, 0.06, (e - s) * S + 0.18], [horiz ? fx(mid) : fx(c), y0 - 0.03, horiz ? fz(c) : fz(mid)], 0, scene, sillMat);
   };
+  // Wooden window: timber frame, two shutters of three small panes each (2 x 3), and iron grill bars across the opening
+  const woodWindow = (s, e, y0, y1) => {
+    const mid = (s + e) / 2, len = (e - s) * S, h = y1 - y0;
+    const pane = new THREE.Mesh(new THREE.BoxGeometry(horiz ? len : 0.03, h, horiz ? 0.03 : len), glassMat);
+    pane.position.set(horiz ? fx(mid) : fx(c), (y0 + y1) / 2, horiz ? fz(c) : fz(mid));
+    scene.add(pane);
+    const f = trim(s, e, y0, y1, woodWinMat, 0.08, T + 0.04, true);
+    f.put(0.08, h, 0, (y0 + y1) / 2);                                            // meeting stiles of the two shutters: two panes wide
+    [1, 2].forEach((k) => f.put(len, 0.04, 0, y0 + (h * k) / 3));                // glazing bars: three panes high
+    const bars = trim(s, e, y0, y1, grillMat, 0.001, T * 0.5);
+    for (let a = -len / 2 + 0.11; a < len / 2 - 0.06; a += 0.11) bars.put(0.014, h, a, (y0 + y1) / 2);   // vertical grill bars
+  };
   let cursor = a1;
-  [...openings].sort((p, q) => p[0] - q[0]).forEach(([a, b, type]) => {
+  [...openings].sort((p, q) => p[0] - q[0]).forEach(([a, b, type, sillY, topY]) => {
     piece(cursor, a, 0, H);
+    if (type === 'arch') {   // open doorway with a rounded (semicircular) top and no door leaf
+      const len = (b - a) * S, r = len / 2, apex = Math.min(2.4, H - 0.15), spring = apex - r, mid = (a + b) / 2;
+      piece(a, b, apex, H, { solid: false });
+      // The two curved corners between the arch and a level line at its apex
+      const sh = new THREE.Shape();
+      sh.moveTo(-r, 0); sh.lineTo(-r, r); sh.lineTo(r, r); sh.lineTo(r, 0);
+      sh.absarc(0, 0, r, 0, Math.PI, false);
+      const geo = new THREE.ExtrudeGeometry(sh, { depth: T, bevelEnabled: false, curveSegments: 18 });
+      geo.translate(0, 0, -T / 2);
+      const m0 = Array.isArray(mat) ? mat[2] : mat, tile = m0.userData?.tile;
+      if (tile) { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / tile, uv.getY(i) / tile); }
+      const arch = new THREE.Mesh(geo, m0);
+      arch.position.set(horiz ? fx(mid) : fx(c), spring, horiz ? fz(c) : fz(mid));
+      if (!horiz) arch.rotation.y = Math.PI / 2;
+      arch.castShadow = arch.receiveShadow = true;
+      scene.add(arch);
+    }
     if (type === 'door') {
       piece(a, b, 2.1, H, { solid: false });
       trim(a, b, 0, 2.1, doorFrameMat, 0.08, T + 0.05);   // timber door frame
     }
-    if (type === 'win' || type === 'vent' || type === 'plain') {   // plain: a window without its own white box frame
-      const sill = type === 'vent' ? 1.5 : 0.9, top = type === 'vent' ? 2.3 : 2.2;
+    if (type === 'win' || type === 'vent' || type === 'plain' || type === 'wood') {   // plain: no white box frame; wood: timber 2 x 3 panes with a grill
+      const sill = type === 'vent' ? 1.5 : 0.9, top = type === 'vent' ? 2.3 : type === 'wood' ? 2.1 : 2.2;
       piece(a, b, 0, sill, { solid: false });
       piece(a, b, top, H, { solid: false });
       piece(a, b, 0, H, { mesh: false });   // you cannot walk through a window
       planWalls.push([horiz, c, a, b]);
-      glass(a, b, sill, top, type !== 'plain');
+      if (type === 'wood') woodWindow(a, b, sill, top); else glass(a, b, sill, top, type !== 'plain');
     }
-    if (type === 'tall') {   // stairwell window: one tall pane from the usual sill up to the roof, carried on above the roof by the mumty
-      const mid = (a + b) / 2, len = (b - a) * S, y0 = 0.9, midY = (y0 + H) / 2;
-      const pane = new THREE.Mesh(new THREE.BoxGeometry(horiz ? len : 0.04, H - y0, horiz ? 0.04 : len), glassMat);
+    if (type === 'tall') {   // stairwell window: one tall pane from its sill (default 0.9 m) up to its top (default: the roof, carried on above it by the mumty)
+      const mid = (a + b) / 2, len = (b - a) * S, y0 = sillY ?? 0.9, y1 = Math.min(topY ?? H, H), midY = (y0 + y1) / 2;
+      const pane = new THREE.Mesh(new THREE.BoxGeometry(horiz ? len : 0.04, y1 - y0, horiz ? 0.04 : len), glassMat);
       pane.position.set(horiz ? fx(mid) : fx(c), midY, horiz ? fz(c) : fz(mid));
       scene.add(pane);
       [a, b].forEach((edge, i) => {
         const off = i ? -0.06 : 0.06;
-        box(horiz ? [0.12, H - y0, T + 0.1] : [T + 0.1, H - y0, 0.12], [horiz ? fx(edge) + off : fx(c), midY, horiz ? fz(c) : fz(edge) + off], 0, scene, frameWhite);
+        box(horiz ? [0.12, y1 - y0, T + 0.1] : [T + 0.1, y1 - y0, 0.12], [horiz ? fx(edge) + off : fx(c), midY, horiz ? fz(c) : fz(edge) + off], 0, scene, frameWhite);
       });
+      if (y1 < H) {   // stops below the roof: a head frame, and wall above it
+        box(horiz ? [len, 0.12, T + 0.1] : [T + 0.1, 0.12, len], [horiz ? fx(mid) : fx(c), y1 - 0.06, horiz ? fz(c) : fz(mid)], 0, scene, frameWhite);
+        piece(a, b, y1, H, { solid: false });
+      }
       piece(a, b, 0, H, { mesh: false });
       piece(a, b, 0, y0, { solid: false });
       planWalls.push([horiz, c, a, b]);

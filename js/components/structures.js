@@ -180,7 +180,7 @@ export function mumty(c, ctx) {
   wall(TW.x1, TW.z1, TW.x1 + TW.wall, MWIN.z1);                              // west wall, north of the window
   wall(TW.x1, MWIN.z2, TW.x1 + TW.wall, TW.z2);                              // west wall, south of the window
   wall(TW.x1, MWIN.z1, TW.x1 + TW.wall, MWIN.z2, H, true, MWIN.y0);          // under the window
-  wall(TW.x1, MWIN.z1, TW.x1 + TW.wall, MWIN.z2, MWIN.y1);                   // over the window
+  wall(TW.x1, MWIN.z1, TW.x1 + TW.wall, MWIN.z2, Math.max(H, MWIN.y1));      // over the window (the mumty wall starts at the roof)
   if (c.face) {
     // The tower face: continuous cladding from the plinth to the roof cap, with one tall lit window
     const { x1: FX1, x2: FX2 } = c.face, lowStop = c.face.lowStop ?? TW.z2;

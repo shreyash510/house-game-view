@@ -17,10 +17,10 @@ export const COMPONENTS = {
   steps: structures.steps, sidePorch: structures.sidePorch, staircase: structures.staircase, mumty: structures.mumty,
   towerWindow: structures.towerWindow, shrine: structures.shrine,
   // outdoor.js
-  road: outdoor.road, hedge: outdoor.hedge, fireflies: outdoor.fireflies,
+  road: outdoor.road, hedge: outdoor.hedge, fireflies: outdoor.fireflies, openShed: outdoor.openShed, concreteRoad: outdoor.concreteRoad, sandRoad: outdoor.sandRoad, wireFence: outdoor.wireFence, coconutTree: outdoor.coconutTree,
 };
 // These stand on the ground (heights from the ground, not from the plinth top)
-const GROUND = new Set(['steps', 'sidePorch', 'road', 'hedge', 'fireflies']);
+const GROUND = new Set(['steps', 'sidePorch', 'road', 'hedge', 'fireflies', 'openShed', 'concreteRoad', 'sandRoad', 'wireFence', 'coconutTree']);
 
 // Build a list of components. ctx = { houseG, upper }. Entries with "skip": true are left out.
 export function buildComponents(list = [], ctx) {

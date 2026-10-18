@@ -32,7 +32,7 @@
 
   "walls": [
     { "along": "x", "at": 0, "from": 0, "to": 35, "outside": -1, "openings": [[4.5, 9.5, "win"], [14.4, 16, "vent"], [19, 20.5, "vent"], [25.7, 30.7, "win"]] },
-    { "along": "z", "at": 0, "from": 0, "to": 33, "outside": -1, "openings": [[5.3, 10.35, "plain"], [14.55, 18.55, "tall"], [21.6, 24.6, "door"], [25.2, 30.2, "win"]] },
+    { "along": "z", "at": 0, "from": 0, "to": 33, "outside": -1, "openings": [[5.3, 10.35, "plain"], [14.5917, 18.5083, "tall", 2.1, 4.5], [21.6, 24.6, "door"], [25.2, 30.2, "win"]] },
     { "along": "z", "at": 35, "from": 0, "to": 28, "outside": 1, "openings": [[4.7, 9.7, "win"], [19, 24.5, "win"]] },
     { "along": "x", "at": 28, "from": 17.5, "to": 35, "outside": 1, "material": "taupe", "openings": [[17.9, 21.2, "door"], [24, 29.9, "win"], [32.3, 34.7, "door"]] },
     { "along": "x", "at": 33, "from": 0, "to": 17.5, "outside": 1, "material": "taupe", "openings": [[5.2, 9.2, "plain"]] },
@@ -63,7 +63,7 @@
   "roof": {
     "slabs": [
       [-0.6, -0.6, 35.6, 13.3], [13.2, 13.3, 35.6, 28.6], [-0.6, 19.8, 13.2, 33.6], [13.2, 28.6, 17.9, 33.6],
-      [17.9, 28.6, 35.6, 37.6], [-0.6, 13.3, 0, 14.55], [-0.6, 18.55, 0, 19.8]
+      [17.9, 28.6, 35.6, 37.6], [-0.6, 13.3, 0, 14.5917], [-0.6, 18.5083, 0, 19.8]
     ],
     "canopies": [[17.9, 28.6, 36.3, 38.3]],
     "parapets": [
@@ -124,7 +124,7 @@
     { "type": "item", "name": "WC pan", "rect": [19.1, 1.1, 20.3, 2.8], "h": 0.4, "color": "#f4f4f2" },
     { "type": "item", "name": "bath WC", "rect": [14, 0.7, 15.5, 1.7], "h": 0.9, "color": "#f4f4f2" },
     { "type": "item", "name": "shower tray", "rect": [14, 7.4, 16.6, 8.8], "h": 0.04, "color": "#7fa6c0", "solid": false },
-    { "type": "washBasin", "x": 18.0, "z": 8.4 }
+    { "type": "washBasin", "x": 21.4, "z": 8.4, "face": "-x" }
   ],
 
   "furniture": [
@@ -145,7 +145,7 @@
     { "type": "sidePorch", "name": "kitchen porch", "x1": -3, "x2": 0, "z1": 21, "z2": 30, "steps": [[-3, 0, 30, 31], [-3, 0, 31, 32], [-3, 0, 32, 33]] },
     { "type": "staircase", "x1": 0, "x2": 13.2, "z1": 13.3, "zMid": 16.8, "z2": 19.8, "landing": 3.8, "steps": 8 },
     { "type": "mumty", "x1": 0, "x2": 15, "z1": 11.55, "z2": 21.55, "height": 2.8, "wall": 0.6, "door": [13.6, 16.6],
-      "window": { "z1": 14.55, "z2": 18.55, "y0": 0.9, "height": 4.8 }, "face": { "x1": -0.75, "x2": -0.15, "lowStop": 19.2 } },
+      "window": { "z1": 14.5917, "z2": 18.5083, "y0": 3.7, "height": 2.4 }, "face": { "x1": -0.75, "x2": -0.15, "lowStop": 19.2 } },
 
     { "type": "block", "name": "white roof edge between the tower and the porch", "rect": [10.0, 33.05, 17.9, 33.65], "y0": "H-0.5", "h": 0.53, "color": "#f4f4f2", "roof": true },
     { "type": "block", "name": "balcony parapet (grey)", "rect": [-0.6, 33.1, 10.0, 33.6], "y0": "H", "h": 0.9, "material": "greyClad", "roof": true, "solid": true },
@@ -195,13 +195,38 @@
     { "type": "shrine", "name": "devghar", "rect": [32.4, 29.9, 34.6, 31.4] },
     { "type": "label", "text": ["STOREROOM", "under the stairs"], "at": [9.5, 15.3], "width": 3 },
 
-    { "type": "hedge", "rect": [-0.475, 38.875, 20.275, 41.125] },
-    { "type": "hedge", "rect": [32.5, 38.875, 37.75, 41.125] },
-    { "type": "road", "z": 56.5, "width": 15, "pavement": { "z": 47, "width": 4 }, "lamps": { "x": [-57.5, -17.5, 52.5, 92.5], "z": 45.5 } },
+    { "type": "road", "skip": true, "z": 56.5, "width": 15, "pavement": { "z": 47, "width": 4 }, "lamps": { "x": [-57.5, -17.5, 67.5, 92.5], "z": 45.5 } },
+    { "type": "openShed", "name": "farm shed, 25 x 32 ft", "rect": [70.4, 1.7, 95.4, 33.7], "eave": 3.0, "rise": 1.5, "ridge": "z", "bays": 4,
+      "wall": { "height": 1.22, "door": { "side": "S", "width": 4 } } },
+    { "type": "concreteRoad", "name": "cement concrete road behind the houses", "z": -72, "width": 12 },
+    { "type": "coconutTree", "name": "coconut tree 1", "at": [56.3, 65.5], "height": 7.5, "lean": 7, "leanDir": 70 },
+    { "type": "coconutTree", "name": "coconut tree 2", "at": [48.7, 65.2], "height": 6.8, "lean": 5, "leanDir": 120 },
+    { "type": "wireFence", "name": "barbed-wire compound of the neighbours' property, behind the houses up to the concrete road",
+      "rect": [-40.2, -65.5, 112.3, -7.8], "height": 1.5, "spacing": 8, "strands": 4, "gaps": [["N", 101.4, 111.4], ["S", 101.4, 111.4]] },
+    { "type": "sandRoad", "name": "sand road, 6 ft east of the shed", "along": "z", "at": 106.4, "from": -285, "to": 315, "width": 10 },
     { "type": "fireflies", "count": 60 }
   ],
 
-  "otherHouses": [],
+  "otherHouses": [
+    { "name": "Tin-roof house", "at": [40.6, 35.9], "wall": 2.6, "wallColor": "#cfc6b4", "weathered": true,
+      "ota": { "height": 0.45, "depth": 12, "steps": { "count": 0 }, "entry": "E", "entryWidth": 4, "compound": { "height": 1.2, "thickness": 0.75 },
+               "roof": { "back": 2.55, "front": 2.15, "posts": [0.4, 8, 16, 23.6] } },
+      "kitchenOta": { "room": "Kitchen", "side": "S", "from": 0.6, "width": 7, "depth": 2, "height": 0.8 },
+      "rooms": [
+        { "name": "Kitchen", "x": 0, "z": 0, "w": 12, "d": 13 },
+        { "name": "Room 2", "x": 12, "z": 0, "w": 12, "d": 13 }
+      ],
+      "openings": [
+        { "room": "Kitchen", "side": "S", "from": 8.5, "width": 3, "type": "door" },
+        { "room": "Kitchen", "side": "N", "from": 4.5, "width": 3, "type": "wood" },
+        { "room": "Kitchen", "side": "E", "from": 2.1, "width": 3, "type": "arch" },
+        { "room": "Room 2", "side": "S", "from": 1.5, "width": 3, "type": "door" },
+        { "room": "Room 2", "side": "S", "from": 6.5, "width": 3, "type": "wood" },
+        { "room": "Room 2", "side": "N", "from": 4.5, "width": 3, "type": "wood" }
+      ],
+      "roof": { "type": "shed", "high": "S", "rise": [0.25, 0.65], "overhang": 0.3 }
+    }
+  ],
 
   "spawn": { "at": [26, 43.75] },
   "mapOutlines": [[17.2, 28.6, 35, 37], [21.5, 37, 31.5, 40.6]],
@@ -277,7 +302,7 @@
       { "layer": "cold", "name": "north header", "r": 0.022, "points": [[13.3, 3.3, 19.6], [13.3, 3.3, 0.35], [19.7, 3.3, 0.35]] },
       { "layer": "cold", "name": "bath WC cistern", "points": [[14.75, 3.3, 0.35], [14.75, 0.6, 0.35]] },
       { "layer": "cold", "name": "WC cistern", "points": [[19.7, 3.3, 0.35], [19.7, 0.6, 0.35]] },
-      { "layer": "cold", "name": "wash basin", "points": [[17.7, 3.3, 0.35], [17.7, 3.3, 8.4], [17.7, 0.95, 8.4], [18.1, 0.95, 8.4]] },
+      { "layer": "cold", "name": "wash basin", "points": [[17.7, 3.3, 0.35], [21.7, 3.3, 0.35], [21.7, 3.3, 8.4], [21.7, 0.95, 8.4], [21.3, 0.95, 8.4]] },
       { "layer": "cold", "name": "geyser inlet", "points": [[13.3, 3.3, 4.2], [13.3, 2.0, 4.2]] },
       { "layer": "cold", "name": "shower mixer, cold side", "points": [[13.3, 3.3, 8.3], [13.3, 1.05, 8.3]] },
       { "layer": "cold", "name": "shower riser and arm", "points": [[13.35, 1.05, 8.1], [13.35, 2.05, 8.1], [13.9, 2.05, 8.1]] },
@@ -289,7 +314,7 @@
       { "layer": "drain", "name": "bath WC", "r": 0.05, "points": [[14.75, 0.15, 1.2], [14.75, -0.35, 1.2], [16.5, -0.35, 1.2]] },
       { "layer": "drain", "name": "WC", "r": 0.05, "points": [[19.7, 0.15, 1.6], [19.7, -0.35, 1.6], [16.5, -0.35, 1.6]] },
       { "layer": "drain", "name": "shower floor trap", "r": 0.032, "points": [[15.3, 0.12, 8.1], [15.3, -0.35, 8.1], [16.5, -0.35, 8.1]] },
-      { "layer": "drain", "name": "wash basin", "r": 0.032, "points": [[18.7, 0.85, 8.4], [18.7, -0.35, 8.4], [16.5, -0.35, 8.4]] },
+      { "layer": "drain", "name": "wash basin", "r": 0.032, "points": [[20.75, 0.85, 8.4], [20.75, -0.35, 8.4], [16.5, -0.35, 8.4]] },
       { "layer": "drain", "name": "to septic tank", "r": 0.05, "points": [[16.5, -1.0, -4], [16.5, -1.1, -7]] },
       { "layer": "drain", "name": "kitchen sink", "r": 0.032, "points": [[7.1, 0.6, 31.7], [7.1, -0.35, 31.7], [7.1, -0.35, 33.8], [7.1, -1.0, 36.5]] },
       { "layer": "drain", "name": "to street drain", "r": 0.05, "points": [[7.1, -1.0, 36.5], [7.1, -1.4, 50]] },
