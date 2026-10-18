@@ -73,7 +73,8 @@ const WALK = 3.4, RUN = 6.2;   // metres per second
 // Height of the floor under (x, z). On the terrace only if we are already up there.
 function groundHeight(x, z, currentY) {
   const xf = toFtX(x), zf = toFtZ(z);
-  if (buildings.some((b) => b.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2))) return 0.1;   // floor of a makeHouse() house
+  const inBuilding = buildings.find((b) => b.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2));
+  if (inBuilding) return inBuilding.floor ?? 0.1;   // floor of a makeHouse() house (raised when it stands on an ota plinth)
   const walk = (first) => {
     for (const w of walkables) if (!!w.first === first) { const h = w(xf, zf, currentY); if (h !== null) return h; }
     return null;
@@ -122,6 +123,7 @@ const clock = new THREE.Clock();
 let walkTime = 0, elapsed = 0, facing = 0, fov = 60, xrayWas = false, mapFrame = 0, frame = 0;
 const vel = { x: 0, z: 0 };
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), camWant = new THREE.Vector3(), camAim = new THREE.Vector3();
+const EYE_H = 1.65;   // eye height above the feet (m), for the eye-view camera
 let camReady = false;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -155,6 +157,12 @@ function update(dt) {
     facing += diff * (1 - Math.exp(-12 * dt));
     player.rotation.y = facing;
   }
+  // Eye view: the avatar always faces where you look (it is hidden, but the minimap arrow follows it)
+  if (view.eye) {
+    facing = Math.atan2(-Math.sin(cam.yaw), -Math.cos(cam.yaw));
+    player.rotation.y = facing;
+  }
+  player.visible = !view.eye;
 
   collide(player.position);
 
@@ -189,7 +197,7 @@ function update(dt) {
   const xf = toFtX(p.x), zf = toFtZ(p.z);
   const inside = inHouse(xf, zf) && p.y < H - 0.2 + PLINTH;
   // Top view (looking steeply down from far away): lift the roof off so the whole plan of the house is visible
-  const topView = cam.pitch > 1.1 && cam.distance > 12;
+  const topView = !view.eye && cam.pitch > 1.1 && cam.distance > 12;
   // Services (X-ray): roof and ceilings off, floors and ground turn to a ghost, pipes and wiring appear
   const xray = servicesSwitch.checked;
   if (xray !== xrayWas) {
@@ -203,14 +211,18 @@ function update(dt) {
   devices.visible = devicesSwitch.checked;   // "Devices" switch (key E): fans, tube lights, ceiling lights, exhaust fans
   furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...
   const room = inside ? rooms.find((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2) : null;
-  const roomView = view.room && !!room;
+  const roomView = view.room && !!room && !view.eye;
   roomSlab.visible = roomView;
-  buildings.forEach((b) => { b.roof.visible = !(p.y < b.wall - 0.4 && b.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2)); });   // lift the roof off while you are inside
+  buildings.forEach((b) => {   // lift the roof off while you are inside (or under a veranda roof)
+    const under = p.y < b.wall - 0.4 && (b.hideAreas || b.rooms).some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2);
+    b.roof.visible = !under || view.eye;   // in eye view you see the roof above you, as a person would
+    (b.covers || []).forEach((m) => (m.visible = !under || view.eye));
+  });
   if (roomView) {
     roomSlab.scale.set((room.x2 - room.x1) * S, 1, (room.z2 - room.z1) * S);
     roomSlab.position.set(fx((room.x1 + room.x2) / 2), PLINTH + H - 0.1, fz((room.z1 + room.z2) / 2));
   }
-  const seeThrough = roomView || !transparentSwitch || transparentSwitch.checked;   // "Transparent" switch, top right
+  const seeThrough = !view.eye && (roomView || !transparentSwitch || transparentSwitch.checked);   // "Transparent" switch; walls stay solid in eye view
   wallMats.forEach((m) => (m.opacity = xray ? 0.12 : inside && seeThrough ? 0.3 : 1));
   glassMat.opacity = xray ? 0.06 : inside && seeThrough ? 0.12 : 0.95;
 
@@ -240,13 +252,22 @@ function update(dt) {
     camWant.set(lookX + (camWant.x - lookX) * free, headY + (camWant.y - headY) * free, lookZ + (camWant.z - lookZ) * free);
   }
   camWant.y = Math.max(camWant.y, 0.4);   // never dip under the ground
-  const follow = camReady ? 1 - Math.exp(-16 * dt) : 1;
-  camPos.lerp(camWant, follow);
-  camLook.lerp(camAim.set(aimX, aimY, aimZ), roomView ? 1 - Math.exp(-8 * dt) : follow);
-  camReady = true;
+  if (view.eye) {
+    // Eye view: the camera is the avatar's eyes, looking where the mouse / finger points
+    const bob = 0.05 * move * (Math.abs(Math.sin(walkTime)) - 0.5);   // gentle head bob, one dip per footstep
+    const ey = p.y + EYE_H + bob, cp = Math.cos(cam.pitch);
+    camPos.set(p.x, ey, p.z);
+    camLook.set(p.x - Math.sin(cam.yaw) * cp, ey - Math.sin(cam.pitch), p.z - Math.cos(cam.yaw) * cp);
+    camReady = false;   // switching back, the follow camera snaps into place instead of sweeping through walls
+  } else {
+    const follow = camReady ? 1 - Math.exp(-16 * dt) : 1;
+    camPos.lerp(camWant, follow);
+    camLook.lerp(camAim.set(aimX, aimY, aimZ), roomView ? 1 - Math.exp(-8 * dt) : follow);
+    camReady = true;
+  }
   camera.position.copy(camPos);
   camera.lookAt(camLook);
-  const wantFov = sprint && move > 0.5 ? 68 : 60;
+  const wantFov = (view.eye ? 72 : 60) + (sprint && move > 0.5 ? 8 : 0);   // a wider, more natural field of view through the eyes
   if (Math.abs(fov - wantFov) > 0.02) {
     fov += (wantFov - fov) * (1 - Math.exp(-6 * dt));
     camera.fov = fov;

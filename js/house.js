@@ -29,7 +29,8 @@ export function buildHouse(data) {
   useScene(realScene, 0);
   const plinthColor = hex(data.plinth?.color ?? '#8f897c');
   ghost(paint(plinthColor));
-  (data.plinth?.areas || []).forEach(([x1, z1, x2, z2]) => rect(x1, z1, x2, z2, 0, PLINTH, plinthColor));
+  // The plinth takes no shadows: lamp shadows only left dark streaks along its top, so it stays a clean plain band
+  (data.plinth?.areas || []).forEach(([x1, z1, x2, z2]) => { rect(x1, z1, x2, z2, 0, PLINTH, plinthColor).receiveShadow = false; });
   (data.plinth?.solidEdges || []).forEach(solidEdge);
 
   // Everything else rides on the plinth; the roof and terrace go in `upper`, which hides when you walk inside

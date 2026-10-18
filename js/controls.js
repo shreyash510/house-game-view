@@ -13,6 +13,8 @@ export const cam = { yaw: 0, pitch: 0.3, distance: 5 };
 if (query('yaw') !== null) cam.yaw = +query('yaw') * Math.PI / 180;
 if (query('dist') !== null) cam.distance = +query('dist');
 if (query('pitch') !== null) cam.pitch = +query('pitch');
+// How far you can look up / down: wider in eye view (looking up at a ceiling or down at the floor)
+const setPitch = (v) => { const [lo, hi] = view.eye ? [-1.3, 1.3] : [-0.2, 1.5]; cam.pitch = Math.max(lo, Math.min(hi, v)); };
 renderer.domElement.addEventListener('click', (e) => {
   if (e.pointerType === 'touch') return;   // touch has its own controls below
   if (document.pointerLockElement === renderer.domElement) document.exitPointerLock();
@@ -21,9 +23,10 @@ renderer.domElement.addEventListener('click', (e) => {
 addEventListener('mousemove', (e) => {
   if (document.pointerLockElement !== renderer.domElement) return;
   cam.yaw -= e.movementX * 0.003;
-  cam.pitch = Math.max(-0.2, Math.min(1.5, cam.pitch + e.movementY * 0.003));
+  setPitch(cam.pitch + e.movementY * 0.003);
 });
 addEventListener('wheel', (e) => {
+  if (view.eye) return;   // no zoom when looking through the avatar's eyes
   cam.distance = Math.max(3, Math.min(70, cam.distance + e.deltaY * 0.02));
 });
 
@@ -42,11 +45,11 @@ canvasEl.addEventListener('touchmove', (e) => {
   if (e.touches.length === 1 && lastTouch) {
     const t = e.touches[0];
     cam.yaw -= (t.clientX - lastTouch.x) * 0.006;
-    cam.pitch = Math.max(-0.2, Math.min(1.5, cam.pitch + (t.clientY - lastTouch.y) * 0.006));
+    setPitch(cam.pitch + (t.clientY - lastTouch.y) * 0.006);
     lastTouch = { x: t.clientX, y: t.clientY };
   } else if (e.touches.length === 2) {
     const d = pinchDistance(e.touches);
-    cam.distance = Math.max(3, Math.min(70, cam.distance - (d - lastPinch) * 0.06));
+    if (!view.eye) cam.distance = Math.max(3, Math.min(70, cam.distance - (d - lastPinch) * 0.06));
     lastPinch = d;
   }
 }, { passive: false });
@@ -77,12 +80,23 @@ export const furnitureSwitch = document.getElementById('furnitureSwitch');
 if (query('furniture') === '0') furnitureSwitch.checked = false;   // debug: ?furniture=0 starts with the rooms empty
 addEventListener('keydown', (e) => { if (e.code === 'KeyF') furnitureSwitch.checked = !furnitureSwitch.checked; });
 // "Room view" button: inside a room, the camera pulls back to show the whole room in 3D, with its ceiling slab drawn above it
-export const view = { room: false };
+export const view = { room: false, eye: false };
 const roomBtn = document.getElementById('roomViewBtn');
 roomBtn.addEventListener('click', () => {
   view.room = !view.room;
   roomBtn.classList.toggle('on', view.room);
 });
+// Camera button (top right, or key C): switch between the follow camera behind the avatar and the avatar's own eyes
+const eyeBtn = document.getElementById('eyeBtn');
+const setEye = (on) => {
+  view.eye = on;
+  eyeBtn.classList.toggle('on', on);
+  eyeBtn.title = on ? 'Back to the follow camera (C)' : "Eye view: see through the avatar's eyes (C)";
+  setPitch(on ? 0 : 0.3);   // eye view starts looking straight ahead
+};
+eyeBtn.addEventListener('click', () => setEye(!view.eye));
+addEventListener('keydown', (e) => { if (e.code === 'KeyC' && !e.repeat) setEye(!view.eye); });
+if (query('eye') === '1') setEye(true);   // debug: ?eye=1 starts in eye view
 
 // ---------- Virtual joystick (touch) ----------
 // Press the round pad and drag in the direction you want to walk; push to the edge to run.

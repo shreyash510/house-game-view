@@ -82,20 +82,23 @@ export function stove(c) {
 // { "x": front-left corner of the cabinet, "z": centre line, "label": true }
 const mirrorMat = new THREE.MeshStandardMaterial({ color: col(0xdfe8ee), roughness: 0.04, metalness: 1 });
 export function washBasin(c) {
-  const x0 = c.x, zc = c.z;
-  furn(x0, zc - 0.8, x0 + 1.4, zc + 0.8, 0.8, 0xe8e4dc);                                        // cabinet
-  furn(x0, zc - 0.7, x0 + 1.3, zc + 0.7, 0.07, 0xf4f8fa, FLOOR_Y + 0.8, false);                 // basin top
-  furn(x0 + 0.3, zc - 0.3, x0 + 1.0, zc + 0.3, 0.02, 0xaeb8bf, FLOOR_Y + 0.87, false);          // bowl
+  // x = the wall-side edge of the basin; "face": "+x" (default: on a west wall, facing east) or "-x" (on an east wall, facing west)
+  const d = c.face === '-x' ? -1 : 1, x0 = c.x, zc = c.z;
+  const span = (a, b) => (d > 0 ? [x0 + a, x0 + b] : [x0 - b, x0 - a]);   // from a to b feet out from the wall
+  const [c1, c2] = span(0, 1.4), [t1, t2] = span(0, 1.3), [b1, b2] = span(0.3, 1.0);
+  furn(c1, zc - 0.8, c2, zc + 0.8, 0.8, 0xe8e4dc);                                              // cabinet
+  furn(t1, zc - 0.7, t2, zc + 0.7, 0.07, 0xf4f8fa, FLOOR_Y + 0.8, false);                       // basin top
+  furn(b1, zc - 0.3, b2, zc + 0.3, 0.02, 0xaeb8bf, FLOOR_Y + 0.87, false);                      // bowl
   const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.16, 8), steel);
-  tap.position.set(fx(x0 + 0.25), FLOOR_Y + 0.96, fz(zc));
+  tap.position.set(fx(x0 + d * 0.25), FLOOR_Y + 0.96, fz(zc));
   scene.add(tap);
   const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8), steel);
   spout.rotation.z = Math.PI / 2;
-  spout.position.set(fx(x0 + 0.25) + 0.05, FLOOR_Y + 1.03, fz(zc));
+  spout.position.set(fx(x0 + d * 0.25) + d * 0.05, FLOOR_Y + 1.03, fz(zc));
   scene.add(spout);
-  box([0.03, 0.62, 0.56], [fx(x0 - 0.05) + 0.05, FLOOR_Y + 1.55, fz(zc)], 0x2b2b2b);              // mirror frame
-  box([0.02, 0.56, 0.5], [fx(x0 - 0.05) + 0.07, FLOOR_Y + 1.55, fz(zc)], 0, scene, mirrorMat);
-  if (c.label !== false) label(['WASH BASIN', ''], x0 + 2.2, zc, 1.6);
+  box([0.03, 0.62, 0.56], [fx(x0 - d * 0.05) + d * 0.05, FLOOR_Y + 1.55, fz(zc)], 0x2b2b2b);              // mirror frame
+  box([0.02, 0.56, 0.5], [fx(x0 - d * 0.05) + d * 0.07, FLOOR_Y + 1.55, fz(zc)], 0, scene, mirrorMat);
+  if (c.label !== false) label(['WASH BASIN', ''], x0 + d * 2.2, zc, 1.6);
 }
 
 // Floor label: { "text": ["NAME", "size"], "at": [xf, zf], "width" }

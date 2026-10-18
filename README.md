@@ -42,7 +42,7 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `footprint` | `[rect]`: inside the house (roof hides, walls fade, floor height) |
 | `terraceExtra`, `decks` | Extra terrace areas; outdoor floors at plinth level |
 | `floors` | `{ slabs: [{ rect, color }], marble: [rect] }` |
-| `walls` | `{ along: "x"\|"z", at, from, to, openings: [[from, to, type]], material, outside: 1\|-1 }`. Opening types: `door`, `win`, `plain` (window without frame), `vent`, `tall` |
+| `walls` | `{ along: "x"\|"z", at, from, to, openings: [[from, to, type]], material, outside: 1\|-1 }`. Opening types: `door`, `arch` (open doorway with a rounded top, no door), `win`, `plain` (window without frame), `vent`, `tall` |
 | `doors` | `{ along, at, from, to, hingeAtStart, swing: 1\|-1, handle }` |
 | `roof` | `{ slabs: [rect], canopies: [rect], parapets: [rect], parapetHeight }` |
 | `rooms` | `{ name, rect, ceilingY? }`: ceilings and Room view |

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>House Game</title>
   <style>
     body { margin: 0; overflow: hidden; font-family: sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
@@ -12,6 +13,11 @@
     #settingsBtn { width: 44px; height: 44px; border: 0; border-radius: 50%; background: #0008; color: #fff; font-size: 24px; line-height: 44px; cursor: pointer; transition: transform .2s, background .2s; }
     #settingsBtn:hover { background: #000b; }
     #settingsBtn.open { background: #3aa655; transform: rotate(60deg); }
+    /* Camera button: switch to the avatar's eyes and back (key C) */
+    #eyeBtn { position: fixed; top: 10px; right: 62px; z-index: 5; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: #0008; color: #fff; cursor: pointer; display: grid; place-items: center; transition: background .2s; }
+    #eyeBtn:hover { background: #000b; }
+    #eyeBtn.on { background: #3aa655; }
+    #eyeBtn svg { width: 24px; height: 24px; }
     #settingsPanel { display: flex; flex-direction: column; gap: 6px; min-width: 190px; padding: 8px; border-radius: 8px; background: #101420f2; box-shadow: 0 4px 16px #0008; }
     #settingsPanel[hidden] { display: none; }
     #settingsPanel .toggle { justify-content: space-between; }
@@ -23,10 +29,16 @@
     .toggle .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: left .2s; }
     .toggle input:checked + .track { background: #3aa655; }
     .toggle input:checked + .track::after { left: 23px; }
-    #touchPad { position: fixed; right: 24px; bottom: 24px; display: none; width: 150px; height: 150px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
-    #joyBase { position: relative; width: 150px; height: 150px; border-radius: 50%; background: #0005; border: 2px solid #fff5; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    /* Joystick: sized from the screen (about a third of its short side), kept in from the corner where a thumb rests comfortably */
+    #touchPad { --joy: clamp(140px, 36vmin, 200px); position: fixed; right: calc(max(32px, 8vw) + env(safe-area-inset-right)); bottom: calc(max(40px, 11vh) + env(safe-area-inset-bottom)); display: none; width: var(--joy); height: var(--joy); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+    #joyBase { position: relative; width: var(--joy); height: var(--joy); box-sizing: border-box; border-radius: 50%; background: #0005; border: 2px solid #fff5; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
     #joyBase.active { background: #0007; border-color: #7be08f; }
-    #joyKnob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: #ffffffcc; box-shadow: 0 2px 8px #0008; pointer-events: none; }
+    #joyKnob { position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; margin: -21% 0 0 -21%; border-radius: 50%; background: #ffffffcc; box-shadow: 0 2px 8px #0008; pointer-events: none; }
+    /* Touch screens: a smaller minimap and coordinates box, so they do not cover the game */
+    @media (pointer: coarse) {
+      #minimap { width: 132px; height: 138px; left: calc(8px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); }
+      #coords { left: calc(8px + env(safe-area-inset-left)); bottom: calc(154px + env(safe-area-inset-bottom)); font-size: 11px; padding: 4px 8px; }
+    }
     #legend { display: none; color: #fff; background: #000b; padding: 10px 12px; border-radius: 6px; font: 13px sans-serif; }
     #legend b { display: block; margin-bottom: 6px; }
     #legend label { display: flex; align-items: center; gap: 8px; margin: 5px 0; cursor: pointer; }
@@ -47,6 +59,11 @@
     </div>
     <div id="legend"><b>Services (X-ray) — key X</b></div>
   </div>
+  <button id="eyeBtn" title="Eye view: see through the avatar's eyes (C)" aria-label="Camera: eye view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
+    </svg>
+  </button>
   <div id="touchPad">
     <div id="joyBase"><div id="joyKnob"></div></div>
   </div>
