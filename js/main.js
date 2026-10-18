@@ -6,9 +6,10 @@ import {
 import { buildHouse } from './house.js';
 import { buildCeilings, ceilingG } from './ceilings.js';
 import { buildServices } from './services.js';
+import { buildDevices } from './devices.js';
 import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
-import { keys, cam, joy, query, transparentSwitch, servicesSwitch, view, buildLegend } from './controls.js';
+import { keys, cam, joy, query, transparentSwitch, servicesSwitch, devicesSwitch, furnitureSwitch, view, buildLegend } from './controls.js';
 import { setupHud, showCoords, drawMap } from './hud.js';
 
 // ---------- Load the house ----------
@@ -36,10 +37,11 @@ box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, ghost(textured(grassTex, 3, 0.9
 
 // ---------- The house, its ceilings and services, and any simple neighbour houses ----------
 const house = buildHouse(data);
-const { upper, rooms } = house;
+const { upper, rooms, furnitureG } = house;
 buildCeilings(rooms, data.extraCeilings);
 const services = buildServices(data.services || {}, house.houseG);
 const legendEl = buildLegend(services.layers);
+const devices = buildDevices(data.devices, house.houseG);
 (data.otherHouses || []).forEach(makeHouse);
 setupHud(data);
 
@@ -88,7 +90,9 @@ function groundHeight(x, z, currentY) {
 
 // Push the player out of every obstacle whose height range they are standing in
 function collide(pos) {
-  for (const [cx, cz, w, d, bottom, top] of obstacles) {
+  for (const o of obstacles) {
+    if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
+    const [cx, cz, w, d, bottom, top] = o;
     if (pos.y < bottom - 0.7 || pos.y >= top - 0.7) continue;
     const nx = Math.max(cx - w / 2, Math.min(pos.x, cx + w / 2));
     const nz = Math.max(cz - d / 2, Math.min(pos.z, cz + d / 2));
@@ -104,7 +108,9 @@ function collide(pos) {
 
 // Is a point inside something solid and tall (a wall, a column)? Used so the camera does not poke through walls outdoors.
 function blocked(x, y, z) {
-  for (const [cx, cz, w, d, bottom, top] of obstacles) {
+  for (const o of obstacles) {
+    if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
+    const [cx, cz, w, d, bottom, top] = o;
     if (top - bottom < 1.4) continue;
     if (y > bottom - 0.2 && y < top + 0.1 && Math.abs(x - cx) < w / 2 + 0.12 && Math.abs(z - cz) < d / 2 + 0.12) return true;
   }
@@ -194,6 +200,8 @@ function update(dt) {
     ghostMats.forEach((m) => { m.transparent = xray; m.opacity = xray ? 0.25 : 1; m.depthWrite = !xray; m.needsUpdate = true; });
   }
   upper.visible = !inside && !topView && !xray;
+  devices.visible = devicesSwitch.checked;   // "Devices" switch (key E): fans, tube lights, ceiling lights, exhaust fans
+  furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...
   const room = inside ? rooms.find((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2) : null;
   const roomView = view.room && !!room;
   roomSlab.visible = roomView;

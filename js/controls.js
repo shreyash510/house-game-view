@@ -70,6 +70,12 @@ export const transparentSwitch = document.getElementById('transparentSwitch');
 export const servicesSwitch = document.getElementById('servicesSwitch');
 if (query('xray') === '1') servicesSwitch.checked = true;   // debug: ?xray=1 starts with Services on
 addEventListener('keydown', (e) => { if (e.code === 'KeyX') servicesSwitch.checked = !servicesSwitch.checked; });
+export const devicesSwitch = document.getElementById('devicesSwitch');
+if (query('devices') === '1') devicesSwitch.checked = true;   // debug: ?devices=1 starts with the devices shown
+addEventListener('keydown', (e) => { if (e.code === 'KeyE') devicesSwitch.checked = !devicesSwitch.checked; });
+export const furnitureSwitch = document.getElementById('furnitureSwitch');
+if (query('furniture') === '0') furnitureSwitch.checked = false;   // debug: ?furniture=0 starts with the rooms empty
+addEventListener('keydown', (e) => { if (e.code === 'KeyF') furnitureSwitch.checked = !furnitureSwitch.checked; });
 // "Room view" button: inside a room, the camera pulls back to show the whole room in 3D, with its ceiling slab drawn above it
 export const view = { room: false };
 const roomBtn = document.getElementById('roomViewBtn');

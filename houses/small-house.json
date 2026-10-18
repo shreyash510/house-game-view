@@ -67,11 +67,13 @@
     { "type": "road", "z": 47, "width": 15, "pavement": { "z": 38.5, "width": 4 }, "lamps": { "x": [-20, 45], "z": 37 } },
     { "type": "fireflies", "count": 30 }
   ],
-  "furniture": [
-    { "type": "bed", "x": 6 },
+  "fixtures": [
     { "type": "counter", "rect": [17.4, 0.4, 22.4, 2.5] },
     { "type": "sink", "rect": [22.4, 0.4, 24.6, 2.5] },
-    { "type": "item", "name": "WC", "rect": [14, 0.5, 15.2, 2.2], "h": 0.4, "color": "#f4f4f2" },
+    { "type": "item", "name": "WC", "rect": [14, 0.5, 15.2, 2.2], "h": 0.4, "color": "#f4f4f2" }
+  ],
+  "furniture": [
+    { "type": "bed", "x": 6 },
     { "type": "item", "name": "sofa", "rect": [2, 25.5, 10, 27.2], "h": 0.5, "color": "#5a7a9a" },
     { "type": "item", "name": "TV console", "rect": [3, 14, 9, 15.2], "h": 0.5, "color": "#3a2a22" }
   ],
