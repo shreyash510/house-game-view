@@ -1,0 +1,122 @@
+{
+  "name": "Small house (example)",
+  "units": "Plan positions are in FEET: x runs west -> east, z runs north (back) -> south (road). Heights (y, h) are in METRES above the plinth top.",
+  "wallHeight": 3.2,
+
+  "plinth": {
+    "height": 0.6,
+    "areas": [[-0.4, -0.4, 25.4, 30.4]],
+    "solidEdges": [[-0.4, 30.4, 14, 30.4], [19.5, 30.4, 25.4, 30.4], [-0.4, -0.4, -0.4, 30.4], [25.4, -0.4, 25.4, 30.4], [-0.4, -0.4, 25.4, -0.4],
+      [14, 30.4, 14, 32.8], [19.5, 30.4, 19.5, 32.8]]
+  },
+  "footprint": [[0, 0, 25, 30]],
+
+  "floors": { "slabs": [{ "rect": [0, 0, 25, 30], "color": "#cfc8b8" }], "marble": [[0, 0, 25, 30]] },
+
+  "walls": [
+    { "along": "x", "at": 0, "from": 0, "to": 25, "outside": -1, "openings": [[3, 8, "win"], [13.5, 15.5, "vent"], [19, 23, "win"]] },
+    { "along": "z", "at": 0, "from": 0, "to": 30, "outside": -1, "openings": [[4, 9, "win"], [18, 24, "win"]] },
+    { "along": "z", "at": 25, "from": 0, "to": 30, "outside": 1, "openings": [[4, 9, "win"], [18, 24, "win"]] },
+    { "along": "x", "at": 30, "from": 0, "to": 25, "outside": 1, "material": "taupe", "openings": [[4, 9, "plain"], [15, 18.5, "door"]] },
+    { "along": "z", "at": 12, "from": 0, "to": 13 },
+    { "along": "x", "at": 13, "from": 0, "to": 12, "openings": [[8, 11, "door"]] },
+    { "along": "z", "at": 17, "from": 0, "to": 13 },
+    { "along": "x", "at": 8, "from": 12, "to": 17, "openings": [[13, 16, "door"]] },
+    { "along": "x", "at": 13, "from": 17, "to": 25, "openings": [[18, 21, "door"]] }
+  ],
+  "doors": [
+    { "along": "x", "at": 30, "from": 15, "to": 18.5, "swing": 1, "handle": true },
+    { "along": "x", "at": 13, "from": 8, "to": 11, "swing": 1 },
+    { "along": "x", "at": 8, "from": 13, "to": 16, "swing": 1 },
+    { "along": "x", "at": 13, "from": 18, "to": 21, "swing": 1 }
+  ],
+
+  "roof": {
+    "slabs": [[-0.6, -0.6, 25.6, 30.6]],
+    "parapets": [[-0.6, -0.6, 25.6, -0.1], [-0.6, 30.1, 25.6, 30.6], [-0.6, -0.1, -0.1, 30.1], [25.1, -0.1, 25.6, 30.1]]
+  },
+
+  "rooms": [
+    { "name": "Bedroom", "rect": [0, 0, 12, 13] },
+    { "name": "Bath", "rect": [12, 0, 17, 8] },
+    { "name": "Kitchen", "rect": [17, 0, 25, 13] },
+    { "name": "Hall", "rect": [0, 13, 25, 30] }
+  ],
+  "extraCeilings": [[12, 8, 17, 13]],
+  "zones": [
+    ["Bedroom", 0, 0, 12, 13], ["Bath", 12, 0, 17, 8], ["Kitchen", 17, 0, 25, 13], ["Passage", 12, 8, 17, 13], ["Hall", 0, 13, 25, 30],
+    ["Front steps", 14, 30.4, 19.5, 32.8]
+  ],
+  "labels": [
+    { "text": ["BEDROOM", "12' x 13'"], "at": [6, 11], "width": 3 },
+    { "text": ["BATH", "5' x 8'"], "at": [14.5, 5], "width": 1.6 },
+    { "text": ["KITCHEN", "8' x 13'"], "at": [21, 9], "width": 2.4 },
+    { "text": ["HALL", "25' x 17'"], "at": [12.5, 24], "width": 3.6 }
+  ],
+  "lights": [
+    { "at": [6, 6.5], "y": 2.2 }, { "at": [14.5, 4], "y": 2.2, "intensity": 0.7, "distance": 7 }, { "at": [21, 6.5], "y": 2.2 },
+    { "at": [12.5, 21.5], "y": 2.2, "intensity": 1.1, "distance": 11 }, { "at": [16.75, 33], "y": 1.2, "intensity": 0.6, "distance": 8 }
+  ],
+
+  "components": [
+    { "type": "steps", "x1": 14, "x2": 19.5, "z0": 30.4, "tread": 1.2, "count": 2 },
+    { "type": "towerWindow", "along": "x", "at": 30, "outside": 1, "frame": [2.8, 10.2], "window": [4, 9] },
+    { "type": "wallLamp", "at": [19.3, 2.3, 30.4], "face": "+z", "spill": 0.12 },
+    { "type": "hedge", "rect": [-0.4, 33, 13, 35] },
+    { "type": "hedge", "rect": [20.5, 33, 25.4, 35] },
+    { "type": "road", "z": 47, "width": 15, "pavement": { "z": 38.5, "width": 4 }, "lamps": { "x": [-20, 45], "z": 37 } },
+    { "type": "fireflies", "count": 30 }
+  ],
+  "furniture": [
+    { "type": "bed", "x": 6 },
+    { "type": "counter", "rect": [17.4, 0.4, 22.4, 2.5] },
+    { "type": "sink", "rect": [22.4, 0.4, 24.6, 2.5] },
+    { "type": "item", "name": "WC", "rect": [14, 0.5, 15.2, 2.2], "h": 0.4, "color": "#f4f4f2" },
+    { "type": "item", "name": "sofa", "rect": [2, 25.5, 10, 27.2], "h": 0.5, "color": "#5a7a9a" },
+    { "type": "item", "name": "TV console", "rect": [3, 14, 9, 15.2], "h": 0.5, "color": "#3a2a22" }
+  ],
+
+  "spawn": { "at": [16.75, 36] },
+  "mapOutlines": [[14, 30.4, 19.5, 32.8]],
+
+  "services": {
+    "layers": {
+      "light": { "color": "#ffc23a", "name": "Lighting circuit + switches" },
+      "power": { "color": "#ff5fb0", "name": "Power sockets + main board" },
+      "cold": { "color": "#3ea0ff", "name": "Cold water" },
+      "drain": { "color": "#a89a84", "name": "Drainage" }
+    },
+    "electrical": {
+      "lightY": "H-0.1", "powerY": "H-0.16", "lightPointY": "H-0.24", "board": "DB",
+      "junctions": { "DB": [20, 29.6], "HA": [12.5, 21.5], "BR": [6, 6.5], "BA": [14.5, 4], "KI": [21, 6.5] },
+      "links": [["DB", "HA"], ["HA", "BR"], ["HA", "BA"], ["HA", "KI"]],
+      "powerLinks": [["DB", "HA"], ["HA", "BR"], ["HA", "KI"]],
+      "switchboards": [
+        { "from": "HA", "at": [19.2, 29.72], "wall": "z" },
+        { "from": "BR", "at": [11.72, 12.6], "wall": "x" },
+        { "from": "KI", "at": [17.28, 12.6], "wall": "x" }
+      ],
+      "sockets": [
+        { "from": "BR", "at": [2, 0.35, 0.28], "wall": "z" },
+        { "from": "HA", "at": [6, 0.5, 13.28], "wall": "z" },
+        { "from": "KI", "at": [19, 1.15, 0.28], "wall": "z" }
+      ]
+    },
+    "pipes": [
+      { "layer": "power", "points": [[20, 2.05, 29.6], [20, "H-0.1", 29.6]] },
+      { "layer": "cold", "r": 0.022, "points": [[16.5, -1.0, 40], [16.5, -1.0, 30.6], [16.5, "H-0.3", 30.6], [16.5, "H-0.3", 0.35], [14.6, "H-0.3", 0.35], [14.6, 0.6, 0.35]] },
+      { "layer": "cold", "points": [[16.5, "H-0.3", 0.35], [23.5, "H-0.3", 0.35], [23.5, 1.0, 0.35]] },
+      { "layer": "drain", "r": 0.05, "points": [[14.6, 0.15, 1.4], [14.6, -0.3, 1.4], [14.6, -0.3, -0.75], [14.6, -0.9, -4]] },
+      { "layer": "drain", "r": 0.032, "points": [[23.5, 0.6, 1.4], [23.5, -0.3, 1.4], [14.6, -0.3, 1.4]] }
+    ],
+    "fittings": [
+      { "layer": "power", "always": true, "size": [0.5, 0.6, 0.12], "at": [20, 1.75, 29.62], "color": "#3a3f45" }
+    ],
+    "chambers": [{ "at": [14.6, -4] }],
+    "tags": [
+      { "layer": "power", "text": "Main board (DB)", "at": [20, 2.5, 29.4] },
+      { "layer": "cold", "text": "Water supply", "at": [16.5, -0.4, 38] },
+      { "layer": "drain", "text": "Inspection chamber", "at": [14.6, -0.2, -4] }
+    ]
+  }
+}
