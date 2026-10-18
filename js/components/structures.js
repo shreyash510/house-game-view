@@ -4,7 +4,7 @@
 //   towerWindow (white U-frame round a window with a grooved tower above), shrine (pooja corner).
 import {
   scene, rect, box, glow, wallGlow, obstacle, warmLight, rod, fx, fz, S, T, H, PLINTH, FLOOR_Y, white,
-  updaters, walkables, hex, rand, ghost, paint,
+  updaters, walkables, hex, rand, ghost, paint, door, doors,
 } from '../core.js';
 import { material } from '../materials.js';
 
@@ -199,10 +199,57 @@ export function mumty(c, ctx) {
   }
   wall(TW.x2 - TW.wall, c.door[1], TW.x2, TW.z2);                            // east wall, south of the door
   wall(TW.x2 - TW.wall, c.door[0], TW.x2, c.door[1], H + 2.1, false);        // wall above the door
+  if (c.doorLeaf !== false) {   // wooden door like the house doors, hinged at the north jamb, opening into the stair room
+    door(false, TW.x2 - TW.wall / 2, c.door[0], c.door[1], true, -1, false);
+    const d = doors[doors.length - 1];
+    d.pivot.position.y = H + 0.01;   // stands on the terrace floor
+    upper.add(d.pivot);              // and hides with the roof while you are indoors
+  }
   rect(TW.x1 - 0.9, TW.z1 - 0.9, TW.x2 + 0.9, TW.z2 + 0.9, TW.top, 0.15, white, upper);   // thin white roof slab with a slim overhang
-  // Enclosure for the water tank on top, with a slim lid, and small brackets under the roof slab ends
-  rect(TW.x1 + 1.5, TW.z1 + 0.8, TW.x2 - 1.5, TW.z2 - 0.8, TW.top + 0.15, 0.6, 0xe9e7e0, upper);
-  rect(TW.x1 + 1.3, TW.z1 + 0.6, TW.x2 - 1.3, TW.z2 - 0.6, TW.top + 0.75, 0.08, white, upper);
+  // On the roof slab, like the render: a grooved box 3.5 ft high (west) joined to a 2 ft block with white vertical fins (east),
+  // each with a white cap. "top": { "tall", "low" (heights in m), "gap" (ft between them, default none), "split" (ft from the west end) },
+  // or "top": false for a plain roof. "hollow": true makes both open-topped pits (same outside, walls and rim caps only)
+  // so water tanks can stand inside on the roof slab.
+  if (c.top !== false) {
+    const t = c.top || {}, tall = t.tall ?? 1.07, low = t.low ?? 0.61, gap = t.gap ?? 0, base = TW.top + 0.15;
+    const xa = TW.x1 + (t.westInset ?? -0.4), xb = TW.x2 - 1.2, za = TW.z1 + 0.8, zb = TW.z2 - 0.8;   // the tall box comes out to the tower face on the west (window) side
+    const split = TW.x1 + (t.split ?? (TW.x2 - TW.x1) * 0.53), g2 = split + gap;
+    const wt = 0.4;   // wall thickness of a hollow box (ft)
+    // Hollow: one pit across both boxes, so there is no wall between them (west / east ends are left out where they meet)
+    const cap = (x1, x2, y, west = true, east = true) => {
+      if (!t.hollow) return rect(x1 - 0.35, za - 0.35, x2 + 0.35, zb + 0.35, y, 0.12, white, upper);
+      // a rim round the open top: the cap with its middle cut out, down to the inner face of the walls
+      const a1 = west ? x1 - 0.35 : x1, a2 = east ? x2 + 0.35 : x2;
+      rect(a1, za - 0.35, a2, za + wt, y, 0.12, white, upper); rect(a1, zb - wt, a2, zb + 0.35, y, 0.12, white, upper);
+      if (west) rect(x1 - 0.35, za + wt, x1 + wt, zb - wt, y, 0.12, white, upper);
+      if (east) rect(x2 - wt, za + wt, x2 + 0.35, zb - wt, y, 0.12, white, upper);
+    };
+    const block = (x1, x2, h, mat, west = true, east = true) => {
+      if (!t.hollow) return rect(x1, za, x2, zb, base, h, 0, upper, mat);
+      rect(x1, za, x2, za + wt, base, h, 0, upper, mat); rect(x1, zb - wt, x2, zb, base, h, 0, upper, mat);
+      if (west) rect(x1, za + wt, x1 + wt, zb - wt, base, h, 0, upper, mat);
+      if (east) rect(x2 - wt, za + wt, x2, zb - wt, base, h, 0, upper, mat);
+    };
+    const joined = t.hollow && gap === 0;   // the two pits open into each other
+    block(xa, split, tall, lower, true, !joined);                  // tall box, grooved tan-grey cladding
+    cap(xa, split, base + tall, true, !joined);
+    // Left box: horizontal lines. Two dark grooves across its front, back and west (window side) faces, a third and two thirds up
+    const groove = paint(0x3b3a35, 0.8);
+    [1 / 3, 2 / 3].forEach((k) => {
+      const y = base + tall * k;
+      rect(xa, zb, split, zb + 0.04, y, 0.025, 0, upper, groove);
+      rect(xa, za - 0.04, split, za, y, 0.025, 0, upper, groove);
+      rect(xa - 0.04, za, xa, zb, y, 0.025, 0, upper, groove);
+    });
+    // Right block: vertical lines. Plain dark grey with four wide white fins, evenly spaced and full height, on the front and back
+    block(g2, xb, low, paint(0x6c6b64, 0.8), !joined, true);
+    cap(g2, xb, base + low, !joined, true);
+    const fins = t.fins ?? 4, fw = 0.4, step = (xb - g2) / fins;
+    for (let i = 0; i < fins; i++) {
+      const x = g2 + step * (i + 0.5) - fw / 2;
+      [[zb, zb + 0.25], [za - 0.25, za]].forEach(([f1, f2]) => rect(x, f1, x + fw, f2, base, low, white, upper));
+    }
+  }
   [[TW.z1 - 0.9, TW.z1], [TW.z2, TW.z2 + 0.9]].forEach(([za, zb]) => rect(TW.x1 - 0.9, za, TW.x2 + 0.9, zb, TW.top - 0.32, 0.32, white, upper));
 }
 

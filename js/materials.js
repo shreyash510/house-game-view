@@ -16,6 +16,16 @@ const brickTex = () => makeTexture(256, 256, (ctx, w, h) => {
   speckle(ctx, w, h, 5000, 2, 0.08);
 });
 
+// Climbing vine on a wall: dense small leaves in several greens over dark gaps
+const vineTex = () => makeTexture(128, 256, (ctx, w, h) => {
+  ctx.fillStyle = '#1d3317'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 900; i++) {
+    const g = rand(90, 170) | 0;
+    ctx.fillStyle = `rgb(${rand(30, 70) | 0},${g},${rand(25, 55) | 0})`;
+    ctx.beginPath(); ctx.ellipse(rand(0, w), rand(0, h), rand(3, 7), rand(2, 4), rand(0, 3.14), 0, 7); ctx.fill();
+  }
+});
+
 const MAKERS = {
   white: () => paint(white),
   frameWhite: () => frameWhite,                                         // white window surround (fades with the walls)
@@ -34,6 +44,7 @@ const MAKERS = {
   mumtyLower: () => textured(claddingTex('#a39c86'), 0.7, 0.9),        // stair room on the terrace: tan lower band
   mumtyUpper: () => textured(claddingTex('#7b7a6e'), 0.7, 0.9),        // ...and darker grey-olive upper part
   brownCladding: () => textured(claddingTex('#85766a'), 0.7, 0.9),     // brown-grey paint with horizontal lines
+  vine: () => textured(vineTex(), 0.6, 1),                             // green climbing vine strip
 };
 const made = {};
 export function material(name) {

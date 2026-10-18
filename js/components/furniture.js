@@ -1,5 +1,5 @@
 // Furniture: blocks you bump into, and a few ready-made pieces (bed, kitchen counter, sink, stove, wash basin).
-import { scene, rect, box, glow, furn, label, fx, fz, FLOOR_Y, steel, makeTexture, textured, rand, hex, col, ghost, paint } from '../core.js';
+import { scene, rect, box, glow, furn, label, fx, fz, S, FLOOR_Y, steel, makeTexture, textured, rand, hex, col, ghost, paint, obstacle } from '../core.js';
 
 // A plain piece of furniture: { "rect": [x1, z1, x2, z2], "h", "color", "y0" (default: floor level), "solid" (default true) }
 export function item(c) {
@@ -48,6 +48,47 @@ export function counter(c) {
   ghost(paint(CABINET));   // see-through in Services (X-ray) mode
   furn(x1, z1, x2, z2, 0.9, CABINET);
   worktop(x1, z1, x2, z2);
+}
+
+// Single-door fridge (Whirlpool style): glossy body, one door with a shut line and a vertical handle, a base drawer and a badge.
+// { "rect": [x1, z1, x2, z2], "face": "+x" | "-x" | "+z" | "-z" (the door side), "height" (m, default 1.52 = 5 ft), "color", "badge" }
+export function fridge(c) {
+  const [x1, z1, x2, z2] = c.rect, h = c.height ?? 1.52, face = c.face ?? '-x', out = face[0] === '+' ? 1 : -1, onX = face[1] === 'x';
+  const body = new THREE.MeshStandardMaterial({ color: col(hex(c.color ?? '#8a4a2c')), roughness: 0.22, metalness: 0.35 });
+  const dark = paint(0x2a1610, 0.6), y0 = FLOOR_Y, baseH = 0.16;
+  rect(x1, z1, x2, z2, y0, h, 0, scene, body);
+  obstacle(fx((x1 + x2) / 2), fz((z1 + z2) / 2), (x2 - x1) * S, (z2 - z1) * S, 0, h);
+  // Things on the door face: "a" is metres across the face from its centre, y up from the floor, "d" how far they stand out
+  const faceM = onX ? fx(out > 0 ? x2 : x1) : fz(out > 0 ? z2 : z1), across = onX ? (z2 - z1) * S : (x2 - x1) * S;
+  const cA = onX ? fz((z1 + z2) / 2) : fx((x1 + x2) / 2);
+  const put = (a, y, w, hh, d, mat) => {
+    const pos = onX ? [faceM + out * d / 2, y, cA + a] : [cA + a, y, faceM + out * d / 2];
+    return box(onX ? [d, hh, w] : [w, hh, d], pos, 0, scene, mat);
+  };
+  put(0, y0 + baseH / 2, across - 0.04, baseH - 0.02, 0.012, dark);                       // base drawer, darker
+  put(0, y0 + baseH + 0.005, across, 0.01, 0.006, paint(0x120a07));                       // shut line above the drawer
+  put(0, y0 + baseH + (h - baseH) / 2, across - 0.02, h - baseH - 0.03, 0.006, body);    // the door itself, standing a hair proud
+  const side = across / 2 - 0.06;                                                        // handle on the opening edge
+  put(side, y0 + h * 0.62, 0.025, 0.42, 0.04, steel);
+  // Badge near the top of the door
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64;
+  const g = cv.getContext('2d'); g.fillStyle = '#e8e2d8'; g.font = 'italic bold 40px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(c.badge ?? 'Whirlpool', 128, 34);
+  const badge = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.055), new THREE.MeshBasicMaterial({ map: Object.assign(new THREE.CanvasTexture(cv), { encoding: THREE.sRGBEncoding }), transparent: true }));
+  const by = y0 + h - 0.12, bd = 0.008;
+  if (onX) { badge.position.set(faceM + out * bd, by, cA); badge.rotation.y = out * Math.PI / 2; } else { badge.position.set(cA, by, faceM + out * bd); if (out < 0) badge.rotation.y = Math.PI; }
+  scene.add(badge);
+}
+
+// Marble rack against a wall: shelves of the same white marble as the worktop between two marble side panels.
+// { "rect": [x1, z1, x2, z2], "shelves": [heights above the floor, m] (default four), "height" (side panels, m) }
+export function marbleRack(c) {
+  const [x1, z1, x2, z2] = c.rect, shelves = c.shelves ?? [0.4, 0.85, 1.3, 1.75], top = c.height ?? Math.max(...shelves) + 0.04;
+  const alongZ = z2 - z1 >= x2 - x1, t = 0.12;   // side panels at the two ends of the long side, 0.12 ft (about 4 cm) thick
+  if (alongZ) { rect(x1, z1, x2, z1 + t, FLOOR_Y, top, 0, scene, worktopMat()); rect(x1, z2 - t, x2, z2, FLOOR_Y, top, 0, scene, worktopMat()); }
+  else { rect(x1, z1, x1 + t, z2, FLOOR_Y, top, 0, scene, worktopMat()); rect(x2 - t, z1, x2, z2, FLOOR_Y, top, 0, scene, worktopMat()); }
+  shelves.forEach((y) => rect(x1, z1, x2, z2, FLOOR_Y + y - 0.04, 0.04, 0, scene, worktopMat()));
+  obstacle(fx((x1 + x2) / 2), fz((z1 + z2) / 2), (x2 - x1) * S, (z2 - z1) * S, 0, top);   // solid: you cannot walk through the rack
 }
 
 // Sink unit: a low cabinet, worktop round a cut-out, steel basin and a pull-down tap at the back (high z) edge: { "rect" }

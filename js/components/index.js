@@ -9,9 +9,9 @@ import * as outdoor from './outdoor.js';
 export const COMPONENTS = {
   // basic.js
   block: basic.block, piece: basic.piece, glow: basic.glowBox, solid: basic.solid, wallLamp: basic.wallLamp,
-  spots: basic.spots, namePlate: basic.namePlate,
+  spots: basic.spots, namePlate: basic.namePlate, waterTank: basic.waterTank, cementTank: basic.cementTank,
   // furniture.js
-  item: furniture.item, bed: furniture.bed, counter: furniture.counter, sink: furniture.sink, stove: furniture.stove,
+  item: furniture.item, bed: furniture.bed, counter: furniture.counter, marbleRack: furniture.marbleRack, fridge: furniture.fridge, sink: furniture.sink, stove: furniture.stove,
   washBasin: furniture.washBasin, label: furniture.floorLabel,
   // structures.js
   steps: structures.steps, sidePorch: structures.sidePorch, staircase: structures.staircase, mumty: structures.mumty,

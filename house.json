@@ -6,7 +6,7 @@
   "plinth": {
     "height": 0.8,
     "color": "#8f897c",
-    "areas": [[-0.4, -0.4, 35.4, 28.6], [-0.4, 28.6, 17.9, 33.4], [17.2, 28.6, 35, 37]],
+    "areas": [[0, 0, 35.4, 28.6], [0, 28.6, 17.9, 33], [17.2, 28.6, 35, 37]],
     "solidEdges": [
       [17.2, 37, 21.5, 37], [31.5, 37, 35, 37], [35, 28.6, 35, 37], [17.2, 28.6, 17.2, 37],
       [21.5, 37, 21.5, 40.6], [31.5, 37, 31.5, 40.6],
@@ -32,7 +32,7 @@
 
   "walls": [
     { "along": "x", "at": 0, "from": 0, "to": 35, "outside": -1, "openings": [[4.5, 9.5, "win"], [14.4, 16, "vent"], [19, 20.5, "vent"], [25.7, 30.7, "win"]] },
-    { "along": "z", "at": 0, "from": 0, "to": 33, "outside": -1, "openings": [[5.3, 10.35, "plain"], [14.5917, 18.5083, "tall", 2.1, 4.5], [21.6, 24.6, "door"], [25.2, 30.2, "win"]] },
+    { "along": "z", "at": 0, "from": 0, "to": 33, "outside": -1, "openings": [[5.3, 10.35, "plain"], [14.5917, 18.5083, "tall", 1.8, 6.1], [21.6, 24.6, "door"], [25.2, 30.2, "win"]] },
     { "along": "z", "at": 35, "from": 0, "to": 28, "outside": 1, "openings": [[4.7, 9.7, "win"], [19, 24.5, "win"]] },
     { "along": "x", "at": 28, "from": 17.5, "to": 35, "outside": 1, "material": "taupe", "openings": [[17.9, 21.2, "door"], [24, 29.9, "win"], [32.3, 34.7, "door"]] },
     { "along": "x", "at": 33, "from": 0, "to": 17.5, "outside": 1, "material": "taupe", "openings": [[5.2, 9.2, "plain"]] },
@@ -45,7 +45,10 @@
     { "along": "x", "at": 13.3, "from": 17.5, "to": 35 },
     { "along": "x", "at": 19.8, "from": 0, "to": 13 },
     { "along": "z", "at": 17.5, "from": 19.8, "to": 33 },
-    { "along": "z", "at": 13.2, "from": 13.3, "to": 16.8, "openings": [[13.8, 16.4, "open"]] },
+    { "along": "z", "at": 13.2, "from": 13.3, "to": 19.8, "openings": [[13.8, 19.8, "open", 2.1]] },
+    { "along": "z", "at": 17.5, "from": 13.3, "to": 19.8, "openings": [[15.3, 19.8, "open", 2.1]] },
+    { "along": "x", "at": 13.3, "from": 13.2, "to": 17.5, "openings": [[13.2, 17.5, "open", 2.1]] },
+    { "along": "x", "at": 19.8, "from": 13.2, "to": 17.5, "openings": [[13.2, 17.5, "open", 2.1]] },
     { "along": "z", "at": 35, "from": 28, "to": 31.8, "material": "brownCladding" },
     { "along": "z", "at": 32, "from": 28, "to": 31.8, "material": "brownCladding" },
     { "along": "x", "at": 31.8, "from": 32, "to": 35, "material": "brownCladding", "openings": [[33.1, 34.5, "vent"]] }
@@ -67,8 +70,8 @@
     ],
     "canopies": [[17.9, 28.6, 36.3, 38.3]],
     "parapets": [
-      [-0.6, -0.6, 35.6, -0.1], [35.1, -0.1, 35.6, 37.6], [17.4, 37.1, 35.1, 37.6], [17.4, 33.6, 17.9, 37.1],
-      [-0.6, 21.55, -0.1, 33.1], [-0.6, -0.1, -0.1, 11.55]
+      [-0.6, -0.6, 35.6, -0.1], [35.1, -0.1, 35.6, 37.6], [17.4, 33.6, 17.9, 37.1],
+      [-0.6, -0.1, -0.1, 11.55]
     ]
   },
 
@@ -116,10 +119,10 @@
 
   "fixtures": [
     { "type": "counter", "rect": [0.4, 24.4, 2.5, 32.8] },
-    { "type": "counter", "rect": [2.5, 30.6, 5.4, 32.8] },
-    { "type": "counter", "rect": [8.8, 30.6, 10.6, 32.8] },
-    { "type": "sink", "rect": [5.4, 30.6, 8.8, 32.8] },
-    { "type": "stove", "at": [9.1, 31.1] },
+    { "type": "counter", "rect": [2.5, 30.6, 9.85, 32.8] },
+    { "type": "sink", "rect": [9.85, 30.6, 13.25, 32.8] },
+    { "type": "marbleRack", "name": "marble rack, 7 ft high, 4 ft wide, in the corner", "rect": [13.25, 31.28, 17.25, 32.78], "height": 2.13, "shelves": [0.55, 1.08, 1.6, 2.13] },
+    { "type": "stove", "at": [6.5, 31.1] },
     { "type": "item", "name": "WC cistern", "rect": [19.1, 0.5, 20.3, 1.1], "h": 0.7, "color": "#f4f4f2" },
     { "type": "item", "name": "WC pan", "rect": [19.1, 1.1, 20.3, 2.8], "h": 0.4, "color": "#f4f4f2" },
     { "type": "item", "name": "bath WC", "rect": [14, 0.7, 15.5, 1.7], "h": 0.9, "color": "#f4f4f2" },
@@ -130,7 +133,7 @@
   "furniture": [
     { "type": "bed", "x": 7.1 },
     { "type": "bed", "x": 28.9 },
-    { "type": "item", "name": "fridge", "rect": [10.8, 30.6, 12.7, 32.8], "h": 1.8, "color": "#cfd4d8" },
+    { "type": "fridge", "name": "Whirlpool single-door fridge, brown, 5 ft", "rect": [15.15, 20.9, 17.25, 22.65], "face": "-x", "height": 1.52, "color": "#8a4a2c" },
     { "type": "item", "name": "sofa", "rect": [32.6, 18.3, 34.0, 25.2], "h": 0.5, "color": "#a0627f" },
     { "type": "item", "name": "sofa back", "rect": [34.0, 18.3, 34.6, 25.2], "h": 1.0, "color": "#86506a" },
     { "type": "item", "name": "sofa", "rect": [22.2, 25.4, 29.2, 27.0], "h": 0.5, "color": "#a0627f" },
@@ -145,7 +148,9 @@
     { "type": "sidePorch", "name": "kitchen porch", "x1": -3, "x2": 0, "z1": 21, "z2": 30, "steps": [[-3, 0, 30, 31], [-3, 0, 31, 32], [-3, 0, 32, 33]] },
     { "type": "staircase", "x1": 0, "x2": 13.2, "z1": 13.3, "zMid": 16.8, "z2": 19.8, "landing": 3.8, "steps": 8 },
     { "type": "mumty", "x1": 0, "x2": 15, "z1": 11.55, "z2": 21.55, "height": 2.8, "wall": 0.6, "door": [13.6, 16.6],
-      "window": { "z1": 14.5917, "z2": 18.5083, "y0": 3.7, "height": 2.4 }, "face": { "x1": -0.75, "x2": -0.15, "lowStop": 19.2 } },
+      "window": { "z1": 14.5917, "z2": 18.5083, "y0": 1.8, "height": 4.3 }, "face": { "x1": -0.75, "x2": -0.15, "lowStop": 19.2 }, "top": { "hollow": true } },
+    { "type": "waterTank", "name": "overhead tank 1, 2000 L, in the grey box pit", "at": [3.8, 16.55], "y0": "H+2.95", "radius": 0.7, "height": 1.3, "color": "#1f5fa8", "roof": true },
+    { "type": "waterTank", "name": "overhead tank 2, 2000 L, in the finned block pit", "at": [10.9, 16.55], "y0": "H+2.95", "radius": 0.7, "height": 1.3, "color": "#1f5fa8", "roof": true },
 
     { "type": "block", "name": "white roof edge between the tower and the porch", "rect": [10.0, 33.05, 17.9, 33.65], "y0": "H-0.5", "h": 0.53, "color": "#f4f4f2", "roof": true },
     { "type": "block", "name": "balcony parapet (grey)", "rect": [-0.6, 33.1, 10.0, 33.6], "y0": "H", "h": 0.9, "material": "greyClad", "roof": true, "solid": true },
@@ -157,6 +162,7 @@
     { "type": "block", "name": "balcony railing slat", "rect": [-0.5, 33.15, 10, 33.4], "y0": "H+1.51", "h": 0.1, "color": "#f4f4f2", "roof": true },
     { "type": "block", "name": "balcony railing posts", "rects": [[-0.5, 33.15, -0.25, 33.4], [2.1, 33.15, 2.35, 33.4], [4.7, 33.15, 4.95, 33.4], [7.3, 33.15, 7.55, 33.4], [9.9, 33.15, 10.15, 33.4]], "y0": "H+0.97", "h": 0.64, "color": "#f4f4f2", "roof": true },
 
+    { "type": "block", "name": "vine strip on the kitchen porch wall, right of the window", "rect": [-0.42, 30.65, -0.225, 31.55], "y0": 0.1, "h": 2.45, "material": "vine" },
     { "type": "block", "name": "charcoal block over the kitchen porch", "rect": [-3.45, 25.6, -1.9, 28.4], "y0": 3.12, "h": 1.38, "material": "charcoalClad", "roof": true },
     { "type": "block", "name": "its white cap", "rect": [-3.55, 25.5, -1.8, 28.5], "y0": "H+0.9", "h": 0.08, "color": "#f4f4f2", "roof": true },
     { "type": "piece", "name": "vent frame", "at": [-3.5, 3.81, 26.5], "size": [0.04, 0.6, 0.22], "color": "#f4f4f2", "roof": true },
@@ -166,6 +172,10 @@
 
     { "type": "towerWindow", "name": "kitchen front window", "along": "x", "at": 33, "outside": 1, "frame": [4.0, 10.4], "window": [5.2, 9.2],
       "grooves": { "spans": [[-0.4, 4.0], [10.4, 17.9]], "ys": [1.2, 2.4] } },
+    { "type": "block", "name": "kitchen front wall carried down over the plinth", "rect": [-0.225, 33, 17.2, 33.225], "y0": 0, "h": 0.8, "material": "facade", "ground": true },
+    { "type": "block", "name": "groove where the kitchen front wall meets the plinth top", "rect": [-0.225, 33.225, 17.2, 33.265], "y0": -0.0125, "h": 0.025, "color": "#8f887d" },
+    { "type": "block", "name": "west wall carried down over the plinth", "rect": [-0.225, -0.225, 0, 33], "y0": 0, "h": 0.8, "material": "facade", "ground": true },
+    { "type": "block", "name": "back wall carried down over the plinth", "rect": [-0.225, -0.225, 35.4, 0], "y0": 0, "h": 0.8, "material": "facade", "ground": true },
     { "type": "towerWindow", "name": "bedroom window, west side", "along": "z", "at": 0, "outside": -1, "frame": [4.1, 11.55], "window": [5.3, 10.35],
       "ledge": true, "lamps": [[3.2, 0], [12.3, 0.53]] },
 
@@ -175,6 +185,12 @@
     { "type": "block", "name": "porch top: recessed square", "rect": [22.1, 37.4, 24.9, 37.75], "y0": "H+0.3", "h": 0.9, "color": "#3b3a38", "roof": true },
     { "type": "block", "name": "porch top: golden strip", "rect": [34.3, 36.9, 35.6, 37.7], "y0": "H", "h": 1.5, "color": "#d9a63a", "roof": true },
     { "type": "block", "name": "porch top: golden lines", "rects": [[34.55, 37.65, 34.6, 37.75], [34.9, 37.65, 34.95, 37.75], [35.25, 37.65, 35.3, 37.75]], "y0": "H", "h": 1.5, "color": "#a87a1f", "roof": true },
+    { "type": "block", "name": "porch parapet: grey base beside the white frame", "rects": [[17.4, 37.1, 21.5, 37.55], [25.5, 37.1, 26.5, 37.55]], "y0": "H", "h": 0.6, "material": "greyClad", "roof": true },
+    { "type": "block", "name": "porch parapet: rectangular rail", "rects": [[17.4, 37.15, 21.5, 37.6], [25.5, 37.15, 26.5, 37.6]], "y0": "H+0.68", "h": 0.1, "color": "#f4f4f2", "roof": true },
+    { "type": "block", "name": "porch parapet: rectangular rail", "rects": [[17.4, 37.15, 21.5, 37.6], [25.5, 37.15, 26.5, 37.6]], "y0": "H+0.88", "h": 0.1, "color": "#f4f4f2", "roof": true },
+    { "type": "block", "name": "porch parapet: rectangular rail", "rects": [[17.4, 37.15, 21.5, 37.6], [25.5, 37.15, 26.5, 37.6]], "y0": "H+1.08", "h": 0.1, "color": "#f4f4f2", "roof": true },
+    { "type": "block", "name": "porch parapet: end post of the rails", "rect": [17.4, 37.15, 17.65, 37.6], "y0": "H+0.6", "h": 0.58, "color": "#f4f4f2", "roof": true },
+    { "type": "solid", "name": "porch parapet beside the white frame", "rects": [[17.4, 37.1, 21.5, 37.6], [25.5, 37.1, 26.5, 37.6]], "y0": "H", "h": 1.18 },
     { "type": "namePlate", "text": ["NAME", "HERE"], "at": [30.4, "H+0.75", 37.725], "size": [2.0, 1.0], "roof": true },
     { "type": "solid", "name": "porch top", "rect": [21.55, 36.9, 35.65, 37.7], "y0": "H", "h": 1.5 },
     { "type": "spots", "name": "porch ceiling lights", "grid": { "x": [20, 33, 3.25], "z": [30.8, 34.8] }, "y": "H-0.71" },
@@ -188,7 +204,7 @@
     { "type": "wallLamp", "name": "main door lamp", "at": [19.5, 2.4, 28.4], "face": "+z", "spill": 0.12 },
     { "type": "wallLamp", "name": "main door lamp", "at": [22.5, 2.4, 28.4], "face": "+z", "spill": 0.12 },
 
-    { "type": "block", "name": "corner pilasters, west face", "rects": [[-0.5, -0.4, 0, 1.3], [-0.5, 31.7, 0, 33.0]], "y0": 0, "h": "H", "material": "frameWhite" },
+    { "type": "block", "name": "corner pilasters, west face", "rects": [[-0.5, -0.4, 0, 1.3], [-0.5, 31.7, 0, 33.0]], "y0": -0.8, "h": "H+0.8", "material": "frameWhite" },
     { "type": "wallLamp", "name": "pilaster lamp", "at": [-0.625, 1.9, 0.45], "size": [0.1, 0.2, 0.18], "face": "-x" },
     { "type": "wallLamp", "name": "pilaster lamp", "at": [-0.625, 1.9, 32.35], "size": [0.1, 0.2, 0.18], "face": "-x" },
 
@@ -201,6 +217,7 @@
     { "type": "concreteRoad", "name": "cement concrete road behind the houses", "z": -72, "width": 12 },
     { "type": "coconutTree", "name": "coconut tree 1", "at": [56.3, 65.5], "height": 7.5, "lean": 7, "leanDir": 70 },
     { "type": "coconutTree", "name": "coconut tree 2", "at": [48.7, 65.2], "height": 6.8, "lean": 5, "leanDir": 120 },
+    { "type": "cementTank", "name": "ground water tank, cement, 10,000 L (2.5 m across inside, 2.05 m deep)", "at": [-40.6, 0.8], "y0": 0, "radius": 1.4, "height": 2.05, "ground": true },
     { "type": "wireFence", "name": "barbed-wire compound of the neighbours' property, behind the houses up to the concrete road",
       "rect": [-40.2, -65.5, 112.3, -7.8], "height": 1.5, "spacing": 8, "strands": 4, "gaps": [["N", 101.4, 111.4], ["S", 101.4, 111.4]] },
     { "type": "sandRoad", "name": "sand road, 6 ft east of the shed", "along": "z", "at": 106.4, "from": -285, "to": 315, "width": 10 },
@@ -208,6 +225,34 @@
   ],
 
   "otherHouses": [
+    { "name": "1BHK bungalow (900 sq ft)", "at": [-31.5, -62.9], "wall": 3.0, "wallColor": "#e2dccf",
+      "rooms": [
+        { "name": "Bedroom", "x": 0, "z": 0, "w": 12, "d": 14 },
+        { "name": "Kitchen", "x": 0, "z": 14, "w": 12, "d": 14 },
+        { "name": "Hall", "x": 12, "z": 0, "w": 16, "d": 21 },
+        { "name": "Bathroom", "x": 12, "z": 21, "w": 7, "d": 7 },
+        { "name": "Hall corner", "x": 19, "z": 21, "w": 9, "d": 7 },
+        { "name": "Porch", "x": 28, "z": 0, "w": 8, "d": 14 }
+      ],
+      "openings": [
+        { "room": "Bedroom", "side": "N", "from": 4, "width": 4, "type": "win" },
+        { "room": "Bedroom", "side": "W", "from": 5, "width": 4, "type": "win" },
+        { "room": "Bedroom", "side": "E", "from": 10, "width": 3, "type": "door" },
+        { "room": "Kitchen", "side": "W", "from": 5, "width": 4, "type": "win" },
+        { "room": "Kitchen", "side": "S", "from": 4, "width": 3, "type": "win" },
+        { "room": "Kitchen", "side": "E", "from": 2, "width": 3, "type": "door" },
+        { "room": "Hall", "side": "N", "from": 5, "width": 5, "type": "win" },
+        { "room": "Hall", "side": "E", "from": 9, "width": 3.5, "type": "door" },
+        { "room": "Hall", "side": "S", "from": 7, "width": 9, "type": "open" },
+        { "room": "Bathroom", "side": "E", "from": 2.5, "width": 2.5, "type": "door" },
+        { "room": "Bathroom", "side": "S", "from": 2.5, "width": 2, "type": "vent" },
+        { "room": "Hall corner", "side": "S", "from": 3, "width": 3, "type": "win" },
+        { "room": "Porch", "side": "N", "from": 1, "width": 6, "type": "open" },
+        { "room": "Porch", "side": "E", "from": 1, "width": 12, "type": "open" }
+      ],
+      "roof": { "type": "flat" },
+      "stairs": { "x": 28, "z": 14, "w": 8, "d": 14, "up": "N", "steps": 16, "rail": "E" }
+    },
     { "name": "Tin-roof house", "at": [40.6, 35.9], "wall": 2.6, "wallColor": "#cfc6b4", "weathered": true,
       "ota": { "height": 0.45, "depth": 12, "steps": { "count": 0 }, "entry": "E", "entryWidth": 4, "compound": { "height": 1.2, "thickness": 0.75 },
                "roof": { "back": 2.55, "front": 2.15, "posts": [0.4, 8, 16, 23.6] } },
@@ -247,11 +292,11 @@
   ],
   "services": {
     "layers": {
-      "light": { "color": "#ffc23a", "name": "Lighting circuit + switches" },
-      "power": { "color": "#ff5fb0", "name": "Power sockets + main board" },
-      "cold": { "color": "#3ea0ff", "name": "Cold water (tank supply)" },
-      "hot": { "color": "#ff5a2a", "name": "Hot water (geyser)" },
-      "drain": { "color": "#a89a84", "name": "Drainage + vent pipe" }
+      "light": { "color": "#ffc23a", "name": "Lighting circuit + switches", "kind": "electrical" },
+      "power": { "color": "#ff5fb0", "name": "Power sockets + main board", "kind": "electrical" },
+      "cold": { "color": "#3ea0ff", "name": "Cold water (tank supply)", "kind": "plumbing" },
+      "hot": { "color": "#ff5a2a", "name": "Hot water (geyser)", "kind": "plumbing" },
+      "drain": { "color": "#a89a84", "name": "Drainage + vent pipe", "kind": "plumbing" }
     },
 
     "electrical": {
@@ -286,6 +331,7 @@
         { "from": "KI", "at": [3.5, 1.15, 32.72], "wall": "z" },
         { "from": "KI", "at": [0.28, 1.15, 31.5], "wall": "x" },
         { "from": "KI", "at": [11.7, 0.5, 32.72], "wall": "z" },
+        { "from": "KI", "name": "fridge", "at": [17.22, 1.0, 23.0], "wall": "x" },
         { "from": "KI", "at": [9.8, 2.3, 32.72], "wall": "z" },
         { "from": "BA", "at": [13.28, 2.65, 5.3], "wall": "x", "big": true }
       ]
@@ -296,9 +342,18 @@
       { "layer": "power", "r": 0.03, "points": [[31, 1.38, 28.6], [31, -1.0, 28.6], [31, -1.0, 46]] },
       { "layer": "light", "points": [[31, 2.05, 27.6], [31, 3.5, 27.6]] },
       { "layer": "power", "points": [[31.3, 2.05, 27.6], [31.3, 3.44, 27.6]] },
+      { "layer": "light", "name": "bedroom 1 tube light", "points": [[6.5, 3.5, 6.65], [12.775, 3.5, 6.65], [12.775, 3.5, 5.0], [12.775, 2.4, 5.0]] },
+      { "layer": "light", "name": "bedroom 2 tube light", "points": [[28.35, 3.5, 6.65], [21.925, 3.5, 6.65], [21.925, 3.5, 5.0], [21.925, 2.4, 5.0]] },
+      { "layer": "light", "name": "living hall tube light", "points": [[26.2, 3.5, 20.6], [30.5, 3.5, 20.6], [30.5, 3.5, 13.525], [30.5, 2.4, 13.525]] },
+      { "layer": "light", "name": "kitchen tube light", "points": [[6.5, 3.5, 26.4], [6.5, 3.5, 20.025], [6.5, 2.4, 20.025]] },
+      { "layer": "light", "name": "kitchen exhaust fan", "points": [[6.5, 3.5, 26.4], [11.5, 3.5, 26.4], [11.5, 3.5, 32.775], [11.5, 2.6, 32.775]] },
+      { "layer": "light", "name": "bath exhaust fan", "points": [[15.35, 3.5, 4.65], [16.9, 3.5, 4.65], [16.9, 3.5, 0.225], [16.9, 2.7, 0.225]] },
 
-      { "layer": "cold", "name": "mains inlet", "r": 0.02, "points": [[14.6, -1.0, 46], [14.6, -1.0, 33.8], [14.6, 3.85, 33.8], [14.6, 3.85, 21.8], [14.6, 7.8, 21.8], [14.6, 7.8, 16.5], [8.0, 7.8, 16.5], [8.0, 7.65, 16.5]] },
-      { "layer": "cold", "name": "down-take from tank", "r": 0.024, "points": [[9.1, 6.7, 16.5], [13.3, 6.7, 16.5], [13.3, 6.7, 19.6], [13.3, 3.3, 19.6]] },
+      { "layer": "cold", "name": "mains inlet to the ground cement tank (enters through the top slab, float valve inside)", "r": 0.02, "points": [[-40.6, -1.0, 46], [-40.6, -1.0, 4.6], [-40.6, 1.5, 4.6], [-40.6, 1.5, 3.2], [-40.6, 1.2, 3.2]] },
+      { "layer": "cold", "name": "pump suction from the ground tank (foot of its east side)", "r": 0.025, "points": [[-37.1, -0.65, 0.8], [-35.95, -0.65, 0.8]] },
+      { "layer": "cold", "name": "pump delivery: underground to the house, up the west wall to the overhead tanks", "r": 0.02, "points": [[-35.05, -0.65, 0.8], [-34.6, -0.65, 0.8], [-34.6, -1.0, 0.8], [-34.6, -1.0, 13.0], [0, -1.0, 13.0], [0, 8.0, 13.0], [0, 8.0, 16.55], [3.8, 8.0, 16.55], [3.8, 7.9, 16.55]] },
+      { "layer": "cold", "name": "balancing pipe between the two tanks", "r": 0.024, "points": [[6.2, 6.7, 16.55], [8.5, 6.7, 16.55]] },
+      { "layer": "cold", "name": "down-take from tank", "r": 0.024, "points": [[13.25, 6.7, 16.55], [13.3, 6.7, 16.55], [13.3, 6.7, 19.6], [13.3, 3.3, 19.6]] },
       { "layer": "cold", "name": "north header", "r": 0.022, "points": [[13.3, 3.3, 19.6], [13.3, 3.3, 0.35], [19.7, 3.3, 0.35]] },
       { "layer": "cold", "name": "bath WC cistern", "points": [[14.75, 3.3, 0.35], [14.75, 0.6, 0.35]] },
       { "layer": "cold", "name": "WC cistern", "points": [[19.7, 3.3, 0.35], [19.7, 0.6, 0.35]] },
@@ -329,11 +384,14 @@
       { "layer": "cold", "name": "shower head", "always": true, "size": [0.18, 0.03, 0.18], "at": [13.9, 2.02, 8.1], "material": "steel" },
       { "layer": "hot", "name": "geyser", "always": true, "size": [0.32, 0.5, 0.42], "at": [13.625, 2.25, 4.5], "color": "#f4f4f2" },
       { "layer": "hot", "name": "geyser lamp", "always": true, "size": [0.02, 0.05, 0.05], "at": [14.05, 2.35, 4.5], "color": "#ff3020", "glow": true },
+      { "layer": "cold", "name": "water pump (1 HP monoblock) beside the ground tank", "always": true, "size": [0.36, 0.28, 0.24], "at": [-35.5, -0.66, 0.8], "color": "#2f6fb5" },
+      { "layer": "cold", "name": "pump base slab", "always": true, "size": [0.6, 0.06, 0.45], "at": [-35.5, -0.77, 0.8], "color": "#9b978e" },
       { "layer": "drain", "name": "floor trap grille", "always": true, "size": [0.12, 0.012, 0.12], "at": [15.3, 0.12, 8.1], "color": "#2a2a2a" }
     ],
 
     "tanks": [
-      { "layer": "cold", "name": "overhead tank", "at": [7.5, 16.5], "y0": 6.55, "radius": 0.65, "height": 1.1, "color": "#1f2a30" }
+      { "layer": "cold", "name": "overhead tank 1, 2000 L (inside the grey box on the stair room roof)", "at": [3.8, 16.55], "y0": 6.55, "radius": 0.7, "height": 1.3, "color": "#1f5fa8" },
+      { "layer": "cold", "name": "overhead tank 2, 2000 L (inside the finned block)", "at": [10.9, 16.55], "y0": 6.55, "radius": 0.7, "height": 1.3, "color": "#1f5fa8" }
     ],
     "chambers": [{ "at": [16.5, -4] }, { "at": [7.1, 36.5] }],
     "pits": [
@@ -346,8 +404,10 @@
       { "layer": "power", "text": "AC point", "at": [11.8, 2.85, 0.28] },
       { "layer": "light", "text": "Ceiling light point", "at": [26.2, 3.0, 20.6] },
       { "layer": "light", "text": "Switchboard", "at": [12.72, 1.65, 9.4] },
-      { "layer": "cold", "text": "Overhead tank 1000 L", "at": [7.5, 8.15, 16.5] },
-      { "layer": "cold", "text": "Mains water inlet", "at": [14.6, -0.4, 44] },
+      { "layer": "cold", "text": "Overhead tanks 2 x 2000 L", "at": [7.5, 8.35, 16.55] },
+      { "layer": "cold", "text": "Mains water inlet", "at": [-40.6, -0.4, 44] },
+      { "layer": "cold", "text": "Ground tank 10,000 L + pump", "at": [-38.5, 2.0, 0.8] },
+      { "layer": "cold", "text": "Pump riser to overhead tanks", "at": [-0.6, 4.6, 13.0] },
       { "layer": "hot", "text": "Geyser", "at": [13.6, 2.8, 4.5] },
       { "layer": "drain", "text": "Septic tank", "at": [16.5, -0.2, -9.5] },
       { "layer": "drain", "text": "Vent pipe", "at": [16.5, 5.2, -0.75] },

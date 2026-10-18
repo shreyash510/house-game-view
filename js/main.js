@@ -9,7 +9,7 @@ import { buildServices } from './services.js';
 import { buildDevices } from './devices.js';
 import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
-import { keys, cam, joy, query, transparentSwitch, servicesSwitch, devicesSwitch, furnitureSwitch, view, buildLegend } from './controls.js';
+import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, view, buildLegend } from './controls.js';
 import { setupHud, showCoords, drawMap } from './hud.js';
 
 // ---------- Load the house ----------
@@ -74,7 +74,10 @@ const WALK = 3.4, RUN = 6.2;   // metres per second
 function groundHeight(x, z, currentY) {
   const xf = toFtX(x), zf = toFtZ(z);
   const inBuilding = buildings.find((b) => b.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2));
-  if (inBuilding) return inBuilding.floor ?? 0.1;   // floor of a makeHouse() house (raised when it stands on an ota plinth)
+  if (inBuilding) {   // floor of a makeHouse() house (raised when it stands on an ota plinth), or its flat roof once you are up there
+    if (inBuilding.terrace && currentY > inBuilding.terrace - 0.6) return inBuilding.terrace;
+    return inBuilding.floor ?? 0.1;
+  }
   const walk = (first) => {
     for (const w of walkables) if (!!w.first === first) { const h = w(xf, zf, currentY); if (h !== null) return h; }
     return null;
@@ -120,7 +123,7 @@ function blocked(x, y, z) {
 
 // ---------- Game loop ----------
 const clock = new THREE.Clock();
-let walkTime = 0, elapsed = 0, facing = 0, fov = 60, xrayWas = false, mapFrame = 0, frame = 0;
+let walkTime = 0, elapsed = 0, facing = 0, fov = 60, xrayWas = '', mapFrame = 0, frame = 0;
 const vel = { x: 0, z: 0 };
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(), camWant = new THREE.Vector3(), camAim = new THREE.Vector3();
 const EYE_H = 1.65;   // eye height above the feet (m), for the eye-view camera
@@ -198,11 +201,19 @@ function update(dt) {
   const inside = inHouse(xf, zf) && p.y < H - 0.2 + PLINTH;
   // Top view (looking steeply down from far away): lift the roof off so the whole plan of the house is visible
   const topView = !view.eye && cam.pitch > 1.1 && cam.distance > 12;
-  // Services (X-ray): roof and ceilings off, floors and ground turn to a ghost, pipes and wiring appear
-  const xray = servicesSwitch.checked;
-  if (xray !== xrayWas) {
-    xrayWas = xray;
+  // Services (X-ray), "Electrical" and/or "Plumbing": roof and ceilings off, floors and ground turn to a ghost,
+  // and the wiring or the pipes (or both) appear
+  const kindOn = { electrical: electricalSwitch.checked, plumbing: plumbingSwitch.checked };
+  const xray = kindOn.electrical || kindOn.plumbing;
+  const xrayNow = `${kindOn.electrical}/${kindOn.plumbing}`;
+  if (xrayNow !== xrayWas) {
+    xrayWas = xrayNow;
     services.group.visible = xray;
+    Object.values(services.layers).forEach((l) => {
+      l.kindOn = !!kindOn[l.kind];
+      l.group.visible = l.on && l.kindOn;
+      l.row.style.display = l.kindOn ? '' : 'none';
+    });
     ceilingG.visible = !xray;
     legendEl.style.display = xray ? 'block' : 'none';
     ghostMats.forEach((m) => { m.transparent = xray; m.opacity = xray ? 0.25 : 1; m.depthWrite = !xray; m.needsUpdate = true; });

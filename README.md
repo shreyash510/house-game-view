@@ -12,9 +12,9 @@ npx http-server -c-1 .
 
 Then open `http://localhost:8080/`. To load a different house: `http://localhost:8080/?house=houses/small-house.json`.
 
-Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Services on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on).
+Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on).
 
-Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Services (X-ray), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
+Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
 
 ## Files
 
@@ -81,7 +81,7 @@ To add a new kind of part: write a function `(cfg, ctx)` in a file under `js/com
 
 ### Services (X-ray)
 
-- `layers`: `{ key: { color, name } }`, with one legend checkbox per layer.
+- `layers`: `{ key: { color, name, kind } }`, with one legend checkbox per layer. `kind` is `"electrical"` (shown by the Electrical switch, key X) or `"plumbing"` (Plumbing switch, key Z); without it, `cold`, `hot` and `drain` are plumbing and the rest electrical.
 - `electrical`: `junctions` (`{ id: [x, z] }`, one light point per room), `links` and `powerLinks` (conduits in the slab, `[a, b]` or `[a, b, "zFirst"]`), `switchboards` (`{ from, at: [x, z], wall }`), `sockets` (`{ from, at: [x, y, z], wall, big }`), `board` (id of the main board junction), `lightY`, `powerY`, `lightPointY`.
 - `pipes`: `{ layer, r, points: [[x, y, z]] }`.
 - `fittings`: `{ layer, size, at, color, glow, material }`.
