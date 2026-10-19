@@ -49,6 +49,7 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `extraCeilings`, `zones`, `labels`, `mapOutlines` | Ceilings between rooms; names in the readout `[name, x1, z1, x2, z2]`; floor text `{ text: [l1, l2], at: [x, z], width }`; dashed minimap areas |
 | `lights` | `{ at: [x, z], y, intensity, distance }` |
 | `components`, `fixtures`, `furniture` | Lists of parts by `type` (below). `fixtures` are built-in fittings (counters, sink, WC, wash basin) and always stay; `furniture` (beds, sofas, TV, tables...) can be switched off with the Furniture switch (key F). Add `"skip": true` to leave one out |
+| `versions` | Design versions listed in Settings > Design: `[{ id, name }]`. `?v=<id>` loads `versions/<id>.json`, whose `fixtures`, `furniture`, `components`, `devices`, `services.electrical.sockets` and `services.pipes` lists replace every entry tagged with its `group` (e.g. `"group": "kitchen"`); house.json itself is not changed |
 | `otherHouses` | Simple houses from a room list (format at the top of `js/makeHouse.js`) |
 | `spawn` | `{ at: [x, z], y }` |
 | `devices` | Fans and lights shown by the Devices switch (below) |

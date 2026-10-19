@@ -25,6 +25,31 @@ try {
   throw err;
 }
 
+// ---------- Design versions: ?v=kitchen-2 loads versions/kitchen-2.json; its lists replace every entry tagged with its "group" ----------
+const versionId = query('v');
+if (versionId) {
+  try {
+    const res = await fetch(`versions/${versionId}.json`, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const ver = await res.json();
+    ['fixtures', 'furniture', 'components', 'devices', 'services.electrical.sockets', 'services.pipes'].forEach((path) => {
+      const keys = path.split('.'), last = keys.pop();
+      const parent = keys.reduce((o, k) => (o[k] ??= {}), data);
+      parent[last] = (parent[last] || []).filter((e) => e.group !== ver.group).concat(ver[path] || []);
+    });
+  } catch (err) {
+    console.warn(`Could not load version ${versionId}:`, err);
+  }
+}
+// Settings > Design: pick a version; the page reloads with ?v=<id>
+const versionSelect = document.getElementById('versionSelect');
+[{ id: '', name: 'Current (house.json)' }, ...(data.versions || [])].forEach(({ id, name }) => versionSelect.add(new Option(name, id, false, id === (versionId || ''))));
+versionSelect.addEventListener('change', () => {
+  const u = new URL(location.href);
+  if (versionSelect.value) u.searchParams.set('v', versionSelect.value); else u.searchParams.delete('v');
+  location.href = u.href;
+});
+
 // ---------- Ground ----------
 const grassTex = makeTexture(256, 256, (ctx, w, h) => {
   ctx.fillStyle = '#1d3b20'; ctx.fillRect(0, 0, w, h);
