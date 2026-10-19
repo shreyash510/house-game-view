@@ -17,9 +17,9 @@ export function bed(c) {
   furn(cx - 2.4, z0 + 2.6, cx + 2.4, z0 + 6.3, 0.08, 0xe0b27a, FLOOR_Y + 0.65, false);   // blanket
   furn(cx - 2.2, z0 + 0.4, cx - 0.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);   // pillows
   furn(cx + 0.2, z0 + 0.4, cx + 2.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);
-  [cx - 3.9, cx + 3.0].forEach((x) => {                                                  // side tables + lamps
+  if (c.sideTables !== false) [cx - 3.9, cx + 3.0].forEach((x) => {                      // side tables (no lamps on them); "sideTables": false leaves them out
     furn(x, z0 - 0.1, x + 1.2, z0 + 1.1, 0.5, 0x6b2e22);
-    glow([0.14, 0.14, 0.14], [fx(x + 0.6), FLOOR_Y + 0.62, fz(z0 + 0.5)]);
+    if (c.lamps) glow([0.14, 0.14, 0.14], [fx(x + 0.6), FLOOR_Y + 0.62, fz(z0 + 0.5)]);   // "lamps": true puts them back
   });
 }
 

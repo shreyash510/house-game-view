@@ -117,12 +117,16 @@
     { "name": "storeroom", "at": [9, 15], "y": 2.5, "intensity": 0.8, "distance": 6 }
   ],
 
+  "versions": [
+    { "id": "kitchen-2", "name": "Kitchen 2: straight counter, fridge by the side door" }
+  ],
+
   "fixtures": [
-    { "type": "counter", "rect": [0.4, 24.4, 2.5, 32.8] },
-    { "type": "counter", "rect": [2.5, 30.6, 9.85, 32.8] },
-    { "type": "sink", "rect": [9.85, 30.6, 13.25, 32.8] },
-    { "type": "marbleRack", "name": "marble rack, 7 ft high, 4 ft wide, in the corner", "rect": [13.25, 31.28, 17.25, 32.78], "height": 2.13, "shelves": [0.55, 1.08, 1.6, 2.13] },
-    { "type": "stove", "at": [6.5, 31.1] },
+    { "type": "counter", "group": "kitchen", "rect": [0.4, 24.4, 2.5, 32.8] },
+    { "type": "counter", "group": "kitchen", "rect": [2.5, 30.6, 9.85, 32.8] },
+    { "type": "sink", "group": "kitchen", "rect": [9.85, 30.6, 13.25, 32.8] },
+    { "type": "marbleRack", "group": "kitchen", "name": "marble rack, 7 ft high, 4 ft wide, in the corner", "rect": [13.25, 31.28, 17.25, 32.78], "height": 2.13, "shelves": [0.55, 1.08, 1.6, 2.13] },
+    { "type": "stove", "group": "kitchen", "at": [6.5, 31.1] },
     { "type": "item", "name": "WC cistern", "rect": [19.1, 0.5, 20.3, 1.1], "h": 0.7, "color": "#f4f4f2" },
     { "type": "item", "name": "WC pan", "rect": [19.1, 1.1, 20.3, 2.8], "h": 0.4, "color": "#f4f4f2" },
     { "type": "item", "name": "bath WC", "rect": [14, 0.7, 15.5, 1.7], "h": 0.9, "color": "#f4f4f2" },
@@ -131,9 +135,9 @@
   ],
 
   "furniture": [
-    { "type": "bed", "x": 7.1 },
-    { "type": "bed", "x": 28.9 },
-    { "type": "fridge", "name": "Whirlpool single-door fridge, brown, 5 ft", "rect": [15.15, 20.9, 17.25, 22.65], "face": "-x", "height": 1.52, "color": "#8a4a2c" },
+    { "type": "bed", "x": 7.1, "sideTables": false },
+    { "type": "bed", "x": 28.9, "sideTables": false },
+    { "type": "fridge", "group": "kitchen", "name": "Whirlpool single-door fridge, brown, 5 ft", "rect": [15.15, 20.9, 17.25, 22.65], "face": "-x", "height": 1.52, "color": "#8a4a2c" },
     { "type": "item", "name": "sofa", "rect": [32.6, 18.3, 34.0, 25.2], "h": 0.5, "color": "#a0627f" },
     { "type": "item", "name": "sofa back", "rect": [34.0, 18.3, 34.6, 25.2], "h": 1.0, "color": "#86506a" },
     { "type": "item", "name": "sofa", "rect": [22.2, 25.4, 29.2, 27.0], "h": 0.5, "color": "#a0627f" },
@@ -380,7 +384,7 @@
         { "from": "KI", "at": [3.5, 1.15, 32.72], "wall": "z" },
         { "from": "KI", "at": [0.28, 1.15, 31.5], "wall": "x" },
         { "from": "KI", "at": [11.7, 0.5, 32.72], "wall": "z" },
-        { "from": "KI", "name": "fridge", "at": [17.22, 1.0, 23.0], "wall": "x" },
+        { "from": "KI", "group": "kitchen", "name": "fridge", "at": [17.22, 1.0, 23.0], "wall": "x" },
         { "from": "KI", "at": [9.8, 2.3, 32.72], "wall": "z" },
         { "from": "KI", "name": "AC socket, 16 A, north wall", "at": [12.0, 2.5, 20.08], "wall": "z", "big": true },
         { "from": "BA", "at": [13.28, 2.65, 5.3], "wall": "x", "big": true }
