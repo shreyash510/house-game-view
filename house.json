@@ -145,7 +145,7 @@
 
   "components": [
     { "type": "steps", "name": "porch steps", "x1": 21.5, "x2": 31.5, "z0": 37, "tread": 1.2, "count": 3 },
-    { "type": "sidePorch", "name": "kitchen porch", "x1": -3, "x2": 0, "z1": 21, "z2": 30, "steps": [[-3, 0, 30, 31], [-3, 0, 31, 32], [-3, 0, 32, 33]], "spots": false },
+    { "type": "sidePorch", "name": "kitchen porch", "x1": -3, "x2": 0, "z1": 21, "z2": 30, "steps": [[-3, 0, 30, 31], [-3, 0, 31, 32], [-3, 0, 32, 33]], "spots": false, "canopyHeight": 2.3 },
     { "type": "staircase", "x1": 0, "x2": 13.2, "z1": 13.3, "zMid": 16.8, "z2": 19.8, "landing": 3.8, "steps": 8 },
     { "type": "mumty", "x1": 0, "x2": 15, "z1": 11.55, "z2": 21.55, "height": 2.8, "wall": 0.6, "door": [13.6, 16.6],
       "window": { "z1": 14.5917, "z2": 18.5083, "y0": 1.8, "height": 4.3 }, "face": { "x1": -0.75, "x2": -0.15, "lowStop": 19.2 }, "top": { "hollow": true } },

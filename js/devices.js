@@ -127,6 +127,11 @@ export function buildDevices(list, houseG) {
       const [x, z] = c.at, ceil = Y(c.y, Y('H-0.2'));
       mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.04, 16), M.body, parent, fx(x), ceil - 0.02, fz(z));
       mesh(new THREE.SphereGeometry(r, 16, 12), M.light, parent, fx(x), ceil - 0.04 - r, fz(z));
+      // "halo": true = a soft warm glow round the bulb, so it reads as a lit bulb from a distance (e.g. outdoors at night)
+      if (c.halo) {
+        const halo = mesh(new THREE.SphereGeometry(r * 2.6, 16, 12), new THREE.MeshBasicMaterial({ color: col(0xffd38a), transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false }), parent, fx(x), ceil - 0.04 - r, fz(z));
+        halo.castShadow = false;
+      }
     }
   }
 
