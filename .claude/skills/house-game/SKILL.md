@@ -38,6 +38,7 @@ Positions change as the user edits; treat this as a starting point and confirm i
 | Cement concrete road (east-west) | z -72 | `concreteRoad` |
 | Sand road (north-south) | x 106.4 | `sandRoad` |
 | Main asphalt road | z 56.5 | `road` (currently `"skip": true`) |
+| Interior design (POP ceilings, designed furniture, curtains...), shown with Settings > Interior | per room | **`interior.json`** (not house.json), one entry per room in `rooms` |
 
 ## 2. Make the smallest change that does what was asked
 

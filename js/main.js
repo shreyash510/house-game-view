@@ -7,12 +7,13 @@ import { buildHouse } from './house.js';
 import { buildCeilings, ceilingG } from './ceilings.js';
 import { buildServices } from './services.js';
 import { setupBoardInfo } from './boardInfo.js';
-import { buildDevices } from './devices.js';
+import { buildDevices, plainLights } from './devices.js';
 import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
-import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, nightSwitch, view, buildLegend } from './controls.js';
+import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, interiorSwitch, nightSwitch, view, buildLegend } from './controls.js';
 import { setupHud, showCoords, drawMap } from './hud.js';
 import { updateLaser } from './laser.js';
+import { popGroups } from './components/interior.js';
 
 // ---------- Load the house ----------
 const houseUrl = query('house') || 'house.json';
@@ -24,6 +25,14 @@ try {
 } catch (err) {
   document.body.insertAdjacentHTML('beforeend', `<pre style="position:fixed;inset:40px;color:#fff;background:#300c;padding:16px;white-space:pre-wrap">Could not load ${houseUrl}: ${err.message}\n\nOpen the game through a local web server (for example: npx http-server), not as a file.</pre>`);
   throw err;
+}
+
+// ---------- Interior design: interior.json (or ?interior=other.json), shown with Settings > Interior (key V) ----------
+try {
+  const res = await fetch(query('interiorFile') || 'interior.json', { cache: 'no-cache' });
+  if (res.ok) data.interior = await res.json();
+} catch (err) {
+  console.warn('Could not load interior.json:', err);
 }
 
 // ---------- Design versions: ?v=kitchen-2 loads versions/kitchen-2.json; its lists replace every entry tagged with its "group" ----------
@@ -70,7 +79,7 @@ box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, ghost(textured(grassTex, 3, 0.9
 
 // ---------- The house, its ceilings and services, and any simple neighbour houses ----------
 const house = buildHouse(data);
-const { upper, rooms, furnitureG } = house;
+const { upper, rooms, furnitureG, replacedG, interiorG } = house;
 buildCeilings(rooms, data.extraCeilings);
 const services = buildServices(data.services || {}, house.houseG);
 const legendEl = buildLegend(services.layers);
@@ -130,6 +139,8 @@ function groundHeight(x, z, currentY) {
 function collide(pos) {
   for (const o of obstacles) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
+    if (o.interior && !interiorG.visible) continue;     // interior design switched off
+    if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (pos.y < bottom - 0.7 || pos.y >= top - 0.7) continue;
     const nx = Math.max(cx - w / 2, Math.min(pos.x, cx + w / 2));
@@ -148,6 +159,8 @@ function collide(pos) {
 function blocked(x, y, z) {
   for (const o of obstacles) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
+    if (o.interior && !interiorG.visible) continue;     // interior design switched off
+    if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (top - bottom < 1.4) continue;
     if (y > bottom - 0.2 && y < top + 0.1 && Math.abs(x - cx) < w / 2 + 0.12 && Math.abs(z - cz) < d / 2 + 0.12) return true;
@@ -255,6 +268,10 @@ function update(dt) {
   upper.visible = !inside && !topView && !xray;
   // "Devices" switch (key E): fans, tube lights, ceiling lights, exhaust fans; they also show with the Electrical X-ray (key X)
   devices.visible = devicesSwitch.checked || electricalSwitch.checked;
+  // "Interior" switch (key V): the designed rooms (interior.json) replace the plain furniture of those rooms and the plain wall lights
+  interiorG.visible = interiorSwitch.checked;
+  plainLights.visible = !interiorSwitch.checked;
+  replacedG.visible = !interiorSwitch.checked;   // plain furniture of the rooms interior.json redesigns
   furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...
   const room = inside ? rooms.find((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2) : null;
   const roomView = view.room && !!room && !view.eye;
@@ -313,6 +330,9 @@ function update(dt) {
   }
   camera.position.copy(camPos);
   camera.lookAt(camLook);
+  // POP ceilings only from below: hidden in X-ray and when the camera looks down into a room from above them
+  const popOn = !xray && camera.position.y < PLINTH + 3.0;
+  popGroups.forEach((g) => (g.visible = popOn));
   const wantFov = (view.eye ? 72 : 60) + (sprint && move > 0.5 ? 8 : 0);   // a wider, more natural field of view through the eyes
   if (Math.abs(fov - wantFov) > 0.02) {
     fov += (wantFov - fov) * (1 - Math.exp(-6 * dt));

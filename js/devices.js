@@ -26,6 +26,8 @@ const mesh = (geo, mat, parent, x = 0, y = 0, z = 0) => {
   return m;
 };
 
+export const plainLights = new THREE.Group();   // plain wall lights that the interior design (POP, cove, spots) replaces
+
 export function buildDevices(list, houseG) {
   const group = new THREE.Group();
   group.visible = false;
@@ -33,6 +35,7 @@ export function buildDevices(list, houseG) {
   const lightsG = new THREE.Group();   // lights stay visible all the time
   houseG.add(lightsG);
   const ALWAYS = new Set(['bulb', 'tubeLight', 'ceilingLight', 'footLamp']);
+  lightsG.add(plainLights);   // lights marked "interior": false, hidden while the interior design is on
   let parent = group;                  // where the device being built goes
   const M = mats();
   const spinners = [];   // [object, axis, speed]
@@ -147,7 +150,7 @@ export function buildDevices(list, houseG) {
     if (c.skip) return;
     const make = TYPES[c.type];
     if (!make) throw new Error(`house.json devices: unknown type "${c.type}" (entry ${i}). Known: ${Object.keys(TYPES).join(', ')}`);
-    parent = ALWAYS.has(c.type) ? lightsG : group;
+    parent = c.interior === false ? plainLights : ALWAYS.has(c.type) ? lightsG : group;
     make(c);
   });
 

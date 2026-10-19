@@ -33,20 +33,22 @@ export function buildServices(svc, houseG) {
   };
 
   // A run of pipe or conduit through the points [xf, y, zf], with a small ball at every bend
-  function pipe(key, pts, r = 0.018) {
-    const L = layer(key);
+  // always = a pipe fixed on the outside of a wall, visible without X-ray (white PVC)
+  const outsideMat = new THREE.MeshStandardMaterial({ color: col(0xe8ebee), roughness: 0.5 });
+  function pipe(key, pts, r = 0.018, always = false) {
+    const L = layer(key), mat = always ? outsideMat : L.mat, group = always ? fixtures : L.group;
     pts.forEach((p, i) => {
       const a = V3(p[0], Y(p[1]), p[2]);
-      const ball = new THREE.Mesh(ballGeos[r] ||= new THREE.SphereGeometry(r * 1.3, 8, 6), L.mat);
+      const ball = new THREE.Mesh(ballGeos[r] ||= new THREE.SphereGeometry(r * 1.3, 8, 6), mat);
       ball.position.copy(a);
-      L.group.add(ball);
+      group.add(ball);
       if (!i) return;
       const q = pts[i - 1], b = V3(q[0], Y(q[1]), q[2]), dir = new THREE.Vector3().subVectors(a, b), len = dir.length();
       if (len < 1e-4) return;
-      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8), L.mat);
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8), mat);
       m.position.copy(a).add(b).multiplyScalar(0.5);
       m.quaternion.setFromUnitVectors(UP, dir.normalize());
-      L.group.add(m);
+      group.add(m);
     });
   }
   // A fitting (board, socket, geyser...) as a box at plan point (xf, y, zf)
@@ -147,7 +149,7 @@ export function buildServices(svc, houseG) {
   }
 
   // ---------- Pipes, fittings, tanks, chambers, pits and tags ----------
-  (svc.pipes || []).forEach((p) => pipe(p.layer, p.points, p.r ?? 0.018));
+  (svc.pipes || []).forEach((p) => pipe(p.layer, p.points, p.r ?? 0.018, !!p.always));
   // "always": true = a fitting you can see in the house (board, geyser, mixer); otherwise it shows only in X-ray
   (svc.fittings || []).forEach((f) => fitting(f.layer, f.size, f.at, matFor(f), !!f.always));
   // Cylindrical tank standing on y0: { "at": [xf, zf], "y0", "radius", "height" }

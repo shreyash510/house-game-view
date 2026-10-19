@@ -5,6 +5,7 @@ import * as basic from './basic.js';
 import * as furniture from './furniture.js';
 import * as structures from './structures.js';
 import * as outdoor from './outdoor.js';
+import * as interior from './interior.js';
 
 export const COMPONENTS = {
   // basic.js
@@ -16,6 +17,10 @@ export const COMPONENTS = {
   // structures.js
   steps: structures.steps, sidePorch: structures.sidePorch, staircase: structures.staircase, mumty: structures.mumty,
   towerWindow: structures.towerWindow, shrine: structures.shrine,
+  // interior.js (interior design, built from interior.json)
+  popCeiling: interior.popCeiling, wallFinish: interior.wallFinish, wallPanel: interior.wallPanel, ibox: interior.ibox, sofa: interior.sofa,
+  table: interior.table, chair: interior.chair, rug: interior.rug, curtain: interior.curtain, pendant: interior.pendant, floorLamp: interior.floorLamp,
+  plant: interior.plant, frame: interior.frame, shelf: interior.shelf,
   // outdoor.js
   road: outdoor.road, hedge: outdoor.hedge, fireflies: outdoor.fireflies, openShed: outdoor.openShed, concreteRoad: outdoor.concreteRoad, sandRoad: outdoor.sandRoad, wireFence: outdoor.wireFence, coconutTree: outdoor.coconutTree,
 };

@@ -85,6 +85,10 @@ export const nightSwitch = document.getElementById('nightSwitch');
 if (query('night') === '1') nightSwitch.checked = true;   // debug: ?night=1 starts in night mode
 addEventListener('keydown', (e) => { if (e.code === 'KeyN') { nightSwitch.checked = !nightSwitch.checked; nightSwitch.dispatchEvent(new Event('change')); } });
 export const laserSwitch =document.getElementById('laserSwitch');   // "Laser" switch: a laser pointer in the hand in eye view (see laser.js)
+// "Interior" switch (key V): the interior design from interior.json, in place of the plain furniture
+export const interiorSwitch = document.getElementById('interiorSwitch');
+if (query('interior') === '1') interiorSwitch.checked = true;   // debug: ?interior=1 starts with the interior design shown
+addEventListener('keydown', (e) => { if (e.code === 'KeyV') interiorSwitch.checked = !interiorSwitch.checked; });
 export const furnitureSwitch = document.getElementById('furnitureSwitch');
 if (query('furniture') === '0') furnitureSwitch.checked = false;   // debug: ?furniture=0 starts with the rooms empty
 addEventListener('keydown', (e) => { if (e.code === 'KeyF') furnitureSwitch.checked = !furnitureSwitch.checked; });

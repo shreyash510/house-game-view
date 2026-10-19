@@ -80,10 +80,28 @@ export function buildHouse(data) {
   houseG.add(furnitureG);
   const firstObstacle = obstacles.length;
   useScene(furnitureG, PLINTH);
-  buildComponents(data.furniture, ctx);
+  // Pieces standing in a room that interior.json redesigns (its "replaces" rect) go in their own subgroup, hidden while Interior is on
+  const redone = (data.interior?.rooms || []).filter((r) => !r.skip && r.replaces).map((r) => r.replaces);
+  const centre = (c) => (c.rect ? [(c.rect[0] + c.rect[2]) / 2, (c.rect[1] + c.rect[3]) / 2] : c.at ? c.at : c.x !== undefined ? [c.x, (c.z ?? 0.9) + 3] : null);
+  const isRedone = (c) => { const p = centre(c); return !!p && redone.some(([x1, z1, x2, z2]) => p[0] > x1 && p[0] < x2 && p[1] > z1 && p[1] < z2); };
+  buildComponents((data.furniture || []).filter((c) => !isRedone(c)), ctx);
+  const replacedG = new THREE.Group();
+  furnitureG.add(replacedG);
+  const firstReplaced = obstacles.length;
+  useScene(replacedG, PLINTH);
+  buildComponents((data.furniture || []).filter(isRedone), ctx);
+  obstacles.slice(firstReplaced).forEach((o) => (o.replaced = true));
   obstacles.slice(firstObstacle).forEach((o) => (o.furniture = true));
+  // Interior design (interior.json, Settings > Interior): its own group, shown instead of the plain furniture
+  const interiorG = new THREE.Group();
+  interiorG.visible = false;
+  houseG.add(interiorG);
+  const firstInterior = obstacles.length;
+  useScene(interiorG, PLINTH);
+  (data.interior?.rooms || []).forEach((r) => { if (!r.skip) buildComponents(r.items, ctx); });
+  obstacles.slice(firstInterior).forEach((o) => (o.interior = true));
 
   useScene(realScene, 0);
   const rooms = (data.rooms || []).map((r) => ({ ...r, x1: r.rect[0], z1: r.rect[1], x2: r.rect[2], z2: r.rect[3] }));
-  return { ...ctx, rooms, furnitureG };
+  return { ...ctx, rooms, furnitureG, replacedG, interiorG };
 }

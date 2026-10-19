@@ -1,0 +1,60 @@
+{
+  "name": "Interior design: Modern Indian, premium",
+  "note": "Shown with Settings > Interior (key V, or ?interior=1). Replaces the plain furniture while on. Plan feet, heights in m above the plinth top (floor 0.11, slab underside 3.4). Palette: walls #efe9df, walnut, light oak, sage #8a9a7b, teal #2f5455, terracotta #b5644a, brass.",
+
+  "rooms": [
+    {
+      "id": "living",
+      "name": "Living hall (x 17.5-35, z 13.3-28)",
+      "replaces": [17.5, 13.3, 35, 28],
+      "items": [
+        { "type": "popCeiling", "name": "living hall POP: 2 ft band at 10 ft, raised tray with cove, open centre over the fan",
+          "rect": [17.725, 13.525, 34.775, 27.775], "drop": 3.05, "band": 2, "tray": { "width": 1.5, "y": 3.22 },
+          "grooves": [[20.5, 14.35, 32.5, 14.38], [20.5, 14.75, 32.5, 14.78]],
+          "spots": [[22.5, 14.55], [26.5, 14.55], [30.5, 14.55], [21.5, 26.75], [25.5, 26.75], [29.5, 26.75], [33.5, 26.75],
+                    [33.75, 17.5], [33.75, 21.5], [18.75, 21.5], [18.75, 25.0]] },
+
+        { "type": "wallFinish", "name": "sage accent: west wall behind the shoe cabinet and mirror", "along": "z", "at": 17.725, "dir": 1, "from": 19.8, "to": 27.775, "color": "#8a9a7b" },
+        { "type": "wallPanel", "name": "TV wall: fluted walnut, floor to the POP band", "along": "x", "at": 13.525, "dir": 1, "from": 22.5, "to": 31.5, "y0": 0.11, "y1": 3.05, "material": "flutedWalnut", "depth": 0.03, "backlight": true },
+        { "type": "ibox", "name": "floating TV console: walnut", "rect": [23.5, 13.6, 30.5, 14.95], "y0": 0.35, "h": 0.3, "material": "walnut", "solid": true },
+        { "type": "ibox", "name": "TV console: drawer line", "rect": [23.5, 14.94, 30.5, 14.96], "y0": 0.495, "h": 0.006, "color": "#2a1b11" },
+        { "type": "ibox", "name": "TV console: LED under it", "rect": [23.7, 13.7, 30.3, 14.85], "y0": 0.335, "h": 0.01, "glow": "#ffd59a" },
+        { "type": "ibox", "name": "TV, 65 inch", "rect": [24.64, 13.58, 29.36, 13.7], "y0": 1.0, "h": 0.83, "color": "#0b0b0d" },
+        { "type": "ibox", "name": "soundbar", "rect": [25.4, 14.3, 28.6, 14.6], "y0": 0.65, "h": 0.07, "color": "#1d1d1f" },
+        { "type": "shelf", "name": "backlit niche left of the TV wall", "rect": [20.9, 13.53, 22.45, 14.6], "y0": 0.6, "h": 1.9, "shelves": 4, "material": "walnut", "back": "#8a9a7b", "backlight": true },
+        { "type": "shelf", "name": "backlit niche right of the TV wall", "rect": [31.55, 13.53, 33.1, 14.6], "y0": 0.6, "h": 1.9, "shelves": 4, "material": "walnut", "back": "#8a9a7b", "backlight": true },
+
+        { "type": "sofa", "name": "3-seater sofa, beige, in the user's spot facing the TV", "rect": [23.2, 25.2, 30.2, 27.7], "face": "-z", "seats": 3, "fabric": "fabricBeige", "cushions": ["fabricTeal", "fabricRust", "fabricSage", "fabricTeal"] },
+        { "type": "sofa", "name": "armchair, teal, north", "rect": [31.8, 18.4, 34.4, 20.7], "face": "-x", "seats": 1, "fabric": "fabricTeal", "arms": 0.45, "cushions": ["fabricRust"] },
+        { "type": "sofa", "name": "armchair, teal, south", "rect": [31.8, 22.3, 34.4, 24.6], "face": "-x", "seats": 1, "fabric": "fabricTeal", "arms": 0.45, "cushions": ["fabricBeige"] },
+        { "type": "table", "name": "round side table between the armchairs: marble on brass", "rect": [32.6, 20.85, 33.9, 22.15], "round": true, "h": 0.55, "top": "marbleWhite", "base": "brass" },
+        { "type": "table", "name": "round coffee table: white marble on a brass stand", "rect": [24.95, 19.75, 28.45, 23.25], "round": true, "h": 0.4, "thick": 0.05, "top": "marbleWhite", "base": "brass" },
+        { "type": "rug", "name": "8 x 10 dhurrie", "rect": [22.7, 17.0, 30.7, 25.0], "material": "rugDhurrie" },
+        { "type": "floorLamp", "name": "floor lamp beside the north armchair", "at": [34.05, 17.8], "h": 1.6 },
+
+
+        { "type": "ibox", "name": "shoe cabinet by the main door: oak", "rect": [17.75, 21.0, 18.95, 24.3], "h": 0.82, "material": "oak", "solid": true },
+        { "type": "ibox", "name": "shoe cabinet: walnut top", "rect": [17.75, 20.95, 19.0, 24.35], "y0": 0.93, "h": 0.03, "material": "walnut" },
+        { "type": "ibox", "name": "shoe cabinet: shutter line", "rect": [18.95, 22.63, 18.97, 22.67], "y0": 0.15, "h": 0.75, "color": "#7a5a38" },
+        { "type": "frame", "name": "round brass mirror above the shoe cabinet", "along": "z", "at": 17.725, "dir": 1, "from": 21.3, "to": 24.0, "y0": 1.3, "y1": 2.12, "art": "roundMirror", "frame": "brass" },
+        { "type": "plant", "name": "tall palm in the north-east corner", "at": [34.0, 14.6], "h": 1.6 },
+        { "type": "plant", "name": "palm beside the main door", "at": [22.55, 26.9], "h": 1.3, "r": 0.16, "pot": "#3b3a38" },
+
+        { "type": "curtain", "name": "south window: sheer + drape (falls behind the sofa)", "along": "x", "at": 27.775, "dir": -1, "from": 23.4, "to": 30.5, "y1": 3.0, "drape": "fabricBeige", "sheer": "#f5efe4", "offset": 0.07, "stack": 1.1 },
+        { "type": "curtain", "name": "east window: sheer + drape", "along": "z", "at": 34.775, "dir": -1, "from": 18.4, "to": 25.1, "y1": 3.0, "drape": "fabricBeige", "sheer": "#f5efe4", "offset": 0.08, "stack": 1.1 }
+      ]
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen (x 0-17.5, z 19.8-33): dining set only so far; the kitchen fittings and fridge stay as they are",
+      "items": [
+        { "type": "table", "name": "dining table, 4 seater, walnut, 3 x 4 ft, between the counter and the north wall", "rect": [10.5, 23.2, 13.5, 27.2], "h": 0.76, "top": "walnut", "base": "#2b2420" },
+        { "type": "chair", "name": "dining chair, west 1", "rect": [9.25, 23.55, 10.7, 24.95], "face": "+x", "seat": "fabricBeige", "frame": "walnut" },
+        { "type": "chair", "name": "dining chair, west 2", "rect": [9.25, 25.45, 10.7, 26.85], "face": "+x", "seat": "fabricBeige", "frame": "walnut" },
+        { "type": "chair", "name": "dining chair, east 1", "rect": [13.3, 23.55, 14.75, 24.95], "face": "-x", "seat": "fabricBeige", "frame": "walnut" },
+        { "type": "chair", "name": "dining chair, east 2", "rect": [13.3, 25.45, 14.75, 26.85], "face": "-x", "seat": "fabricBeige", "frame": "walnut" },
+        { "type": "pendant", "name": "brass dome pendant over the dining table", "at": [12.0, 25.2], "y": 1.75, "r": 0.24, "shape": "dome" }
+      ]
+    }
+  ]
+}
