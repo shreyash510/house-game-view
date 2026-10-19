@@ -26,6 +26,7 @@ export function buildServices(svc, houseG) {
     };
     group.add(layers[key].group);
   });
+  const boards = [];   // switchboard meshes, each with userData.board = { room, items }, for the hover card
   const layer = (key) => {
     if (!layers[key]) throw new Error(`house.json services: unknown layer "${key}". Add it to services.layers.`);
     return layers[key];
@@ -101,14 +102,45 @@ export function buildServices(svc, houseG) {
       layer('light').group.add(bulb);
       fitting('light', [0.3, 0.03, 0.3], [x, y, z], paint(0xf2f2ee, 0.5));
     });
-    // Switchboards beside the doors, 1.2 m up, each with three switches
-    (E.switchboards || []).forEach(({ from, at: [x, z], wall: n, y = 1.2 }) => {
+    // Switchboards beside the doors, 1.2 m up. The plate shows exactly what its "items" list: a rocker per switch (red for a
+    // geyser), a round knob for a fan regulator, a socket face with pin holes, a small red indicator lamp; the plate is as wide
+    // as its pieces. Hovering a board (or tapping it) shows the same list as a card (boardInfo.js).
+    // "room" and "items": [{ "name", "count", "for" }] in house.json; without items it shows three switches.
+    const kindOf = (name) => (/regulator|roller/i.test(name) ? 'regulator' : /socket/i.test(name) ? 'socket' : /indicator/i.test(name) ? 'indicator' : 'switch');
+    const WIDTH = { switch: 0.04, regulator: 0.075, socket: 0.075, indicator: 0.03 };   // metres across the plate per piece
+    const rocker = paint(0x55595e, 0.5), redRocker = paint(0xb0302a, 0.5), knobMat = paint(0x3a3d42, 0.4), holeMat = paint(0x111111, 0.9);
+    const lampMat = new THREE.MeshBasicMaterial({ color: col(0xff3b2f) });
+    (E.switchboards || []).forEach(({ from, at: [x, z], wall: n, y = 1.2, room, items }) => {
       pipe('light', [...lPath(J[from], [x, z], Hc), [x, y + 0.08, z]]);
-      plate('light', x, y, z, n, 0.28, 0.16);
-      [-0.07, 0, 0.07].forEach((o) => plate('light', n === 'x' ? x : x + o / S, y, n === 'x' ? z + o / S : z, n, 0.035, 0.07, 0x55595e));
+      const info = { room: room || from, items: items || [] };
+      const pieces = [];
+      (items && items.length ? items : [{ name: 'Switch', count: 3 }]).forEach((it) => {
+        for (let i = 0; i < (it.count ?? 1); i++) pieces.push({ kind: kindOf(it.name), red: /geyser|16 ?a/i.test(it.name) });
+      });
+      const W = pieces.reduce((w, p) => w + WIDTH[p.kind], 0) + 0.05, PH = 0.13;
+      const parts = [plate('light', x, y, z, n, W, PH)];
+      // A piece "a" metres along the plate from its centre, "dy" up, "d" thick (it stands out of the plate face on both sides)
+      const at = (a, dy, w, h, d, mat) => fitting('light', n === 'x' ? [d, h, w] : [w, h, d], [n === 'x' ? x : x + a / S, y + dy, n === 'x' ? z + a / S : z], mat, true);
+      let a = -W / 2 + 0.025;
+      pieces.forEach((p) => {
+        const c = a + WIDTH[p.kind] / 2;
+        if (p.kind === 'switch') parts.push(at(c, 0, 0.026, 0.06, 0.042, p.red ? redRocker : rocker));
+        if (p.kind === 'regulator') {
+          parts.push(at(c, 0, 0.06, 0.06, 0.042, paint(0xe6e3dc, 0.5)));                 // regulator plate
+          parts.push(at(c, 0, 0.034, 0.034, 0.06, knobMat));                            // knob
+          parts.push(at(c, 0.012, 0.004, 0.012, 0.064, paint(0xf2f2ee, 0.5)));           // knob marker
+        }
+        if (p.kind === 'socket') {
+          parts.push(at(c, 0, 0.06, 0.06, 0.042, paint(0xe6e3dc, 0.5)));                 // socket face
+          [[-0.012, -0.008], [0.012, -0.008], [0, 0.014]].forEach(([dx, dy]) => parts.push(at(c + dx, dy, 0.007, 0.007, 0.046, holeMat)));   // three pin holes
+        }
+        if (p.kind === 'indicator') parts.push(at(c, 0.02, 0.012, 0.012, 0.046, lampMat));
+        a += WIDTH[p.kind];
+      });
+      parts.forEach((m) => { m.userData.board = info; boards.push(m); });
     });
     // Sockets, fed from the power run above
-    (E.sockets || []).forEach(({ from, at: [x, y, z], wall: n, big }) => {
+    (E.sockets || []).filter((s) => !s.skip).forEach(({ from, at: [x, y, z], wall: n, big }) => {
       pipe('power', [...lPath(JP[from], [x, z], Hp), [x, y + 0.05, z]]);
       plate('power', x, y, z, n, big ? 0.16 : 0.1, big ? 0.14 : 0.1);
     });
@@ -139,5 +171,5 @@ export function buildServices(svc, houseG) {
   });
   (svc.tags || []).forEach((t) => tag(t.layer, t.text, t.at));
 
-  return { group, layers };
+  return { group, layers, boards };
 }

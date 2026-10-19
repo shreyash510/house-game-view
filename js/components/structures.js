@@ -62,7 +62,7 @@ export function sidePorch(c) {
     rect(x1 - 0.4, z1 - 0.1, x2, end + 0.3, yb, 0.34, white);
     rect(x1 - 0.42, z1 - 0.12, x2 + 0.02, end + 0.32, yb + 0.34, 0.03, 0x9a9a98);   // groove between the two tiers
     rect(x1 - 0.4, z1 - 0.1, x2, end + 0.3, yb + 0.37, 0.2, white);
-    [x1 + 0.5, x1 + 2.0].forEach((x) => { for (let z = z1 + 1.6; z < end; z += 2.7) glow([0.14, 0.02, 0.14], [fx(x), yb - 0.012, fz(z)], 0xfff0c8); });
+    if (c.spots !== false) [x1 + 0.5, x1 + 2.0].forEach((x) => { for (let z = z1 + 1.6; z < end; z += 2.7) glow([0.14, 0.02, 0.14], [fx(x), yb - 0.012, fz(z)], 0xfff0c8); });   // "spots": false = none (e.g. a bulb device instead)
     for (let z = z1 + 3; z < end; z += 6) warmLight(fx((x1 + x2) / 2), yb - 0.3, fz(z), 0.8, 5);
     rect(x1 - 0.2, z1 + 0.1, x2 - 0.3, end + 0.1, yb + 0.57, 0.5, 0x8a8b7f);                                    // planter wall
     [0.62, 0.8, 0.98].forEach((h) => rect(x1 - 0.3, z1, x1 - 0.1, end + 0.2, yb + 0.57 + h - 0.05, 0.07, white));   // horizontal slats
@@ -287,7 +287,7 @@ export function towerWindow(c, ctx) {
   R(f1, f2, 0, depth, H, top - H, 0, upper, towerClad);
   R(f1 - 0.15, f2 + 0.15, 0, depth + 0.15, top, 0.12, white, upper);       // thin white cap
   solidPart(H, top);
-  lamp(mid, 3.1, depth);
+  if (c.towerLamp !== false) lamp(mid, 3.1, depth);   // "towerLamp": false leaves out the lamp on the tower
   if (c.ledge) R(f1 - 0.3, f2 + 0.3, 0, depth + 1.0, lintelTop - 0.02, 0.12, 0, scene, frameWhite);   // white ledge sticking out over the window
   (c.lamps || []).forEach(([a, d]) => lamp(a, 1.9, d));
   if (c.grooves) c.grooves.spans.forEach(([g1, g2]) => c.grooves.ys.forEach((y) => R(g1, g2, 0, 0.04, y, 0.025, hex(c.grooves.color ?? '#8f887d'))));

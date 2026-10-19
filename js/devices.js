@@ -1,10 +1,13 @@
 // Electrical devices: ceiling fans, tube lights, ceiling lights and exhaust fans, all from house.json "devices".
-// Hidden until the "Devices" switch (or key E) turns them on. Fans spin while they are shown.
+// Fans and exhaust fans are hidden until the "Devices" switch (or key E) turns them on, and spin while shown.
+// Lights (bulbs, tube lights, ceiling lights) are always visible, like the switchboards.
 // Plan feet for x / z, metres for y measured from the plinth top like the rest of the house ("H-0.2" style heights work too).
 //   { "type": "fan", "at": [x, z], "y": ceiling height (default "H-0.2"), "rod": downrod length, "sweep": blade tip diameter }
 //   { "type": "ceilingLight", "at": [x, z], "y": ceiling height (default "H-0.2") }
 //   { "type": "tubeLight", "at": [x, y, z], "face": "+x" | "-x" | "+z" | "-z", "length" }   (at = point on the wall face)
+//   { "type": "tubeLight", "at": [x, z], "y", "along": "x" | "z", "length" }                   (on the ceiling, default y "H-0.2")
 //   { "type": "exhaustFan", "at": [x, y, z], "face": ... }                                    (face = which way it looks into the room)
+//   { "type": "bulb", "at": [x, z], "y" }  on the ceiling, or  { "type": "bulb", "at": [x, y, z], "face" }  on a wall
 import { fx, fz, col, paint, updaters, Y } from './core.js';
 
 const FACE_ROT = { '+z': 0, '-z': Math.PI, '+x': Math.PI / 2, '-x': -Math.PI / 2 };   // turns local +z to point along the face
@@ -27,6 +30,10 @@ export function buildDevices(list, houseG) {
   const group = new THREE.Group();
   group.visible = false;
   houseG.add(group);
+  const lightsG = new THREE.Group();   // lights stay visible all the time
+  houseG.add(lightsG);
+  const ALWAYS = new Set(['bulb', 'tubeLight', 'ceilingLight']);
+  let parent = group;                  // where the device being built goes
   const M = mats();
   const spinners = [];   // [object, axis, speed]
 
@@ -35,7 +42,7 @@ export function buildDevices(list, houseG) {
     const [x, z] = c.at, ceil = Y(c.y, Y('H-0.2')), rod = c.rod ?? 0.3, r = (c.sweep ?? 1.2) / 2;
     const g = new THREE.Group();
     g.position.set(fx(x), ceil, fz(z));
-    group.add(g);
+    parent.add(g);
     mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.05, 16), M.body, g, 0, -0.025);
     mesh(new THREE.CylinderGeometry(0.012, 0.012, rod, 8), M.rod, g, 0, -rod / 2);
     mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.1, 20), M.body, g, 0, -rod - 0.05);
@@ -55,8 +62,8 @@ export function buildDevices(list, houseG) {
   // Round LED panel light flush on the ceiling
   function ceilingLight(c) {
     const [x, z] = c.at, ceil = Y(c.y, Y('H-0.2')), r = c.radius ?? 0.15;
-    mesh(new THREE.CylinderGeometry(r, r, 0.03, 24), M.body, group, fx(x), ceil - 0.015, fz(z));
-    mesh(new THREE.CylinderGeometry(r - 0.02, r - 0.02, 0.005, 24), M.light, group, fx(x), ceil - 0.032, fz(z));
+    mesh(new THREE.CylinderGeometry(r, r, 0.03, 24), M.body, parent, fx(x), ceil - 0.015, fz(z));
+    mesh(new THREE.CylinderGeometry(r - 0.02, r - 0.02, 0.005, 24), M.light, parent, fx(x), ceil - 0.032, fz(z));
   }
 
   // Something fixed on a wall: a group at the wall face, its local +z looking into the room
@@ -66,13 +73,23 @@ export function buildDevices(list, houseG) {
     const g = new THREE.Group();
     g.position.set(fx(x), Y(y), fz(z));
     g.rotation.y = FACE_ROT[c.face];
-    group.add(g);
+    parent.add(g);
     return g;
   }
 
   // LED tube light: a slim white batten along the wall with a glowing diffuser
   function tubeLight(c) {
-    const g = onWall(c), len = c.length ?? 1.22;
+    const len = c.length ?? 1.22;
+    if (!c.face) {   // on the ceiling, lying along x (or z), the diffuser facing down
+      const [x, z] = c.at, g = new THREE.Group();
+      g.position.set(fx(x), Y(c.y, Y('H-0.2')), fz(z));
+      if (c.along === 'z') g.rotation.y = Math.PI / 2;
+      parent.add(g);
+      mesh(new THREE.BoxGeometry(len, 0.04, 0.045), M.body, g, 0, -0.02, 0);
+      mesh(new THREE.BoxGeometry(len - 0.06, 0.012, 0.03), M.light, g, 0, -0.044, 0);
+      return;
+    }
+    const g = onWall(c);
     mesh(new THREE.BoxGeometry(len, 0.045, 0.04), M.body, g, 0, 0, 0.02);
     mesh(new THREE.BoxGeometry(len - 0.06, 0.03, 0.012), M.light, g, 0, -0.008, 0.044);
   }
@@ -99,11 +116,26 @@ export function buildDevices(list, houseG) {
     spinners.push([rotor, 'z', c.speed ?? 9]);
   }
 
-  const TYPES = { fan, ceilingLight, tubeLight, exhaustFan };
+  // Small bulb (light point / night lamp): round batten holder with a glowing bulb, on the ceiling or on a wall
+  function bulb(c) {
+    const r = c.radius ?? 0.05;
+    if (c.face) {
+      const g = onWall(c);
+      mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 16), M.body, g, 0, 0, 0.015).rotation.x = Math.PI / 2;
+      mesh(new THREE.SphereGeometry(r, 16, 12), M.light, g, 0, 0, 0.03 + r);
+    } else {
+      const [x, z] = c.at, ceil = Y(c.y, Y('H-0.2'));
+      mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.04, 16), M.body, parent, fx(x), ceil - 0.02, fz(z));
+      mesh(new THREE.SphereGeometry(r, 16, 12), M.light, parent, fx(x), ceil - 0.04 - r, fz(z));
+    }
+  }
+
+  const TYPES = { fan, ceilingLight, tubeLight, exhaustFan, bulb };
   (list || []).forEach((c, i) => {
     if (c.skip) return;
     const make = TYPES[c.type];
     if (!make) throw new Error(`house.json devices: unknown type "${c.type}" (entry ${i}). Known: ${Object.keys(TYPES).join(', ')}`);
+    parent = ALWAYS.has(c.type) ? lightsG : group;
     make(c);
   });
 

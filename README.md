@@ -14,7 +14,7 @@ Then open `http://localhost:8080/`. To load a different house: `http://localhost
 
 Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on).
 
-Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
+Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring, with the fans and lights shown), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
 
 ## Files
 
@@ -42,7 +42,7 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `footprint` | `[rect]`: inside the house (roof hides, walls fade, floor height) |
 | `terraceExtra`, `decks` | Extra terrace areas; outdoor floors at plinth level |
 | `floors` | `{ slabs: [{ rect, color }], marble: [rect] }` |
-| `walls` | `{ along: "x"\|"z", at, from, to, openings: [[from, to, type]], material, outside: 1\|-1 }`. Opening types: `door`, `arch` (open doorway with a rounded top, no door), `win`, `plain` (window without frame), `vent`, `tall` |
+| `walls` | `{ along: "x"\|"z", at, from, to, openings: [[from, to, type]], material, outside: 1\|-1 }`. Opening types: `door`, `arch` (open doorway with a rounded top, no door), `open` (gap; `[from, to, "open", 2.1]` carries the wall on above it from 2.1 m), `win` (sliding window), `plain` (window without frame, for `towerWindow`), `wood` (timber window, 2 x 3 panes and a grill), `vent`, `tall` (`[from, to, "tall", sillY, topY]`) |
 | `doors` | `{ along, at, from, to, hingeAtStart, swing: 1\|-1, handle }` |
 | `roof` | `{ slabs: [rect], canopies: [rect], parapets: [rect], parapetHeight }` |
 | `rooms` | `{ name, rect, ceilingY? }`: ceilings and Room view |
@@ -67,22 +67,30 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `namePlate` | `text: [l1, l2]`, `at`, `size: [w, h]`, `roof` |
 | `label` | Floor text: `text`, `at`, `width` |
 | `steps` | Front steps going toward +z: `x1, x2, z0, tread, count, handrails` |
-| `sidePorch` | Deck against the west wall: `x1, x2, z1, z2, steps: [rect]`, `canopy`, `railing` |
+| `sidePorch` | Deck against the west wall: `x1, x2, z1, z2, steps: [rect]`, `canopy`, `railing`, `spots` (`false` = no small ceiling spots under the canopy) |
 | `staircase` | U-shaped stairs to the terrace: `x1, x2, z1, zMid, z2, landing, steps` |
-| `mumty` | Stair room on the terrace: `x1, x2, z1, z2, height, wall, door: [z1, z2], window: { z1, z2, y0, height }, face` |
+| `mumty` | Stair room on the terrace: `x1, x2, z1, z2, height, wall, door: [z1, z2], doorLeaf, window: { z1, z2, y0, height }, face, top` (`top: { hollow: true }` = open-topped pit on its roof for water tanks; `top: false` = plain roof) |
 | `towerWindow` | Framed window with a tower above: `along, at, outside, frame: [a1, a2], window: [a1, a2], ledge, lamps, grooves` (the wall opening must be `plain`) |
 | `shrine` | Pooja corner: `rect` |
-| `item`, `bed`, `counter`, `sink`, `stove`, `washBasin` | Furniture: `item` = `rect, h, color, y0, solid`; `bed` = `x`; `counter`/`sink` = `rect`; `stove` = `at`; `washBasin` = `x, z` |
+| `item`, `bed`, `counter`, `sink`, `stove`, `washBasin`, `fridge`, `marbleRack` | Furniture: `item` = `rect, h, color, y0, solid`; `bed` = `x`; `counter`/`sink` = `rect`; `stove` = `at`; `washBasin` = `x, z, face: "+x"|"-x"` (wall-side edge, which way it faces); `fridge` = `rect, face, height, color, badge`; `marbleRack` = `rect, shelves, height` |
+| `waterTank`, `cementTank` | Round plastic / RCC tank: `at: [x, z], y0, radius, height, color, roof` |
 | `road`, `hedge`, `fireflies` | `road` = `z, width, pavement: { z, width }, lamps: { x: [...], z }`; `hedge` = `rect`; `fireflies` = `count` |
+| `concreteRoad`, `sandRoad` | `concreteRoad` = `z, width, x: [from, to], joint` (cement road along x); `sandRoad` = `along: "z"|"x", at, from, to, width` (kaccha road) |
+| `openShed` | Farm shed on posts with trusses and a tin gable roof: `rect, eave, rise, ridge: "z"|"x", bays, overhang, color, floor, wall: { height, door: { side, from, width } }` (4 ft compound wall with a gate) |
+| `wireFence`, `coconutTree` | `wireFence` = `rect, height, spacing, strands, gaps: [[side, from, to]]`; `coconutTree` = `at, height, lean, leanDir` |
 
-Materials: `cream`, `taupe`, `white`, `frameWhite`, `steel`, `glass`, `brick`, `charcoalClad`, `towerClad`, `porchClad`, `greyClad`, `mumtyLower`, `mumtyUpper`, `brownCladding` (see `js/materials.js`).
+Materials: `cream`, `taupe`, `white`, `frameWhite`, `steel`, `glass`, `brick`, `charcoalClad`, `towerClad`, `porchClad`, `greyClad`, `mumtyLower`, `mumtyUpper`, `brownCladding`, `vine` (see `js/materials.js`).
+
+### Simple houses (`otherHouses`)
+
+Room-list houses built by `js/makeHouse.js` (full format at the top of that file): `name, at, wall, wallColor, weathered, rooms, openings` (`door`, `win`, `wood`, `vent`, `open`), `roof` (`gable`, `flat`, or `shed` = single slope `{ high: "S"|"N", rise: [low, high], overhang }`), `ota` (3 ft plinth + front veranda: `{ height, depth, steps, roof: { back, front, posts } }`), `kitchenOta` (cooking platform `{ room, side, from, width, depth, height }`), `furniture`.
 
 To add a new kind of part: write a function `(cfg, ctx)` in a file under `js/components/` and list it in `COMPONENTS` in `js/components/index.js`.
 
 ### Services (X-ray)
 
 - `layers`: `{ key: { color, name, kind } }`, with one legend checkbox per layer. `kind` is `"electrical"` (shown by the Electrical switch, key X) or `"plumbing"` (Plumbing switch, key Z); without it, `cold`, `hot` and `drain` are plumbing and the rest electrical.
-- `electrical`: `junctions` (`{ id: [x, z] }`, one light point per room), `links` and `powerLinks` (conduits in the slab, `[a, b]` or `[a, b, "zFirst"]`), `switchboards` (`{ from, at: [x, z], wall }`), `sockets` (`{ from, at: [x, y, z], wall, big }`), `board` (id of the main board junction), `lightY`, `powerY`, `lightPointY`.
+- `electrical`: `junctions` (`{ id: [x, z] }`, one light point per room), `links` and `powerLinks` (conduits in the slab, `[a, b]` or `[a, b, "zFirst"]`), `switchboards` (`{ from, at: [x, z], wall, room, items: [{ name, count, for }] }`: hovering a board, or tapping it on a touch screen, shows a small card with the room and each item, e.g. `{ "name": "Switch", "count": 4, "for": "tube light, fan..." }`, `{ "name": "Fan regulator (roller)", "count": 1 }`), `sockets` (`{ from, at: [x, y, z], wall, big }`), `board` (id of the main board junction), `lightY`, `powerY`, `lightPointY`.
 - `pipes`: `{ layer, r, points: [[x, y, z]] }`.
 - `fittings`: `{ layer, size, at, color, glow, material }`.
 - `tanks`: `{ at: [x, z], y0, radius, height }`.
@@ -98,5 +106,6 @@ Shown with the **Devices** switch (key **E**). Fans spin while shown. Positions 
 |---|---|
 | `fan` | Ceiling fan: `at: [x, z]`, `y` (ceiling, default `"H-0.2"`), `rod`, `sweep`, `speed` |
 | `ceilingLight` | Round LED panel on the ceiling: `at: [x, z]`, `y`, `radius` |
-| `tubeLight` | LED batten on a wall: `at: [x, y, z]` (on the wall face), `face: "+x"|"-x"|"+z"|"-z"` (into the room), `length` |
+| `tubeLight` | LED batten on a wall: `at: [x, y, z]` (on the wall face), `face: "+x"|"-x"|"+z"|"-z"` (into the room), `length`; or on the ceiling: `at: [x, z]`, `y` (default `"H-0.2"`), `along: "x"|"z"` |
 | `exhaustFan` | Exhaust fan in a wall: `at: [x, y, z]`, `face`, `size`, `speed` |
+| `bulb` | Small bulb in a round holder: on the ceiling `at: [x, z]`, `y` (default `"H-0.2"`), or on a wall `at: [x, y, z]`, `face` |

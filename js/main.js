@@ -6,6 +6,7 @@ import {
 import { buildHouse } from './house.js';
 import { buildCeilings, ceilingG } from './ceilings.js';
 import { buildServices } from './services.js';
+import { setupBoardInfo } from './boardInfo.js';
 import { buildDevices } from './devices.js';
 import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
@@ -41,6 +42,7 @@ const { upper, rooms, furnitureG } = house;
 buildCeilings(rooms, data.extraCeilings);
 const services = buildServices(data.services || {}, house.houseG);
 const legendEl = buildLegend(services.layers);
+setupBoardInfo(services.boards, camera, renderer.domElement);   // hover / tap a switchboard to see what is on it
 const devices = buildDevices(data.devices, house.houseG);
 (data.otherHouses || []).forEach(makeHouse);
 setupHud(data);
@@ -219,7 +221,8 @@ function update(dt) {
     ghostMats.forEach((m) => { m.transparent = xray; m.opacity = xray ? 0.25 : 1; m.depthWrite = !xray; m.needsUpdate = true; });
   }
   upper.visible = !inside && !topView && !xray;
-  devices.visible = devicesSwitch.checked;   // "Devices" switch (key E): fans, tube lights, ceiling lights, exhaust fans
+  // "Devices" switch (key E): fans, tube lights, ceiling lights, exhaust fans; they also show with the Electrical X-ray (key X)
+  devices.visible = devicesSwitch.checked || electricalSwitch.checked;
   furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...
   const room = inside ? rooms.find((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2) : null;
   const roomView = view.room && !!room && !view.eye;
