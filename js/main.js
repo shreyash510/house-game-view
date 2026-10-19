@@ -30,7 +30,9 @@ try {
 
 // ---------- Interior design: interior.json (or ?interior=other.json), shown with Settings > Interior (key V) ----------
 try {
-  const res = await fetch(query('interiorFile') || 'interior.json', { cache: 'no-cache' });
+  // Only the main bungalow uses interior.json; another house file names its own with "interiorFile"
+  const interiorUrl = query('interiorFile') || data.interiorFile || (houseUrl === 'house.json' ? 'interior.json' : '');
+  const res = interiorUrl ? await fetch(interiorUrl, { cache: 'no-cache' }) : { ok: false };
   if (res.ok) data.interior = await res.json();
 } catch (err) {
   console.warn('Could not load interior.json:', err);
