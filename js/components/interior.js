@@ -373,3 +373,68 @@ export function shelf(c) {
     }
   }
 }
+
+// ---------- Bed (designed) ----------
+// Low walnut platform on a dark recessed plinth, mattress, quilt with a drop on the sides, a throw across the foot,
+// pillows and accent cushions. Headboard against the north wall at z (default 0.9), like the plain bed.
+// { "x", "z", "length" (ft, 6), "width" (ft, 5.5), "frame" (walnut), "quilt", "throw", "cushions": [..],
+//   "headboard": material (leave out when an upholstered wall panel is the headboard), "headboardH" (m, 1.1) }
+export function bedSet(c) {
+  const cx = c.x, z0 = c.z ?? 0.9, len = c.length ?? 6, hw = (c.width ?? 5.5) / 2, hm = hw - 0.25;
+  const frameM = mat(c.frame ?? 'walnut'), quilt = mat(c.quilt, '#efe7da'), sheet = paint(0xf6f2ea), pil = paint(0xf3eee4);
+  block(cx - hw + 0.3, z0 + 0.3, cx + hw - 0.3, z0 + len - 0.3, FLOOR_Y, 0.08, paint(0x1e1f21));   // recessed plinth
+  block(cx - hw, z0, cx + hw, z0 + len, FLOOR_Y + 0.08, 0.24, frameM);                              // platform
+  if (c.headboard) block(cx - hw - 0.2, z0 - 0.35, cx + hw + 0.2, z0, FLOOR_Y, c.headboardH ?? 1.1, mat(c.headboard));
+  block(cx - hm, z0 + 0.12, cx + hm, z0 + len - 0.12, FLOOR_Y + 0.32, 0.22, sheet);                 // mattress
+  block(cx - hm - 0.04, z0 + len * 0.36, cx + hm + 0.04, z0 + len - 0.08, FLOOR_Y + 0.53, 0.04, quilt);   // quilt on top
+  block(cx - hm - 0.06, z0 + len * 0.36, cx - hm - 0.02, z0 + len - 0.08, FLOOR_Y + 0.36, 0.21, quilt);   // ...hanging down the sides
+  block(cx + hm + 0.02, z0 + len * 0.36, cx + hm + 0.06, z0 + len - 0.08, FLOOR_Y + 0.36, 0.21, quilt);
+  block(cx - hm - 0.04, z0 + len - 0.12, cx + hm + 0.04, z0 + len - 0.06, FLOOR_Y + 0.36, 0.21, quilt);
+  if (c.throw) block(cx - hm - 0.08, z0 + len - 1.7, cx + hm + 0.08, z0 + len - 0.9, FLOOR_Y + 0.57, 0.03, mat(c.throw));
+  const n = hw * 2 >= 6.3 ? 3 : 2, pw = (hm * 2 - 0.3) / n;                                       // pillows (3 on a king bed)
+  for (let i = 0; i < n; i++) {
+    const a = cx - hm + 0.15 + i * pw;
+    block(a + 0.05, z0 + 0.25, a + pw - 0.05, z0 + 1.45, FLOOR_Y + 0.54, 0.16, pil);
+  }
+  (c.cushions || []).forEach((cc, i, all) => {                                                    // accent cushions in front of the pillows
+    const w = 1.1, a = cx - (all.length * w) / 2 + i * w;
+    block(a + 0.05, z0 + 1.45, a + w - 0.05, z0 + 1.8, FLOOR_Y + 0.54, 0.3, mat(cc));
+  });
+  furn(cx - hw, z0, cx + hw, z0 + len, 0, 0, FLOOR_Y, true).visible = false;
+}
+
+// ---------- Wardrobe ----------
+// Full height to the POP (loft above the shutters), shutter lines, black profile handles, dark recessed kick.
+// { "rect", "face" (where the shutters look), "shutters" (3), "h" (shutter height, m, 2.13), "top" (loft top, 3.05),
+//   "material" (oak), "accent": [shutter indexes in "accentMaterial" (flutedWalnut)], "mirror": [indexes with a mirror],
+//   "sliding": true (two big sliding panels, the front one overlapping) }
+export function wardrobe(c) {
+  const { width, depth, map } = frameOf(c.rect, c.face), body = mat(c.material ?? 'oak'), dark = paint(0x1e1f21), black = mat('blackMetal');
+  const h = c.h ?? 2.13, top = c.top ?? 3.05, B = (u0, u1, v0, v1, y0, hh, m) => block(...map(u0, u1, v0, v1), y0, hh, m);
+  B(0, width, 0, depth - 0.05, FLOOR_Y, top - FLOOR_Y, body);                                    // carcass
+  B(0.05, width - 0.05, depth - 0.12, depth - 0.04, FLOOR_Y, 0.09, dark);                         // kick
+  const shutterM = (i) => (c.mirror || []).includes(i) ? material('mirror') : (c.accent || []).includes(i) ? mat(c.accentMaterial ?? 'flutedWalnut') : body;
+  const y0 = FLOOR_Y + 0.1;
+  if (c.sliding) {
+    const half = width / 2 + 0.15;
+    B(0.02, half, depth - 0.05, depth - 0.01, y0, h - 0.1, shutterM(0));
+    B(width - half, width - 0.02, depth - 0.01, depth + 0.03, y0, h - 0.1, shutterM(1));
+    B(half - 0.25, half - 0.2, depth - 0.01, depth + 0.02, y0 + 0.4, h - 0.9, black);           // recessed pull strips
+    B(width - half + 0.2, width - half + 0.25, depth + 0.03, depth + 0.06, y0 + 0.4, h - 0.9, black);
+  } else {
+    const n = c.shutters ?? 3, sw = width / n;
+    for (let i = 0; i < n; i++) {
+      B(i * sw + 0.015, (i + 1) * sw - 0.015, depth - 0.05, depth, y0, h - 0.1, shutterM(i));
+      const hu = i % 2 === 0 ? (i + 1) * sw - 0.18 : i * sw + 0.12;                                // handles meet at the middle of each pair
+      B(hu, hu + 0.06, depth, depth + 0.05, FLOOR_Y + 0.6, 0.95, black);
+    }
+  }
+  // Loft shutters above, with their own line and small handles
+  const n = c.sliding ? 4 : (c.shutters ?? 3), sw = width / n;
+  for (let i = 0; i < n; i++) {
+    B(i * sw + 0.015, (i + 1) * sw - 0.015, depth - 0.05, depth, FLOOR_Y + h + 0.03, top - FLOOR_Y - h - 0.06, body);
+    B(i * sw + sw / 2 - 0.25, i * sw + sw / 2 + 0.25, depth, depth + 0.04, FLOOR_Y + h + 0.06, 0.025, black);
+  }
+  B(0, width, depth - 0.05, depth - 0.04, FLOOR_Y + h, 0.03, dark);                               // line between loft and shutters
+  furn(...map(0, width, 0, depth), 0, 0, FLOOR_Y, true).visible = false;
+}

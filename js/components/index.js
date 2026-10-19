@@ -20,7 +20,7 @@ export const COMPONENTS = {
   // interior.js (interior design, built from interior.json)
   popCeiling: interior.popCeiling, wallFinish: interior.wallFinish, wallPanel: interior.wallPanel, ibox: interior.ibox, sofa: interior.sofa,
   table: interior.table, chair: interior.chair, rug: interior.rug, curtain: interior.curtain, pendant: interior.pendant, floorLamp: interior.floorLamp,
-  plant: interior.plant, frame: interior.frame, shelf: interior.shelf,
+  plant: interior.plant, frame: interior.frame, shelf: interior.shelf, bedSet: interior.bedSet, wardrobe: interior.wardrobe,
   // outdoor.js
   road: outdoor.road, hedge: outdoor.hedge, fireflies: outdoor.fireflies, openShed: outdoor.openShed, concreteRoad: outdoor.concreteRoad, sandRoad: outdoor.sandRoad, wireFence: outdoor.wireFence, coconutTree: outdoor.coconutTree,
 };
