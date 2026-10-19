@@ -308,7 +308,7 @@
     { "type": "ceilingLight", "name": "mumty (stair room on the terrace)", "at": [12, 15.1], "y": 6.4 },
     { "type": "bulb", "name": "mumty outside, east face, over the door", "at": [15, 6.0, 15.1], "face": "+x" },
     { "type": "bulb", "name": "mumty outside, south face", "at": [7.5, 5.8, 21.55], "face": "+z" },
-    { "type": "bulb", "name": "mumty outside, west face, beside the tall window", "at": [-0.75, 5.2, 20.0], "face": "-x" }
+    { "type": "bulb", "skip": true, "name": "mumty outside, west face, beside the tall window", "at": [-0.75, 5.2, 20.0], "face": "-x" }
   ],
   "services": {
     "layers": {
