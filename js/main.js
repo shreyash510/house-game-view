@@ -12,6 +12,7 @@ import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
 import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, view, buildLegend } from './controls.js';
 import { setupHud, showCoords, drawMap } from './hud.js';
+import { updateLaser } from './laser.js';
 
 // ---------- Load the house ----------
 const houseUrl = query('house') || 'house.json';
@@ -26,7 +27,9 @@ try {
 }
 
 // ---------- Design versions: ?v=kitchen-2 loads versions/kitchen-2.json; its lists replace every entry tagged with its "group" ----------
-const versionId = query('v');
+// With no ?v=, house.json's "defaultVersion" is used; ?v=current opens house.json as it is.
+const requestedVersion = query('v') ?? data.defaultVersion ?? '';
+const versionId = requestedVersion === 'current' ? '' : requestedVersion;
 if (versionId) {
   try {
     const res = await fetch(`versions/${versionId}.json`, { cache: 'no-cache' });
@@ -46,7 +49,7 @@ const versionSelect = document.getElementById('versionSelect');
 [{ id: '', name: 'Current (house.json)' }, ...(data.versions || [])].forEach(({ id, name }) => versionSelect.add(new Option(name, id, false, id === (versionId || ''))));
 versionSelect.addEventListener('change', () => {
   const u = new URL(location.href);
-  if (versionSelect.value) u.searchParams.set('v', versionSelect.value); else u.searchParams.delete('v');
+  u.searchParams.set('v', versionSelect.value || 'current');
   location.href = u.href;
 });
 
@@ -313,6 +316,7 @@ function update(dt) {
     camera.updateProjectionMatrix();
   }
   sky.position.copy(camera.position);
+  updateLaser(dt);
   updateLamps(p);
   if (++mapFrame % 6 === 0) drawMap(p, player.rotation.y);   // the minimap does not need 60 updates per second
   showCoords(p);

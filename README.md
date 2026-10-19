@@ -4,7 +4,7 @@ A walkable 3D house (three.js) built entirely from a JSON description. The bunga
 
 ## Run
 
-The game loads JSON with `fetch`, so open it through a local web server, not as a file:
+The game loads JSON with `fetch`, so open it through a local web server, not as a file. Easiest: double-click `start.bat` (starts the server on port 8080 and opens the browser). Or run it by hand:
 
 ```
 npx http-server -c-1 .
@@ -12,7 +12,9 @@ npx http-server -c-1 .
 
 Then open `http://localhost:8080/`. To load a different house: `http://localhost:8080/?house=houses/small-house.json`.
 
-Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on).
+Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on), `?eye=1` (start in eye view), `?laser=0` (start with the laser off).
+
+**Laser pointer** (eye view, camera button or key C; Settings > Laser): a red beam from the right hand to what it points at. It shows only while you move the hand (and for about a second after), then hides. The dot shows its plan position in feet (x, z) and height in m above the plinth top, next to the dot and in the readout box, so you can quote it when asking for a change. Move the hand with I / J / K / L, H = centre; on touch use the round pad left of the joystick (double tap = centre). Code: `js/laser.js`.
 
 Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring, with the fans and lights shown), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
 
@@ -49,7 +51,7 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `extraCeilings`, `zones`, `labels`, `mapOutlines` | Ceilings between rooms; names in the readout `[name, x1, z1, x2, z2]`; floor text `{ text: [l1, l2], at: [x, z], width }`; dashed minimap areas |
 | `lights` | `{ at: [x, z], y, intensity, distance }` |
 | `components`, `fixtures`, `furniture` | Lists of parts by `type` (below). `fixtures` are built-in fittings (counters, sink, WC, wash basin) and always stay; `furniture` (beds, sofas, TV, tables...) can be switched off with the Furniture switch (key F). Add `"skip": true` to leave one out |
-| `versions` | Design versions listed in Settings > Design: `[{ id, name }]`. `?v=<id>` loads `versions/<id>.json`, whose `fixtures`, `furniture`, `components`, `devices`, `services.electrical.sockets` and `services.pipes` lists replace every entry tagged with its `group` (e.g. `"group": "kitchen"`); house.json itself is not changed |
+| `versions` | Design versions listed in Settings > Design: `[{ id, name }]`. `?v=<id>` loads `versions/<id>.json` (with no `?v=`, the top-level `defaultVersion` is loaded; `?v=current` opens house.json as it is), whose `fixtures`, `furniture`, `components`, `devices`, `services.electrical.sockets` and `services.pipes` lists replace every entry tagged with its `group` (e.g. `"group": "kitchen"`); house.json itself is not changed |
 | `otherHouses` | Simple houses from a room list (format at the top of `js/makeHouse.js`) |
 | `spawn` | `{ at: [x, z], y }` |
 | `devices` | Fans and lights shown by the Devices switch (below) |

@@ -40,6 +40,10 @@
       #minimap { width: 132px; height: 138px; left: calc(8px + env(safe-area-inset-left)); bottom: calc(8px + env(safe-area-inset-bottom)); }
       #coords { left: calc(8px + env(safe-area-inset-left)); bottom: calc(154px + env(safe-area-inset-bottom)); font-size: 11px; padding: 4px 8px; }
     }
+    /* Laser pointer (eye view): the hand pad sits left of the joystick, the label follows the red dot */
+    #handPad { --hand: clamp(90px, 22vmin, 120px); position: fixed; right: calc(max(32px, 8vw) + clamp(140px, 36vmin, 200px) + 24px + env(safe-area-inset-right)); bottom: calc(max(40px, 11vh) + env(safe-area-inset-bottom)); display: none; width: var(--hand); height: var(--hand); box-sizing: border-box; border-radius: 50%; background: #3a0a0a66; border: 2px solid #ff5a5a99; touch-action: none; user-select: none; -webkit-user-select: none; place-items: center; }
+    #handKnob { width: 42%; height: 42%; border-radius: 50%; background: #ff7a7acc; box-shadow: 0 2px 8px #0008; pointer-events: none; }
+    #laserLabel { position: fixed; z-index: 4; padding: 3px 7px; border-radius: 5px; background: #000b; color: #ff9a9a; font: 12px/1.35 monospace; white-space: pre; pointer-events: none; }
     #legend { display: none; color: #fff; background: #000b; padding: 10px 12px; border-radius: 6px; font: 13px sans-serif; }
     #legend b { display: block; margin-bottom: 6px; }
     #legend label { display: flex; align-items: center; gap: 8px; margin: 5px 0; cursor: pointer; }
@@ -66,6 +70,7 @@
     <label class="toggle" title="Movable furniture: beds, sofas, TV, tables, fridge, shelves (key F)"><span>Furniture</span><input type="checkbox" id="furnitureSwitch" checked><span class="track"></span></label>
     <button class="toggle" id="roomViewBtn" title="Inside a room: see the whole room in 3D with its slab">Room view</button>
     <label class="toggle" title="Design version: try another layout (kitchen...) without changing house.json"><span>Design</span><select id="versionSelect"></select></label>
+    <label class="toggle" title="Laser pointer in the hand in eye view: shows the plan position of what it points at. Move the hand with I J K L, H = centre (key: camera C first)"><span>Laser</span><input type="checkbox" id="laserSwitch" checked><span class="track"></span></label>
     <label class="toggle"><span>Touch</span><input type="checkbox" id="touchSwitch" checked><span class="track"></span></label>
     </div>
     <div id="legend"><b>Services (X-ray) — X electrical, Z plumbing</b></div>
@@ -78,6 +83,7 @@
   <div id="touchPad">
     <div id="joyBase"><div id="joyKnob"></div></div>
   </div>
+  <div id="handPad" title="Move the laser hand (double tap = centre)"><div id="handKnob"></div></div>
   <canvas id="minimap" width="220" height="230"></canvas>
   <div id="coords"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

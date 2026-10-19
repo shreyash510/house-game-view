@@ -4,9 +4,12 @@
   "group": "kitchen",
 
   "fixtures": [
-    { "type": "sink", "name": "sink in the west corner of the counter", "rect": [0.4, 30.6, 3.8, 32.8] },
-    { "type": "counter", "name": "straight counter along the front wall, from the sink to the east wall", "rect": [3.8, 30.6, 17.25, 32.8] },
-    { "type": "stove", "at": [6.5, 31.1] }
+    { "type": "sink", "name": "sink in the east corner of the counter", "rect": [13.85, 30.6, 17.25, 32.8] },
+    { "type": "counter", "name": "straight counter along the front wall, from the west wall to the sink", "rect": [0.4, 30.6, 13.85, 32.8] },
+    { "type": "stove", "at": [6.5, 31.1] },
+    { "type": "item", "name": "mixer grinder: motor base, west end of the counter", "rect": [1.0, 31.3, 2.3, 32.5], "y0": 0.95, "h": 0.26, "color": "#d9d9d6", "solid": false },
+    { "type": "item", "name": "mixer grinder: steel jar", "rect": [1.2, 31.5, 2.1, 32.3], "y0": 1.21, "h": 0.22, "color": "#a9adb2", "solid": false },
+    { "type": "item", "name": "mixer grinder: jar lid", "rect": [1.3, 31.6, 2.0, 32.2], "y0": 1.43, "h": 0.04, "color": "#2b2c2e", "solid": false }
   ],
 
   "furniture": [
@@ -14,8 +17,8 @@
   ],
 
   "services.pipes": [
-    { "layer": "cold", "name": "kitchen sink", "points": [[13.3, 3.3, 19.6], [13.3, 3.3, 32.8], [2.1, 3.3, 32.8], [2.1, 1.0, 32.8]] },
-    { "layer": "drain", "name": "kitchen sink", "r": 0.032, "points": [[2.1, 0.6, 31.7], [2.1, -0.35, 31.7], [2.1, -0.35, 33.8], [7.1, -0.6, 33.8], [7.1, -1.0, 36.5]] }
+    { "layer": "cold", "name": "kitchen sink", "points": [[13.3, 3.3, 19.6], [13.3, 3.3, 32.8], [15.55, 3.3, 32.8], [15.55, 1.0, 32.8]] },
+    { "layer": "drain", "name": "kitchen sink", "r": 0.032, "points": [[15.55, 0.6, 31.7], [15.55, -0.35, 31.7], [15.55, -0.35, 33.8], [7.1, -0.6, 33.8], [7.1, -1.0, 36.5]] }
   ],
 
   "services.electrical.sockets": [

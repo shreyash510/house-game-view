@@ -113,10 +113,25 @@ export function sink(c) {
   part(new THREE.BoxGeometry(0.07, 0.015, 0.015), tx + 0.06, baseY + 0.05, tz);                           // lever
 }
 
-// Four-burner hob on the worktop; "at" is the north-west burner: { "at": [xf, zf] }
+// Three-burner glass-top gas stove (gas shegadi) on the worktop; "at" is its north-west (front-left) corner: { "at": [xf, zf] }
+const brass = new THREE.MeshStandardMaterial({ color: col(0xc9a24a), roughness: 0.3, metalness: 0.9 });
+const glass = new THREE.MeshStandardMaterial({ color: col(0x0b0c0e), roughness: 0.05, metalness: 0.6 });
 export function stove(c) {
-  const [x0, z0] = c.at;
-  [[0, 0], [0, 0.9], [0.7, 0], [0.7, 0.9]].forEach(([dx, dz]) => furn(x0 + dx, z0 + dz, x0 + dx + 0.7, z0 + dz + 0.7, 0.03, 0x111111, FLOOR_Y + 0.95, false));
+  const [x0, z0] = c.at, w = 2.7, d = 1.4, top = FLOOR_Y + 0.95;
+  box([w * S, 0.012, d * S], [fx(x0 + w / 2), top + 0.026, fz(z0 + d / 2)], 0, scene, glass);          // black glass top
+  box([(w - 0.2) * S, 0.02, (d - 0.2) * S], [fx(x0 + w / 2), top + 0.01, fz(z0 + d / 2)], 0x222222);  // body under the glass
+  for (let i = 0; i < 3; i++) {
+    const x = x0 + 0.45 + i * 0.9, z = z0 + d / 2 + 0.05, X = fx(x), Z = fz(z), y = top + 0.032;
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.025, 20), brass);     // brass burner ring
+    ring.position.set(X, y + 0.012, Z); scene.add(ring);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.03, 16), brass);     // burner cap
+    cap.position.set(X, y + 0.03, Z); scene.add(cap);
+    const grate = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.006, 6, 24), steel);          // pan-support ring
+    grate.rotation.x = Math.PI / 2; grate.position.set(X, y + 0.05, Z); scene.add(grate);
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.03, 12), steel);   // knob on the front edge
+    knob.rotation.x = Math.PI / 2; knob.position.set(X, top + 0.02, fz(z0) - 0.012); scene.add(knob);
+  }
+  obstacle(fx(x0 + w / 2), fz(z0 + d / 2), w * S, d * S, 0, 1.2);
 }
 
 // Hand-wash basin against a wall that runs along z (the wall face is just west of x): cabinet, bowl, tap and mirror

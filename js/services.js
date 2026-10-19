@@ -110,7 +110,7 @@ export function buildServices(svc, houseG) {
     const WIDTH = { switch: 0.04, regulator: 0.075, socket: 0.075, indicator: 0.03 };   // metres across the plate per piece
     const rocker = paint(0x55595e, 0.5), redRocker = paint(0xb0302a, 0.5), knobMat = paint(0x3a3d42, 0.4), holeMat = paint(0x111111, 0.9);
     const lampMat = new THREE.MeshBasicMaterial({ color: col(0xff3b2f) });
-    (E.switchboards || []).forEach(({ from, at: [x, z], wall: n, y = 1.2, room, items }) => {
+    (E.switchboards || []).filter((s) => !s.skip).forEach(({ from, at: [x, z], wall: n, y = 1.2, room, items }) => {
       pipe('light', [...lPath(J[from], [x, z], Hc), [x, y + 0.08, z]]);
       const info = { room: room || from, items: items || [] };
       const pieces = [];

@@ -4,7 +4,8 @@ import { PLINTH, planWalls, toFtX, toFtZ } from './core.js';
 
 const coordsEl = document.getElementById('coords');
 const mapEl = document.getElementById('minimap');
-let zones = [], outlines = [], lastCoords = '';
+let zones = [], outlines = [], lastCoords = '', laserText = '';
+export const setLaserText = (t) => { laserText = t; };   // laser.js adds its reading to the box
 
 // zones: [[name, x1, z1, x2, z2]...] named areas for the readout (first match wins);
 // outlines: [[x1, z1, x2, z2]...] dashed areas on the minimap (porch, steps)
@@ -18,7 +19,7 @@ export function showCoords(p) {
   const xf = toFtX(p.x), zf = toFtZ(p.z);
   const level = p.y > PLINTH + 3 ? 'terrace' : p.y > 0.2 ? 'on the plinth' : 'ground';
   lastCoords = `x: ${xf.toFixed(1)}, z: ${zf.toFixed(1)}`;
-  if (coordsEl) coordsEl.textContent = `PLAN (feet)  x ${xf.toFixed(1)}   z ${zf.toFixed(1)}\nRoom: ${roomAt(xf, zf)} (${level})\nGAME (m)  x ${p.x.toFixed(2)}  y ${p.y.toFixed(2)}  z ${p.z.toFixed(2)}`;
+  if (coordsEl) coordsEl.textContent = `PLAN (feet)  x ${xf.toFixed(1)}   z ${zf.toFixed(1)}\nRoom: ${roomAt(xf, zf)} (${level})\nGAME (m)  x ${p.x.toFixed(2)}  y ${p.y.toFixed(2)}  z ${p.z.toFixed(2)}${laserText ? '\n' + laserText : ''}`;
 }
 addEventListener('keydown', (e) => {
   if (e.code === 'KeyP') {
