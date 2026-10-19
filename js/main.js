@@ -14,6 +14,7 @@ import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwi
 import { setupHud, showCoords, drawMap } from './hud.js';
 import { updateLaser } from './laser.js';
 import { popGroups } from './components/interior.js';
+import { futureGroups } from './components/index.js';
 
 // ---------- Load the house ----------
 const houseUrl = query('house') || 'house.json';
@@ -140,6 +141,7 @@ function collide(pos) {
   for (const o of obstacles) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
     if (o.interior && !interiorG.visible) continue;     // interior design switched off
+    if (o.future && !interiorSwitch.checked) continue;  // future plan (compound wall...) only with Interior on
     if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (pos.y < bottom - 0.7 || pos.y >= top - 0.7) continue;
@@ -160,6 +162,7 @@ function blocked(x, y, z) {
   for (const o of obstacles) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
     if (o.interior && !interiorG.visible) continue;     // interior design switched off
+    if (o.future && !interiorSwitch.checked) continue;  // future plan (compound wall...) only with Interior on
     if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (top - bottom < 1.4) continue;
@@ -270,6 +273,7 @@ function update(dt) {
   devices.visible = devicesSwitch.checked || electricalSwitch.checked;
   // "Interior" switch (key V): the designed rooms (interior.json) replace the plain furniture of those rooms and the plain wall lights
   interiorG.visible = interiorSwitch.checked;
+  futureGroups.forEach((g) => (g.visible = interiorSwitch.checked));   // future plan: compound wall, paver blocks
   plainLights.visible = !interiorSwitch.checked;
   replacedG.visible = !interiorSwitch.checked;   // plain furniture of the rooms interior.json redesigns
   furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...

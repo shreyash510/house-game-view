@@ -132,6 +132,56 @@ export function openShed(c) {
   scene.add(roof);
 }
 
+// ---------- Dumbbell paver blocks (interlocking "I" shaped pavers) over a rectangle of the yard ----------
+// Columns of blocks with wavy side joints so the blocks lock into each other, straight end joints staggered
+// half a block between columns, laid in bands of red and grey columns.
+// { "rect": [x1, z1, x2, z2], "colors": [["#b0523c", ...red shades], ["#9e9c97", ...grey shades]], "band": columns per colour (2),
+//   "block": block size in m (0.22) }
+const paverTex = (colors, band) => makeTexture(512, 512, (ctx, w, h) => {
+  const cols = 8, rows = 8, cw = w / cols, bh = h / rows, amp = cw * 0.16;
+  // Fill each column with its colour band, block by block (each block a slightly different shade)
+  for (let c = 0; c < cols; c++) {
+    const set = colors[Math.floor(c / band) % colors.length];
+    for (let r = -1; r <= rows; r++) {
+      const y0 = r * bh + (c % 2) * bh / 2;
+      ctx.fillStyle = set[Math.floor(Math.random() * set.length)];
+      ctx.fillRect(c * cw - amp, y0, cw + 2 * amp, bh);
+    }
+  }
+  speckle(ctx, w, h, 9000, 2, 0.07);
+  ctx.strokeStyle = '#4e4a44'; ctx.lineWidth = 2.5;
+  // Wavy joints between the columns: the blocks pinch in at the waist and swell at the ends (dumbbell shape)
+  for (let c = 0; c <= cols; c++) {
+    ctx.beginPath();
+    for (let y = 0; y <= h; y += 4) {
+      const x = c * cw + amp * Math.cos((2 * Math.PI * y) / bh);
+      if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  // Straight end joints across each column, half a block apart in the next column
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r <= rows; r++) {
+      const y = r * bh + (c % 2) * bh / 2;
+      ctx.beginPath(); ctx.moveTo(c * cw + amp * Math.cos((2 * Math.PI * y) / bh), y); ctx.lineTo((c + 1) * cw + amp * Math.cos((2 * Math.PI * y) / bh), y); ctx.stroke();
+    }
+  }
+});
+export function pavers(c) {
+  const [x1, z1, x2, z2] = c.rect;
+  const colors = c.colors ?? [['#b0523c', '#a84a35', '#b85c43', '#9e4632'], ['#a19f9a', '#9a9893', '#aaa8a2', '#93918c']];
+  const m = textured(paverTex(colors, c.band ?? 2), (c.block ?? 0.22) * 8, 0.9, 0.4);
+  ghostMats.push(m);
+  rect(x1, z1, x2, z2, 0, 0.03, 0, scene, m).castShadow = false;
+}
+
+// ---------- Compound wall round the plot: the same plastered brick wall as round the shed, with one steel gate ----------
+// { "rect": [x1, z1, x2, z2], "height" (m, default 1.22), "gate": { "side": "N" | "S" | "E" | "W", "from" (ft from the west / north end), "width" (ft) } }
+export function compound(c) {
+  const steel = paint(0x3b3e42, 0.5);
+  steel.metalness = 0.5;
+  compoundWall(c.rect, { height: c.height, door: c.gate }, steel);
+}
 // Low plastered brick wall round a rectangle, with a coping on top and one steel gate that swings open as you come near
 function compoundWall([x1, z1, x2, z2], w, steel) {
   const h = w.height ?? 1.22, t = 0.75;   // wall height (m), thickness (ft, a 9-inch brick wall)

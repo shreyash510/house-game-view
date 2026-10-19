@@ -246,6 +246,9 @@
     { "type": "cementTank", "name": "ground water tank, cement, 10,000 L (2.5 m across inside, 2.05 m deep)", "at": [-40.6, 0.8], "y0": 0, "radius": 1.4, "height": 2.05, "ground": true },
     { "type": "wireFence", "name": "barbed-wire compound of the neighbours' property, behind the houses up to the concrete road",
       "rect": [-40.2, -65.5, 112.3, -7.8], "height": 1.5, "spacing": 8, "strands": 4, "gaps": [["N", 101.4, 111.4], ["S", 101.4, 111.4]] },
+    { "type": "pavers", "future": true, "name": "dumbbell paver blocks, red and grey bands: front yard from the west compound wall to the tin-roof house, from the kitchen front to the south compound wall", "rect": [-6.6, 33.3, 40.6, 69.6] },
+    { "type": "compound", "future": true, "name": "compound wall round the plot (house, tin-roof house, shed, coconut trees), 12 ft main gate at the east end of the front sand road, facing the village sand road, centred at z 77 (earlier: east side from 49.8; first on the south side in front of the porch steps: side S, from 28.5)", "rect": [-7, -2.5, 100, 84], "height": 1.5, "gate": { "side": "E", "from": 73.5, "width": 12 } },
+    { "type": "sandRoad", "future": true, "name": "front sand road inside the compound, from the main gate west along the front wall (z 71-83)", "along": "x", "at": 77, "from": -6, "to": 106.4, "width": 12 },
     { "type": "sandRoad", "name": "sand road, 6 ft east of the shed", "along": "z", "at": 106.4, "from": -285, "to": 315, "width": 10 },
     { "type": "fireflies", "count": 60 }
   ],
