@@ -9,6 +9,39 @@ The game already knows how to draw a house from JSON (format in `README.md`). Th
 
 Output: **`houses/<short-name>.json`**, opened with `?house=houses/<short-name>.json` (and `start.bat` / the screenshot script). `house.json`, the user's main bungalow, is never touched by this skill. If the user wants the new building placed on the existing plot next to the bungalow instead, a small one can go into `house.json` → `otherHouses` (room-list format at the top of `js/makeHouse.js`); ask first, because that file is shared.
 
+## How the game is built: reusable components driven by JSON
+
+Nothing in a house is hand-placed geometry in code. Every part is a **reusable component**: a function `(cfg, ctx)` that draws one *kind* of thing from its JSON settings, registered by its `"type"` name in `js/components/index.js`. A house file is a list of these with different settings. So a new building is mostly a new JSON file, and code is written only for a kind of part that does not exist yet.
+
+| File | Components (the `"type"` names you can use) |
+|---|---|
+| `js/components/basic.js` | `block`, `piece`, `glow`, `solid`, `wallLamp`, `spots`, `namePlate`, `waterTank`, `cementTank` |
+| `js/components/structures.js` | `steps`, `sidePorch`, `staircase`, `mumty`, `towerWindow`, `shrine` |
+| `js/components/furniture.js` | `item`, `bed`, `counter`, `sink`, `stove`, `washBasin`, `fridge`, `marbleRack`, `label` |
+| `js/components/outdoor.js` | `road`, `hedge`, `fireflies`, `openShed`, `concreteRoad`, `sandRoad`, `wireFence`, `coconutTree`, `compound`, `pavers` |
+| `js/components/interior.js` | `popCeiling`, `wallFinish`, `wallPanel`, `ibox`, `sofa`, `table`, `chair`, `rug`, `curtain`, `pendant`, `floorLamp`, `plant`, `frame`, `shelf`, `bedSet`, `wardrobe` |
+| `js/makeHouse.js` | whole simple houses from a room list (`otherHouses`) |
+| `js/devices.js`, `js/services.js` | fans and lights (`devices`), wiring and plumbing for X-ray (`services`) |
+
+The exact settings of each type are in `README.md` → Component types; the file itself shows defaults. Named materials (`"material": "brick"`, `"walnut"`...) come from `js/materials.js`.
+
+Flags that work on any entry:
+- `"name"`: what it is, so the user can point at it later.
+- `"skip": true`: hide it without deleting it.
+- `"future": true`: future plan, shown only with Settings > Interior.
+- `"group"`: replaced by a design version in `versions/`.
+- `"ground": true`: heights measured from the ground, not the plinth.
+- `"roof": true`: hidden when you walk inside.
+
+**When the photo shows something no component covers** (a jaali screen, an arched gate, a sloped Mangalore-tile roof, a spiral stair...), add a **new reusable component** instead of piling up dozens of `block`s:
+1. Write it general: give it a size or rect, the useful options, and sensible defaults, so the next house can use it with other settings.
+2. Put it in the right file under `js/components/` and reuse the `core.js` helpers (`rect`, `box`, `furn`, `glow`, `makeTexture`, `obstacle`) and `matOf`/`material` from `materials.js`.
+3. List it in `COMPONENTS` in `js/components/index.js`, and in `GROUND` if it stands on the ground.
+4. Add a row for it to the README Component types table, then use it from the JSON.
+5. Check it with `node --check js/components/<file>.js`.
+
+A one-off tweak (a single coloured band, one extra post) is fine as a `block` or `piece`; a shape you would draw more than twice deserves a component.
+
 ## 1. Read the plan into a room schedule
 
 Work out, and write down as a table in your reply before building:

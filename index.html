@@ -22,6 +22,7 @@
     #settingsPanel[hidden] { display: none; }
     #settingsPanel .toggle { justify-content: space-between; }
     .toggle { color: #fff; background: #0008; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; user-select: none; }
+    .toggle[hidden] { display: none; }
     button.toggle { border: 0; font: inherit; cursor: pointer; }
     button.toggle.on { background: #3aa655; }
     .toggle input { display: none; }
@@ -64,8 +65,8 @@
     <button id="settingsBtn" title="Settings" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel">&#9881;</button>
     <div id="settingsPanel" hidden>
     <label class="toggle"><span>Transparent</span><input type="checkbox" id="transparentSwitch" checked><span class="track"></span></label>
-    <label class="toggle" title="X-ray: see the wiring, light points, switchboards and sockets inside the walls (key X)"><span>Electrical</span><input type="checkbox" id="electricalSwitch"><span class="track"></span></label>
-    <label class="toggle" title="X-ray: see the water pipes, tanks, pump and drains inside the walls and under the ground (key Z)"><span>Plumbing</span><input type="checkbox" id="plumbingSwitch"><span class="track"></span></label>
+    <label class="toggle" hidden title="X-ray: see the wiring, light points, switchboards and sockets inside the walls (key X)"><span>Electrical</span><input type="checkbox" id="electricalSwitch"><span class="track"></span></label>
+    <label class="toggle" hidden title="X-ray: see the water pipes, tanks, pump and drains inside the walls and under the ground (key Z)"><span>Plumbing</span><input type="checkbox" id="plumbingSwitch"><span class="track"></span></label>
     <label class="toggle" title="Electrical devices: ceiling fans, tube lights, ceiling lights and exhaust fans (key E)"><span>Devices</span><input type="checkbox" id="devicesSwitch"><span class="track"></span></label>
     <label class="toggle" title="Movable furniture: beds, sofas, TV, tables, fridge, shelves (key F)"><span>Furniture</span><input type="checkbox" id="furnitureSwitch" checked><span class="track"></span></label>
     <label class="toggle" title="Interior design: POP ceilings, wall finishes, designed furniture, curtains and lights in place of the plain furniture (key V)"><span>Interior</span><input type="checkbox" id="interiorSwitch"><span class="track"></span></label>

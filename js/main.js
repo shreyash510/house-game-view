@@ -1,6 +1,6 @@
 // Entry point: load the house JSON (house.json, or ?house=other.json), build it, then run the game loop.
 import {
-  realScene, camera, renderer, sky, H, PLINTH, FLOOR_Y, ROOF_REACH, S, fx, fz, toFtX, toFtZ, rand, box, textured, makeTexture,
+  realScene, camera, renderer, sky, H, PLINTH, FLOOR_Y, ROOF_REACH, S, fx, fz, toFtX, toFtZ, rand, box, textured, makeTexture, speckle,
   obstacles, doors, wallMats, glassMat, ghostMats, ghost, updateLamps, setNight, updaters, walkables, col,
 } from './core.js';
 import { buildHouse } from './house.js';
@@ -78,7 +78,21 @@ const grassTex = makeTexture(256, 256, (ctx, w, h) => {
     ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + rand(-2, 2), y - rand(2, 6)); ctx.stroke();
   }
 });
-box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, ghost(textured(grassTex, 3, 0.95, 0.5)));
+// "ground": "dry" in house.json = dry, light tan village earth with a few dry grass tufts (as on the satellite view)
+const dryTex = () => makeTexture(256, 256, (ctx, w, h) => {
+  ctx.fillStyle = '#8f7d63'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 260; i++) {   // soft lighter and darker patches
+    const g = rand(0, 1) < 0.5 ? 'rgba(70,55,40,0.10)' : 'rgba(190,175,150,0.10)';
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, rand(6, 22), 0, 7); ctx.fill();
+  }
+  speckle(ctx, w, h, 9000, 2, 0.14);
+  for (let i = 0; i < 1500; i++) {   // dry grass
+    ctx.strokeStyle = `rgb(${rand(110, 150)},${rand(100, 130)},${rand(60, 80)})`;
+    const x = Math.random() * w, y = Math.random() * h;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + rand(-2, 2), y - rand(2, 5)); ctx.stroke();
+  }
+});
+box([240, 0.2, 240], [0, -0.1, 0], 0, realScene, ghost(textured(data.ground === 'dry' ? dryTex() : grassTex, 3, 0.95, 0.5)));
 
 // ---------- The house, its ceilings and services, and any simple neighbour houses ----------
 const house = buildHouse(data);
@@ -121,6 +135,8 @@ function groundHeight(x, z, currentY) {
   const xf = toFtX(x), zf = toFtZ(z);
   const inBuilding = buildings.find((b) => b.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2));
   if (inBuilding) {   // floor of a makeHouse() house (raised when it stands on an ota plinth), or its flat roof once you are up there
+    const onStair = inBuilding.stair && inBuilding.stair(xf, zf, currentY);   // inside staircase of a makeHouse() house
+    if (onStair != null) return onStair;
     if (inBuilding.terrace && currentY > inBuilding.terrace - 0.6) return inBuilding.terrace;
     return inBuilding.floor ?? 0.1;
   }
@@ -144,6 +160,7 @@ function collide(pos) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
     if (o.interior && !interiorG.visible) continue;     // interior design switched off
     if (o.future && !interiorSwitch.checked) continue;  // future plan (compound wall...) only with Interior on
+    if (o.current && interiorSwitch.checked) continue;  // today's state that the future plan replaces
     if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (pos.y < bottom - 0.7 || pos.y >= top - 0.7) continue;
@@ -165,6 +182,7 @@ function blocked(x, y, z) {
     if (o.furniture && !furnitureG.visible) continue;   // furniture switched off: walk through where it stood
     if (o.interior && !interiorG.visible) continue;     // interior design switched off
     if (o.future && !interiorSwitch.checked) continue;  // future plan (compound wall...) only with Interior on
+    if (o.current && interiorSwitch.checked) continue;  // today's state that the future plan replaces
     if (o.replaced && !replacedG.visible) continue;     // plain furniture of a redesigned room, while Interior is on
     const [cx, cz, w, d, bottom, top] = o;
     if (top - bottom < 1.4) continue;
@@ -275,7 +293,7 @@ function update(dt) {
   devices.visible = devicesSwitch.checked || electricalSwitch.checked;
   // "Interior" switch (key V): the designed rooms (interior.json) replace the plain furniture of those rooms and the plain wall lights
   interiorG.visible = interiorSwitch.checked;
-  futureGroups.forEach((g) => (g.visible = interiorSwitch.checked));   // future plan: compound wall, paver blocks
+  futureGroups.forEach((g) => (g.visible = g.userData.current ? !interiorSwitch.checked : interiorSwitch.checked));   // future plan: compound wall, paver blocks ("current" parts: the reverse)
   plainLights.visible = !interiorSwitch.checked;
   replacedG.visible = !interiorSwitch.checked;   // plain furniture of the rooms interior.json redesigns
   furnitureG.visible = furnitureSwitch.checked;   // "Furniture" switch (key F): beds, sofas, TV, tables...
@@ -286,6 +304,10 @@ function update(dt) {
     const under = p.y < b.wall - 0.4 && (b.hideAreas || b.rooms).some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2);
     b.roof.visible = !under || view.eye;   // in eye view you see the roof above you, as a person would
     (b.covers || []).forEach((m) => (m.visible = !under || view.eye));
+    if (b.upper) {   // rooms on the roof: their own roof lifts off while you stand in one
+      const inUp = p.y > b.terrace - 0.5 && b.upper.rooms.some((r) => xf > r.x1 && xf < r.x2 && zf > r.z1 && zf < r.z2);
+      b.upper.roof.visible = !inUp || view.eye;
+    }
   });
   if (roomView) {
     roomSlab.scale.set((room.x2 - room.x1) * S, 1, (room.z2 - room.z1) * S);

@@ -23,6 +23,13 @@
 //              "roof": { "back": 2.55, "front": 2.15, "posts": [0.4, 8, 16, 23.6] },          // optional tin veranda roof on posts
 //              "entry": "E", "entryWidth": 4,                                                  // optional: a gap in the middle of this end ("E" or "W"); "steps": { "count": 0 } for no steps
 //              "compound": { "height": 1.2, "thickness": 0.75 } },                             // optional low wall along the front and both ends (open at the entry)
+//     "stairTower": { "room": "Hall corner", "height": 2.3, "color": "#8c8a7e", "flip": false },   // flip: true = the room is open on its south side
+//       // optional inside staircase in that room up to the flat roof: a U of two flights (the lower one climbs west along the north
+//       // side from the east end, the upper one climbs east along the south side), a landing at the west end, and a stair room
+//       // (mumty) on the roof over it with an open doorway and a tall lit window on the south and east sides. Use it instead of "stairs".
+//     "terraceRooms": [{ "name": "Room 1", "x": 0, "z": 0, "w": 10.75, "d": 10.75, "wall": 2.9,
+//                        "openings": [{ "side": "E", "from": 8, "width": 2.5, "type": "door" }] }],
+//       // optional rooms on the flat roof (positions relative to "at", sides N/S/E/W as for the rooms below), each with its own roof slab
 //     "kitchenOta": { "room": "Kitchen", "side": "N", "from": 0.6, "width": 8, "depth": 2, "height": 0.8 },
 //       // optional cooking platform inside a room, against one of its walls (from = feet from the start of that wall, as for openings)
 //       // optional: the house stands on a plinth this high (metres), with a raised platform (ota) "depth" feet deep along the
@@ -30,7 +37,7 @@
 //   }
 import {
   scene, realScene, useScene, obstacle, walkables, H, setH, T, S, fx, fz, rect, wallLine, door, label, warmLight, furn, paint, textured, makeTexture, plasterTex,
-  scaleUV, speckle, rand, hex, rod,
+  scaleUV, speckle, rand, hex, rod, glow,
 } from './core.js';
 
 export const buildings = [];   // every house made by makeHouse(): used for floors and for hiding roofs when you walk inside
@@ -85,6 +92,7 @@ export function makeHouse(cfg) {
   // 0. Plinth and ota: built on the ground, then the rest of the house is built on top of them
   const ota = cfg.ota, P = ota ? ota.height ?? 0.9 : 0;
   const covers = ota ? buildOta(cfg, ota, bounds, P, wallH) : [];   // veranda roof sheets: hidden with the roof while you are under them
+  const tower = cfg.stairTower ? towerGeometry(cfg.stairTower, byName[cfg.stairTower.room], P, wallH) : null;
   const raised = new THREE.Group();
   raised.position.y = P;
   realScene.add(raised);
@@ -113,7 +121,7 @@ export function makeHouse(cfg) {
   rooms.forEach((r) => {
     rect(r.x1, r.z1, r.x2, r.z2, 0, 0.1, hex(cfg.floorColor ?? 0xa9a69f));
     const cx = (r.x1 + r.x2) / 2, cz = (r.z1 + r.z2) / 2;
-    label([r.name, `${r.w} x ${r.d} ft`], cx, cz, Math.min(3.4, r.w * S * 0.7));
+    if (!r.noLabel) label([r.name, `${r.w} x ${r.d} ft`], cx, cz, Math.min(3.4, r.w * S * 0.7));
     warmLight(fx(cx), 2.2, fz(cz), 0.9, 8);
   });
   if (cfg.kitchenOta) kitchenOta(cfg.kitchenOta, byName[cfg.kitchenOta.room], textured(plasterTex('#9d978b'), 1.2, 0.9));   // cement base, darker than the walls
@@ -147,7 +155,16 @@ export function makeHouse(cfg) {
     // A slab over each room (so an outside staircase beside the house stays open to the sky), a walkable terrace on top,
     // and a parapet along the outer edges only, with a gap where the outside stairs arrive
     const slabMat = paint(0xe6e3dc), lip = 0.25, pt = 0.5, ph = roofCfg.parapet ?? 0.9;   // overhang (ft), parapet thickness (ft) and height (m)
-    rooms.forEach((r, i) => rect(r.x1 - lip, r.z1 - lip, r.x2 + lip, r.z2 + lip, wallH + i * 0.002, 0.2, 0, roof, slabMat));
+    rooms.forEach((r, i) => {
+      if (tower && r.name === tower.r.name) {   // stairwell: slab only over the east end of the north lane and of the south lane
+        const zr = (a, b) => [Math.min(tower.mz(a), tower.mz(b)), Math.max(tower.mz(a), tower.mz(b))];
+        const [a1, a2] = zr(r.z1 - lip, tower.zm), [b1, b2] = zr(tower.zm, r.z2 + lip);
+        rect(tower.xs, a1, r.x2 + lip, a2, wallH + i * 0.002, 0.2, 0, roof, slabMat);
+        rect(tower.xe, b1, r.x2 + lip, b2, wallH + i * 0.002, 0.2, 0, roof, slabMat);
+        return;
+      }
+      rect(r.x1 - lip, r.z1 - lip, r.x2 + lip, r.z2 + lip, wallH + i * 0.002, 0.2, 0, roof, slabMat);
+    });
     const st = cfg.stairs, stairTop = st && {   // the edge of the roof where the stairs come up
       horiz: (st.up ?? 'N') === 'N' || st.up === 'S',
       c: { N: oz + st.z, S: oz + st.z + st.d, W: ox + st.x, E: ox + st.x + st.w }[st.up ?? 'N'],
@@ -155,6 +172,7 @@ export function makeHouse(cfg) {
     };
     const minus = (segs, a, b) => segs.flatMap(([p, q]) => (b <= p || a >= q ? [[p, q]] : [[p, a], [b, q]].filter(([u, v]) => v - u > 0.01)));
     rooms.forEach((r) => {
+      if (tower && r.name === tower.r.name) return;
       [['N', true, r.z1, r.x1, r.x2, -1], ['S', true, r.z2, r.x1, r.x2, 1], ['W', false, r.x1, r.z1, r.z2, -1], ['E', false, r.x2, r.z1, r.z2, 1]].forEach(([, horiz, c, a1, a2, out]) => {
         let segs = [[a1, a2]];
         rooms.forEach((q) => {   // parts shared with a neighbouring room are not an outer edge
@@ -212,10 +230,141 @@ export function makeHouse(cfg) {
   const hideAreas = [...rooms];
   if (ota) hideAreas.push({ x1: bounds.x1 - 0.25, z1: bounds.z2, x2: bounds.x2 + 0.25, z2: bounds.z2 + (ota.depth ?? 5) });
   if (cfg.stairs) buildStairs(cfg, cfg.stairs, P + wallH + 0.2);   // outside staircase up to the flat roof
+  const stair = tower && buildStairTower(tower, roof, wallH);      // inside staircase and the stair room on the roof
+  const upper = cfg.terraceRooms && roofCfg.type === 'flat' ? buildTerraceRooms(cfg, P + wallH + 0.2, wallMat) : null;   // rooms on the roof
   const terrace = roofCfg.type === 'flat' ? P + wallH + 0.2 : null;   // top of a flat roof: you can walk on it once you are up there
-  const house = { name: cfg.name, rooms, bounds, roof, covers, hideAreas, wall: P + wallH, floor: P + 0.1, terrace };
+  const house = { name: cfg.name, rooms, bounds, roof, covers, hideAreas, wall: P + wallH, floor: P + 0.1, terrace, stair, upper };
   buildings.push(house);
   return house;
+}
+
+// Rooms on the flat roof: walls and openings like the rooms below, standing on the terrace, each with a roof slab of its own.
+// The roof slabs lift off while you stand inside one of them (main.js).
+function buildTerraceRooms(cfg, terraceY, wallMat) {
+  const [ox, oz] = cfg.at;
+  const rooms = cfg.terraceRooms.map((r) => ({ ...r, x1: ox + r.x, z1: oz + r.z, x2: ox + r.x + r.w, z2: oz + r.z + r.d }));
+  const up = new THREE.Group();
+  up.position.y = terraceY;
+  realScene.add(up);
+  const roof = new THREE.Group();
+  realScene.add(roof);
+  const savedH = H;
+  rooms.forEach((r) => {
+    const h = r.wall ?? 2.9, ops = [];
+    (r.openings || []).forEach((o) => {
+      const horiz = o.side === 'N' || o.side === 'S', c = { N: r.z1, S: r.z2, W: r.x1, E: r.x2 }[o.side], a = (horiz ? r.x1 : r.z1) + o.from;
+      ops.push({ horiz, c, a, b: a + o.width, type: o.type || 'win', side: o.side });
+    });
+    useScene(up, terraceY);
+    setH(h);
+    [[true, r.z1, r.x1, r.x2], [true, r.z2, r.x1, r.x2], [false, r.x1, r.z1, r.z2], [false, r.x2, r.z1, r.z2]].forEach(([horiz, c, a1, a2]) =>
+      wallLine(horiz, c, a1, a2, ops.filter((o) => o.horiz === horiz && o.c === c).map((o) => [o.a, o.b, o.type]), wallMat));
+    const swingInto = { S: 1, N: -1, E: -1, W: 1 };
+    ops.forEach((o) => { if (o.type === 'door') door(o.horiz, o.c, o.a, o.b, true, swingInto[o.side]); });
+    rect(r.x1, r.z1, r.x2, r.z2, 0, 0.1, hex(cfg.floorColor ?? 0xa9a69f));
+    const cx = (r.x1 + r.x2) / 2, cz = (r.z1 + r.z2) / 2;
+    if (!r.noLabel) label([r.name, `${r.w} x ${r.d} ft`], cx, cz, Math.min(3.4, r.w * S * 0.7));
+    warmLight(fx(cx), h - 0.8, fz(cz), 0.9, 8);
+    rect(r.x1 - 0.6, r.z1 - 0.6, r.x2 + 0.6, r.z2 + 0.6, terraceY + h, 0.15, 0, roof, paint(0xe6e3dc));   // roof slab with a slim overhang
+  });
+  setH(savedH);
+  useScene(realScene, 0);
+  return { rooms, roof };
+}
+
+// Inside staircase: sizes in plan feet from the inner faces of the room. Two flights of 8 steps side by side and a landing
+function towerGeometry(t, r, P, wallH) {
+  if (!r) throw new Error(`house.json: stairTower room "${t.room}" not found`);
+  const ext = T / 2 / S, n = 8;
+  const xi1 = r.x1 + ext, xi2 = r.x2 - ext, zi1 = r.z1 + ext, zi2 = r.z2 - ext, zm = (zi1 + zi2) / 2;
+  const xl = xi1 + 2.2, xe = xi2 - 1.3, tread = (xe - xl) / n, fl = P + 0.1, terrace = P + wallH + 0.2;
+  const flip = !!t.flip, mz = (z) => (flip ? r.z1 + r.z2 - z : z);   // flip mirrors the whole stair north-south
+  return { r, cfg: t, ext, n, xi1, xi2, zi1, zi2, zm, xl, xe, xs: xe - 4 * tread, tread, fl, terrace, rise: (terrace - fl) / (2 * n), wallH, flip, mz };
+}
+
+// Lower flight: north side, from the east end climbing west to the landing; upper flight: south side, climbing east to the
+// roof. The stair room (mumty) stands on the roof over the room: open doorway on the north side, tall lit window on the south.
+function buildStairTower(g, roof, wallH) {
+  const { r, ext, n, xi1, xi2, zi1, zi2, zm, xl, xe, xs, tread, fl, terrace, rise, mz } = g;
+  const R = (x1, z1, x2, z2, y0, h, color, parent, material) => {   // rect with the z range mirrored when the stair is flipped
+    const p = mz(z1), q = mz(z2);
+    return rect(x1, Math.min(p, q), x2, Math.max(p, q), y0, h, color, parent, material);
+  };
+  const O = (cx, cz, w, d, bottom, top) => obstacle(cx, fz(mz(cz)), w, d, bottom, top);
+  const mat = textured(plasterTex('#b3ada3'), 1.2, 0.9), nose = paint(0x8f8a82, 0.8);
+  const top = (k) => fl + rise * k;   // top of step number k (the landing is step n)
+  for (let i = 0; i < n; i++) {   // lower flight
+    const a = xe - (i + 1) * tread, b = xe - i * tread;
+    R(a, zi1, b, zm, 0, top(i + 1), 0, realScene, mat);
+    R(a, zi1, a + 0.12, zm, top(i + 1) - 0.03, 0.035, 0, realScene, nose);
+  }
+  R(xi1, zi1, xl, zi2, 0, top(n), 0, realScene, mat);   // landing
+  for (let j = 0; j < n; j++) {   // upper flight
+    const a = xl + j * tread, b = a + tread;
+    R(a, zm, b, zi2, 0, top(n + 1 + j), 0, realScene, mat);
+    R(b - 0.12, zm, b, zi2, top(n + 1 + j) - 0.03, 0.035, 0, realScene, nose);
+  }
+  // Steel railings: the open north edge (lower flight and landing) and between the two flights
+  const V = (x, y, z) => new THREE.Vector3(fx(x), y, fz(mz(z)));
+  const rail = (a, b, post) => {
+    rod(a, b, 0.03);
+    [0.3, 0.6].forEach((d) => rod(a.clone().setY(a.y - d), b.clone().setY(b.y - d), 0.015));
+    for (let k = 0; k <= post; k++) { const p = a.clone().lerp(b, k / post); rod(p.clone().setY(p.y - 0.95), p, 0.03); }
+  };
+  const zN = zi1 + 0.15, zS = zm + 0.15;
+  rail(V(xe - tread, top(2) + 0.95, zN), V(xl, top(n) + 0.95, zN), 4);
+  rail(V(xl, top(n) + 0.95, zN), V(xi1 + 0.15, top(n) + 0.95, zN), 1);
+  rail(V(xl, top(n + 1) + 0.95, zS), V(xe, top(2 * n) + 0.95, zS), 4);
+  // Solid: the north rail, the partition between the flights, the edge of the roof opening over the lower flight
+  O(fx((xi1 + xe - 1.5 * tread) / 2), zi1, (xe - 1.5 * tread - xi1) * S, 0.15, 0, terrace - 0.4);
+  O(fx((xl + xe) / 2), zm, (xe - xl) * S, 0.12, 0, terrace + 1.0);
+  O(fx((xe + xi2) / 2), zm, (xi2 - xe) * S, 0.12, 0, wallH);
+  O(fx(xs), (zi1 + zm) / 2, 0.12, (zm - zi1) * S, terrace - 0.3, terrace + 1.1);
+
+  // Stair room on the roof
+  const T2 = g.cfg.height ?? 2.3, TOP = terrace + T2, cl = textured(plasterTex(g.cfg.color || '#8c8a7e'), 1.2, 0.9), white = paint(0xf1efe9, 0.7);
+  const X1 = r.x1 - ext, X2 = r.x2 + ext, Z1 = r.z1 - ext, Z2 = r.z2 + ext;
+  const wall = (x1, z1, x2, z2, y0, y1) => {
+    if (y1 - y0 < 0.01 || x2 - x1 < 0.01 || z2 - z1 < 0.01) return;
+    R(x1, z1, x2, z2, y0, y1 - y0, 0, roof, cl);
+    O(fx((x1 + x2) / 2), (z1 + z2) / 2, (x2 - x1) * S, (z2 - z1) * S, terrace, y1);
+  };
+  const d1 = xe - 2.2, d2 = xi2 - 0.3;   // doorway over the top of the stairs, in the north wall
+  wall(X1, Z1, d1, r.z1 + ext, wallH, TOP); wall(d2, Z1, X2, r.z1 + ext, wallH, TOP);
+  wall(d1, Z1, d2, r.z1 + ext, terrace + 2.1, TOP);
+  const w1 = xi1 + 1.5, w2 = xi2 - 1.5, sill = terrace + 0.3, head = terrace + 1.9;   // tall window in the south wall
+  wall(X1, r.z2 - ext, w1, Z2, wallH, TOP); wall(w2, r.z2 - ext, X2, Z2, wallH, TOP);
+  wall(w1, r.z2 - ext, w2, Z2, wallH, sill); wall(w1, r.z2 - ext, w2, Z2, head, TOP);
+  glow([(w2 - w1) * S, head - sill, 0.05], [fx((w1 + w2) / 2), (sill + head) / 2, fz(mz(r.z2))], 0xffd08a, roof);
+  [[w1 - 0.2, w1], [w2, w2 + 0.2]].forEach(([a, b]) => R(a, r.z2 - 0.3, b, r.z2 + 0.3, sill - 0.05, head - sill + 0.1, 0, roof, white));
+  R(w1 - 0.2, r.z2 - 0.3, w2 + 0.2, r.z2 + 0.3, head, 0.08, 0, roof, white);
+  R(w1 - 0.2, r.z2 - 0.3, w2 + 0.2, r.z2 + 0.3, sill - 0.08, 0.08, 0, roof, white);
+  wall(X1, Z1, r.x1 + ext, Z2, wallH, TOP);
+  const e1 = zi1 + 1.2, e2 = zi2 - 1.2;   // a second tall window in the east wall, the side you see from the porch
+  wall(r.x2 - ext, Z1, X2, e1, wallH, TOP); wall(r.x2 - ext, e2, X2, Z2, wallH, TOP);
+  wall(r.x2 - ext, e1, X2, e2, wallH, sill); wall(r.x2 - ext, e1, X2, e2, head, TOP);
+  glow([0.05, head - sill, (e2 - e1) * S], [fx(r.x2), (sill + head) / 2, fz(mz((e1 + e2) / 2))], 0xffd08a, roof);
+  [[e1 - 0.2, e1], [e2, e2 + 0.2]].forEach(([a, b]) => R(r.x2 - 0.3, a, r.x2 + 0.3, b, sill - 0.05, head - sill + 0.1, 0, roof, white));
+  R(r.x2 - 0.3, e1 - 0.2, r.x2 + 0.3, e2 + 0.2, head, 0.08, 0, roof, white);
+  R(r.x2 - 0.3, e1 - 0.2, r.x2 + 0.3, e2 + 0.2, sill - 0.08, 0.08, 0, roof, white);
+  R(X1 - 0.9, Z1 - 0.9, X2 + 0.9, Z2 + 0.9, TOP, 0.15, 0, roof, white);   // thin white roof with a slim overhang
+
+  // Height of the stair floor under (x, z); null = not on the stairs (normal floor, or the roof)
+  return (xf, zf0, y) => {
+    const zf = mz(zf0);
+    if (!(xf > xi1 && xf < xi2 && zf > zi1 && zf < zi2)) return null;
+    if (((zf < zm && xf >= xs) || (zf >= zm && xf >= xe)) && y > terrace - 0.6) return null;   // up on the roof slab
+    if (xf < xl) return top(n);
+    let h;
+    if (zf < zm) {
+      if (xf > xe) return null;
+      h = top(Math.min(n - 1, Math.floor((xe - xf) / tread)) + 1);
+    } else {
+      if (xf > xe) return null;
+      h = top(n + 1 + Math.min(n - 1, Math.floor((xf - xl) / tread)));
+    }
+    return y >= h - 0.5 ? h : null;
+  };
 }
 
 // Outside staircase against the house, up to the flat roof: solid concrete steps on a filled base, a steel railing on the

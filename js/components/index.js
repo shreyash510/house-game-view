@@ -23,13 +23,16 @@ export const COMPONENTS = {
   plant: interior.plant, frame: interior.frame, shelf: interior.shelf, bedSet: interior.bedSet, wardrobe: interior.wardrobe,
   // outdoor.js
   road: outdoor.road, hedge: outdoor.hedge, fireflies: outdoor.fireflies, openShed: outdoor.openShed, concreteRoad: outdoor.concreteRoad, sandRoad: outdoor.sandRoad, wireFence: outdoor.wireFence, coconutTree: outdoor.coconutTree, compound: outdoor.compound, pavers: outdoor.pavers,
+  lawn: outdoor.lawn, flowerBed: outdoor.flowerBed, steppingStones: outdoor.steppingStones, fruitTree: outdoor.fruitTree, tulsi: outdoor.tulsi, swing: outdoor.swing, bench: outdoor.bench, orchard: outdoor.orchard, farm: outdoor.farm, bund: outdoor.bund,
 };
 // These stand on the ground (heights from the ground, not from the plinth top)
-const GROUND = new Set(['steps', 'sidePorch', 'road', 'hedge', 'fireflies', 'openShed', 'concreteRoad', 'sandRoad', 'wireFence', 'coconutTree', 'compound', 'pavers']);
+const GROUND = new Set(['steps', 'sidePorch', 'road', 'hedge', 'fireflies', 'openShed', 'concreteRoad', 'sandRoad', 'wireFence', 'coconutTree', 'compound', 'pavers', 'lawn', 'flowerBed', 'steppingStones', 'fruitTree', 'tulsi', 'swing', 'bench', 'orchard', 'farm', 'bund']);
 
+// Any entry can have "lift": 1.2 to stand on a plinth that high (heights are then measured from the plinth top, like "ground" but raised).
 // Build a list of components. ctx = { houseG, upper }. Entries with "skip": true are left out.
 // "future": true = part of the future plan (compound wall, paver blocks...): built into a group of its own that shows,
-// and blocks the player, only while Settings > Interior is on (main.js)
+// and blocks the player, only while Settings > Interior is on (main.js). "current": true = the opposite: today's
+// state that the future plan replaces (farm inside the compound...), shown only while Interior is off
 export const futureGroups = [];
 export function buildComponents(list = [], ctx) {
   list.forEach((cfg, i) => {
@@ -37,15 +40,25 @@ export function buildComponents(list = [], ctx) {
     const make = COMPONENTS[cfg.type];
     if (!make) throw new Error(`house.json: unknown component type "${cfg.type}" (entry ${i}). Known: ${Object.keys(COMPONENTS).join(', ')}`);
     const ground = GROUND.has(cfg.type) || cfg.ground;
-    if (cfg.future) {
+    if (cfg.future || cfg.current) {
       const g = new THREE.Group();
-      g.visible = false;
+      g.visible = !!cfg.current;
+      g.userData.current = !!cfg.current;
       (ground ? realScene : ctx.houseG).add(g);
       futureGroups.push(g);
       const first = obstacles.length;
       useScene(g, ground ? 0 : PLINTH);
       make(cfg, ctx);
-      obstacles.slice(first).forEach((o) => (o.future = true));
+      obstacles.slice(first).forEach((o) => (cfg.current ? (o.current = true) : (o.future = true)));
+      useScene(ctx.houseG, PLINTH);
+      return;
+    }
+    if (cfg.lift) {   // stands on a plinth of its own: "lift" = its height in metres (for the otherHouses on a plinth)
+      const g = new THREE.Group();
+      g.position.y = cfg.lift;
+      realScene.add(g);
+      useScene(g, cfg.lift);
+      make(cfg, ctx);
       useScene(ctx.houseG, PLINTH);
       return;
     }

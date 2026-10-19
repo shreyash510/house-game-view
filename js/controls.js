@@ -75,8 +75,9 @@ export const electricalSwitch = document.getElementById('electricalSwitch');
 export const plumbingSwitch = document.getElementById('plumbingSwitch');
 if (query('xray') === '1') electricalSwitch.checked = plumbingSwitch.checked = true;   // debug: ?xray=1 starts with both on
 addEventListener('keydown', (e) => {
-  if (e.code === 'KeyX') electricalSwitch.checked = !electricalSwitch.checked;
-  if (e.code === 'KeyZ') plumbingSwitch.checked = !plumbingSwitch.checked;
+  // X-ray keys disabled (toggles removed from Settings)
+  // if (e.code === 'KeyX') electricalSwitch.checked = !electricalSwitch.checked;
+  // if (e.code === 'KeyZ') plumbingSwitch.checked = !plumbingSwitch.checked;
 });
 export const devicesSwitch = document.getElementById('devicesSwitch');
 devicesSwitch.checked = query('devices') !== '0';   // on by default; ?devices=0 starts with the devices hidden

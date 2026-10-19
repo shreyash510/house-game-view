@@ -284,7 +284,7 @@ export function wireFence(c) {
   const sides = { N: [x1, z1, x2, z1], S: [x1, z2, x2, z2], W: [x1, z1, x1, z2], E: [x2, z1, x2, z2] };
   const levels = Array.from({ length: strands }, (_, i) => 0.3 + (hgt - 0.4) * i / Math.max(1, strands - 1));
   const barbs = [];   // [x, y, z, along-x?] for every barb, drawn at the end as one instanced mesh
-  Object.entries(sides).forEach(([side, [ax, az, bx, bz]]) => {
+  Object.entries(sides).filter(([side]) => !c.sides || c.sides.includes(side)).forEach(([side, [ax, az, bx, bz]]) => {   // "sides": ["N"...] = only those sides (a straight divider)
     const alongX = az === bz, a0 = alongX ? ax : az, b0 = alongX ? bx : bz;
     // The side split into runs by its gaps
     let runs = [[a0, b0]];
@@ -397,4 +397,399 @@ export function coconutTree(c) {
     tree.add(nut);
   }
   obstacle(fx(xf), fz(zf), 0.45, 0.45, 0, height);   // you cannot walk through the trunk
+}
+
+// ---------- Garden: lawn, flower beds, stepping stones, fruit trees, tulsi vrindavan, jhula, bench ----------
+// Lawn: a patch of fresher, trimmed grass with a low brick edging: { "rect" }
+const lawnTex = () => makeTexture(256, 256, (ctx, w, h) => {
+  ctx.fillStyle = '#3d7a32'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 16000; i++) {
+    ctx.strokeStyle = `rgb(${rand(45, 85)},${rand(110, 160)},${rand(35, 65)})`;
+    const x = Math.random() * w, y = Math.random() * h;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + rand(-1.5, 1.5), y - rand(1.5, 4)); ctx.stroke();
+  }
+});
+const brickEdge = () => paint(0xa0523d, 0.85);
+function edging([x1, z1, x2, z2], h, mat) {
+  const t = 0.35;   // ft
+  rect(x1, z1, x2, z1 + t, 0, h, 0, scene, mat); rect(x1, z2 - t, x2, z2, 0, h, 0, scene, mat);
+  rect(x1, z1, x1 + t, z2, 0, h, 0, scene, mat); rect(x2 - t, z1, x2, z2, 0, h, 0, scene, mat);
+}
+export function lawn(c) {
+  const m = textured(lawnTex(), 1.5, 0.95, 0.3);
+  ghostMats.push(m);
+  rect(...c.rect, 0, 0.04, 0, scene, m).castShadow = false;
+  edging(c.rect, 0.08, brickEdge());
+}
+
+// Flower bed: dark soil inside a brick edge, planted with leafy bushes in flower: { "rect", "colors": ["#hex"...], "spacing" (ft) }
+export function flowerBed(c) {
+  const [x1, z1, x2, z2] = c.rect;
+  rect(x1, z1, x2, z2, 0, 0.12, 0x4a3426).castShadow = false;
+  edging(c.rect, 0.18, brickEdge());
+  const colors = c.colors ?? ['#d42a2a', '#f39a1e', '#f5d12e', '#e0559a', '#ffffff'], step = c.spacing ?? 1.4;
+  const bushes = [], flowers = colors.map(() => []);
+  let k = 0;
+  for (let x = x1 + step / 2 + 0.2; x < x2 - 0.3; x += step)
+    for (let z = z1 + step / 2 + 0.2; z < z2 - 0.3; z += step, k++) {
+      const px = fx(x + rand(-0.25, 0.25)), pz = fz(z + rand(-0.25, 0.25)), r = rand(0.17, 0.25);
+      bushes.push([px, 0.12 + r * 0.7, pz, r]);
+      const ci = k % colors.length;
+      for (let f = 0; f < 7; f++) {
+        const a = rand(0, Math.PI * 2), up = rand(0.2, 1);
+        flowers[ci].push([px + Math.cos(a) * r * 0.9 * Math.sqrt(1 - up * up * 0.6), 0.12 + r * 0.7 + up * r * 0.8, pz + Math.sin(a) * r * 0.9 * Math.sqrt(1 - up * up * 0.6)]);
+      }
+    }
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+  const bushMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 9, 7), paint(0x2f6a2a, 0.85), bushes.length);
+  bushes.forEach(([x, y, z, r], i) => bushMesh.setMatrixAt(i, mtx.compose(new THREE.Vector3(x, y, z), q, new THREE.Vector3(r, r * 0.75, r))));
+  bushMesh.castShadow = true;
+  scene.add(bushMesh);
+  colors.forEach((col, ci) => {
+    if (!flowers[ci].length) return;
+    const fm = new THREE.InstancedMesh(new THREE.SphereGeometry(0.045, 6, 4), paint(col, 0.6), flowers[ci].length);
+    flowers[ci].forEach(([x, y, z], i) => fm.setMatrixAt(i, mtx.compose(new THREE.Vector3(x, y, z), q, one)));
+    scene.add(fm);
+  });
+}
+
+// Stepping stones laid along a line through the given points: { "points": [[x, z], ...], "spacing" (ft), "size" (ft) }
+export function steppingStones(c) {
+  const pts = c.points, step = c.spacing ?? 2, size = c.size ?? 1.6;
+  const mats = [paint(0x9c978d, 0.9), paint(0x8b867c, 0.9), paint(0xa8a398, 0.9)];
+  let i = 0;
+  for (let p = 0; p < pts.length - 1; p++) {
+    const [ax, az] = pts[p], [bx, bz] = pts[p + 1], len = Math.hypot(bx - ax, bz - az);
+    for (let d = p === 0 ? 0 : step; d <= len + 0.01; d += step, i++) {
+      const t = d / len, s = size * S * rand(0.85, 1.05);
+      const stone = new THREE.Mesh(new THREE.CylinderGeometry(s / 2, s / 2, 0.06, 7), mats[i % 3]);
+      stone.scale.z = rand(0.7, 0.9);
+      stone.rotation.y = rand(0, Math.PI);
+      stone.position.set(fx(ax + (bx - ax) * t), 0.03, fz(az + (bz - az) * t));
+      stone.receiveShadow = true;
+      scene.add(stone);
+    }
+  }
+}
+
+// Fruit tree: { "at": [x, z], "kind": "mango" | "banana" | "papaya", "height" (m) }
+let foliageMat;
+export function fruitTree(c) {
+  const [xf, zf] = c.at, kind = c.kind ?? 'mango';
+  const g = new THREE.Group();
+  g.position.set(fx(xf), 0, fz(zf));
+  g.rotation.y = rand(0, Math.PI * 2);
+  g.scale.setScalar(c.scale ?? 1);
+  scene.add(g);
+  const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  if (kind === 'mango') {
+    const h = c.height ?? 5;
+    foliageMat ||= textured(leafTex(), 0.6, 0.9);
+    add(new THREE.CylinderGeometry(0.14, 0.22, h * 0.45, 9), paint(0x5a4433, 0.9), 0, h * 0.225, 0);
+    [[0, 0.62, 0, 1.5], [0.8, 0.55, 0.3, 1.1], [-0.7, 0.58, -0.4, 1.15], [0.2, 0.8, -0.6, 1.0], [-0.3, 0.75, 0.7, 1.05], [0.5, 0.88, 0.5, 0.85]]
+      .forEach(([x, y, z, r]) => { const b = add(new THREE.SphereGeometry(r, 12, 9), foliageMat, x, y * h, z); b.scale.y = 0.8; });
+    const fruit = paint(0xd9a520, 0.5);
+    for (let n = 0; n < 14; n++) {
+      const a = rand(0, Math.PI * 2), r = rand(1.3, 1.7);
+      add(new THREE.SphereGeometry(0.07, 8, 6), fruit, Math.cos(a) * r, h * rand(0.42, 0.6), Math.sin(a) * r).scale.y = 1.4;
+    }
+    obstacle(fx(xf), fz(zf), 0.5 * (c.scale ?? 1), 0.5 * (c.scale ?? 1), 0, h * (c.scale ?? 1));
+    return;
+  }
+  const leafM = new THREE.MeshStandardMaterial({ color: kind === 'banana' ? 0x5f9a3a : 0x3f7a2e, roughness: 0.75, side: THREE.DoubleSide });
+  if (kind === 'banana') {
+    const h = c.height ?? 2.8;
+    add(new THREE.CylinderGeometry(0.1, 0.16, h * 0.7, 10), paint(0x7f8a4a, 0.85), 0, h * 0.35, 0);
+    for (let k = 0; k < 8; k++) {   // long broad leaves arching out and drooping, each in two bent pieces
+      const root = new THREE.Group();
+      root.position.y = h * 0.68;
+      root.rotation.y = (k / 8) * Math.PI * 2 + rand(-0.2, 0.2);
+      g.add(root);
+      const a = new THREE.Group(); a.rotation.z = rand(0.5, 0.9); root.add(a);
+      const l1 = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.42), leafM); l1.rotation.x = -Math.PI / 2; l1.position.x = 0.45; l1.castShadow = true; a.add(l1);
+      const b = new THREE.Group(); b.position.x = 0.9; b.rotation.z = -rand(0.6, 0.9); a.add(b);
+      const l2 = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.38), leafM); l2.rotation.x = -Math.PI / 2; l2.position.x = 0.4; l2.castShadow = true; b.add(l2);
+    }
+    const bunch = add(new THREE.CylinderGeometry(0.16, 0.08, 0.45, 8), paint(0x8fae3a, 0.6), 0.2, h * 0.5, 0);
+    bunch.rotation.z = 0.25;
+    obstacle(fx(xf), fz(zf), 0.35, 0.35, 0, h);
+    return;
+  }
+  // papaya: thin ringed trunk, a crown of leaves on long stalks, fruit hugging the trunk under the crown
+  const h = c.height ?? 3.6;
+  add(new THREE.CylinderGeometry(0.07, 0.12, h, 9), paint(0x8a8370, 0.9), 0, h / 2, 0);
+  for (let k = 0; k < 11; k++) {
+    const root = new THREE.Group();
+    root.position.y = h;
+    root.rotation.y = (k / 11) * Math.PI * 2;
+    g.add(root);
+    const s = new THREE.Group(); s.rotation.z = rand(0.3, 0.8); root.add(s);
+    const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.8, 5), paint(0x9fb05a, 0.7));
+    stalk.rotation.z = -Math.PI / 2; stalk.position.x = 0.4; s.add(stalk);
+    const leaf = new THREE.Mesh(new THREE.CircleGeometry(0.32, 7), leafM);
+    leaf.rotation.x = -Math.PI / 2; leaf.position.x = 0.95; leaf.castShadow = true; s.add(leaf);
+  }
+  for (let n = 0; n < 6; n++) {
+    const a = (n / 6) * Math.PI * 2;
+    add(new THREE.SphereGeometry(0.09, 8, 6), paint(n % 2 ? 0x5d8a2a : 0xd99a2a, 0.5), Math.cos(a) * 0.13, h - 0.25 - (n % 2) * 0.12, Math.sin(a) * 0.13).scale.y = 1.6;
+  }
+  obstacle(fx(xf), fz(zf), 0.3, 0.3, 0, h);
+}
+
+// Tulsi vrindavan: a plastered square pedestal with a niche, tulsi growing out of the top: { "at": [x, z], "color" }
+export function tulsi(c) {
+  const [xf, zf] = c.at, x = fx(xf), z = fz(zf), col = c.color ?? 0xe8d9b5;
+  box([0.75, 0.12, 0.75], [x, 0.06, z], 0xbcae96);
+  box([0.55, 0.85, 0.55], [x, 0.545, z], col);
+  box([0.65, 0.08, 0.65], [x, 1.01, z], 0xd2742a);   // saffron rim
+  box([0.2, 0.25, 0.02], [x, 0.6, z + 0.27], 0x3a2a22);   // diya niche (faces south)
+  glow([0.04, 0.04, 0.02], [x, 0.52, z + 0.275], 0xffb347);
+  const leafM = [paint(0x2f5a2c), paint(0x3f6b34), paint(0x4c3a5a)];
+  for (let i = 0; i < 12; i++) {
+    const s = new THREE.Mesh(new THREE.SphereGeometry(rand(0.07, 0.12), 8, 6), leafM[i % 3]);
+    s.position.set(x + rand(-0.15, 0.15), 1.1 + rand(0, 0.4), z + rand(-0.15, 0.15));
+    s.castShadow = true;
+    scene.add(s);
+  }
+  obstacle(x, z, 0.75, 0.75, 0, 1.05);
+}
+
+// Jhula: A-frame steel swing with a wooden plank seat that sways gently: { "at": [x, z], "along": "x" | "z" (direction of the top bar) }
+export function swing(c) {
+  const [xf, zf] = c.at, alongX = (c.along ?? 'x') === 'x', H = 2.3, W = 1.6, spread = 0.7;
+  const steelM = paint(0x2f4a5a, 0.5); steelM.metalness = 0.4;
+  const g = new THREE.Group();
+  g.position.set(fx(xf), 0, fz(zf));
+  if (!alongX) g.rotation.y = Math.PI / 2;
+  scene.add(g);
+  const bar = (a, b, r) => {
+    const d = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 8), steelM);
+    m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); m.castShadow = true; g.add(m);
+  };
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  [-1, 1].forEach((s) => { bar(V(s * W / 2, H, 0), V(s * W / 2, 0, -spread), 0.035); bar(V(s * W / 2, H, 0), V(s * W / 2, 0, spread), 0.035); });
+  bar(V(-W / 2 - 0.05, H, 0), V(W / 2 + 0.05, H, 0), 0.04);
+  const seat = new THREE.Group();   // hangs from the top bar; swings about it
+  seat.position.y = H;
+  g.add(seat);
+  const wood = paint(0x8a5a32, 0.7);
+  const plank = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.05, 0.4), wood);
+  plank.position.y = -1.75; plank.castShadow = true; seat.add(plank);
+  const chainM = paint(0x777777, 0.4);
+  [-0.45, 0.45].forEach((x) => [-0.17, 0.17].forEach((z) => {
+    const ch = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.75, 4), chainM);
+    ch.position.set(x, -0.875, z * 0.5); ch.rotation.x = z > 0 ? -0.05 : 0.05; seat.add(ch);
+  }));
+  const phase = rand(0, 6);
+  updaters.push((t) => { seat.rotation.x = Math.sin(t * 1.4 + phase) * 0.07; });
+  const w = alongX ? W + 0.2 : 2 * spread, d = alongX ? 2 * spread : W + 0.2;
+  obstacle(fx(xf), fz(zf), w, d, 0, H);
+}
+
+// Garden bench: wooden slats on cast-iron sides: { "at": [x, z], "face": "+z" | "-z" | "+x" | "-x", "length" (m) }
+export function bench(c) {
+  const [xf, zf] = c.at, L = c.length ?? 1.4, face = c.face ?? '+z';
+  const g = new THREE.Group();
+  g.position.set(fx(xf), 0, fz(zf));
+  g.rotation.y = { '+z': 0, '-z': Math.PI, '+x': Math.PI / 2, '-x': -Math.PI / 2 }[face];
+  scene.add(g);
+  const iron = paint(0x222428, 0.5), wood = paint(0x8a5a32, 0.7);
+  const piece = (size, pos, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(...size), m); b.position.set(...pos); b.castShadow = true; g.add(b); };
+  [-L / 2 + 0.05, L / 2 - 0.05].forEach((x) => {
+    piece([0.05, 0.45, 0.05], [x, 0.225, 0.18], iron); piece([0.05, 0.85, 0.05], [x, 0.425, -0.2], iron);
+    piece([0.05, 0.05, 0.45], [x, 0.43, 0], iron); piece([0.05, 0.05, 0.4], [x, 0.65, 0.02], iron);
+  });
+  for (let i = 0; i < 4; i++) piece([L, 0.03, 0.08], [0, 0.47, 0.15 - i * 0.1], wood);
+  for (let i = 0; i < 3; i++) piece([L, 0.08, 0.025], [0, 0.6 + i * 0.11, -0.21], wood);
+  const w = face[1] === 'z' ? L : 0.5, d = face[1] === 'z' ? 0.5 : L;
+  obstacle(fx(xf), fz(zf), w, d, 0, 0.5);
+}
+
+// ---------- Orchard: a grid of fruit trees (big mango trees by default), a little jittered: { "rect", "kind", "spacing" (ft), "scale" } ----------
+// "points": [[x, z]...] instead of "rect" fills any outline; "avoid": [[x1, z1, x2, z2]...] keeps trees off houses, yards...
+const insidePoly = (pts, x, z) => { let inn = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, zi] = pts[i], [xj, zj] = pts[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inn = !inn; } return inn; };
+export function orchard(c) {
+  const P = c.points, R = c.rect ?? [Math.min(...P.map((p) => p[0])), Math.min(...P.map((p) => p[1])), Math.max(...P.map((p) => p[0])), Math.max(...P.map((p) => p[1]))];
+  const [x1, z1, x2, z2] = R, sp = c.spacing ?? 22, kind = c.kind ?? 'mango';
+  // "cols" (trees across x) and "rows" (along z) set the grid exactly; "count" stops after that many trees (the last row may be short)
+  const nx = c.cols ?? Math.max(1, Math.round((x2 - x1) / sp)), nz = c.rows ?? Math.max(1, Math.round((z2 - z1) / sp));
+  let planted = 0;
+  const gx = (x2 - x1) / nx, gz = (z2 - z1) / nz;
+  for (let j = 0; j < nz; j++)
+    for (let i = 0; i < nx; i++) {
+      if (c.count && planted >= c.count) return;
+      const tx = x1 + gx * (i + 0.5), tz = z1 + gz * (j + 0.5);
+      if (P && !insidePoly(P, tx, tz)) continue;
+      if ((c.avoid || []).some(([a1, b1, a2, b2]) => tx > a1 - 3 && tx < a2 + 3 && tz > b1 - 3 && tz < b2 + 3)) continue;
+      planted++;
+      fruitTree({ kind, height: c.height, scale: (c.scale ?? 1.8) * rand(c.vary ?? 0.92, 1.05),
+        at: [tx + rand(-0.5, 0.5), tz + rand(-0.5, 0.5)] });
+    }
+}
+
+// ---------- Farm field: tilled soil inside a raised earth bund, crop planted in rows ----------
+// { "rect", "crop": "sugarcane" | "jowar" | "vegetables" | "none", "rows": "x" | "z" (direction the rows run; default the long side), "rowSpacing", "plantSpacing" (ft) }
+const soilTex = () => makeTexture(128, 128, (ctx, w, h) => {
+  ctx.fillStyle = '#6e5241'; ctx.fillRect(0, 0, w, h);
+  speckle(ctx, w, h, 3000, 2, 0.18);
+});
+// Ploughed field of any shape (as traced from the satellite view): { "points": [[x, z], ...], "rowAngle" (deg, 0 = rows run along x; default: along the longest edge), "rowSpacing" (ft) }
+function farmPoly(c) {
+  const pts = c.points, rs = c.rowSpacing ?? 2.5;
+  // Soil: a flat shape; ShapeGeometry lies in XY, so build it with y = -z and lay it down
+  const shape = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(fx(x), -fz(z))));
+  const geo = new THREE.ShapeGeometry(shape);
+  geo.rotateX(-Math.PI / 2);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / 2, uv.getY(i) / 2);   // one texture repeat = 2 m
+  const soil = textured(soilTex(), 2, 1, 0.4);
+  ghostMats.push(soil);
+  const field = new THREE.Mesh(geo, soil);
+  field.position.y = 0.05;
+  field.receiveShadow = true;
+  scene.add(field);
+  // Row direction: given, or along the longest edge
+  let ang = c.rowAngle != null ? (c.rowAngle * Math.PI) / 180 : 0;
+  if (c.rowAngle == null) {
+    let best = 0;
+    pts.forEach((p, i) => { const q = pts[(i + 1) % pts.length], l = Math.hypot(q[0] - p[0], q[1] - p[1]); if (l > best) { best = l; ang = Math.atan2(q[1] - p[1], q[0] - p[0]); } });
+  }
+  const ux = Math.cos(ang), uz = Math.sin(ang), nx = -uz, nz = ux;   // u: along the rows, n: across
+  const across = pts.map(([x, z]) => x * nx + z * nz), lo = Math.min(...across), hi = Math.max(...across);
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), segs = [];
+  const seg = (a, b, w, h) => segs.push([a, b, w, h]);
+  for (let o = lo + rs / 2; o < hi; o += rs) {   // each furrow ridge: where the line n.p = o crosses the outline
+    const hits = [];
+    pts.forEach((p, i) => {
+      const q2 = pts[(i + 1) % pts.length], dp = p[0] * nx + p[1] * nz - o, dq = q2[0] * nx + q2[1] * nz - o;
+      if ((dp < 0) !== (dq < 0)) { const t = dp / (dp - dq); hits.push((p[0] + (q2[0] - p[0]) * t) * ux + (p[1] + (q2[1] - p[1]) * t) * uz); }
+    });
+    hits.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < hits.length; k += 2) {
+      const s0 = hits[k] + 0.6, s1 = hits[k + 1] - 0.6;
+      if (s1 > s0) seg([s0 * ux + o * nx, s0 * uz + o * nz], [s1 * ux + o * nx, s1 * uz + o * nz], 0.7, 0.12);
+    }
+  }
+  pts.forEach((p, i) => seg(p, pts[(i + 1) % pts.length], 0.9, 0.18));   // bund round the edge
+  const m = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), paint(0x5a4232, 1), segs.length);
+  segs.forEach(([a, b, w, h], i) => {
+    const dx = (b[0] - a[0]) * S, dz = (b[1] - a[1]) * S;
+    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(dz, dx));
+    m.setMatrixAt(i, mtx.compose(new THREE.Vector3(fx((a[0] + b[0]) / 2), 0.05 + h / 2, fz((a[1] + b[1]) / 2)), q, new THREE.Vector3(Math.hypot(dx, dz), h, w * S)));
+  });
+  m.receiveShadow = true;
+  scene.add(m);
+}
+export function farm(c) {
+  if (c.points) return farmPoly(c);
+  const [x1, z1, x2, z2] = c.rect, crop = c.crop ?? 'jowar';
+  const soil = textured(soilTex(), 2, 1, 0.4);
+  ghostMats.push(soil);
+  rect(x1, z1, x2, z2, 0, 0.05, 0, scene, soil).castShadow = false;
+  edging(c.rect, 0.2, paint(0x6b5040, 1));   // bund round the field
+  const alongX = (c.rows ?? (x2 - x1 >= z2 - z1 ? 'x' : 'z')) === 'x';
+  const rs = c.rowSpacing ?? (crop === 'sugarcane' ? 3 : 2.5), ps = c.plantSpacing ?? (crop === 'vegetables' ? 1.5 : 1.2);
+  const [a1, a2, b1, b2] = alongX ? [x1, x2, z1, z2] : [z1, z2, x1, x2];   // a: along the row, b: across
+  const ridgeM = paint(0x4e3828, 1), spots = [];
+  for (let b = b1 + rs / 2 + 0.5; b < b2 - 0.5; b += rs) {
+    if (alongX) rect(a1 + 0.5, b - 0.35, a2 - 0.5, b + 0.35, 0, 0.12, 0, scene, ridgeM).castShadow = false;
+    else rect(b - 0.35, a1 + 0.5, b + 0.35, a2 - 0.5, 0, 0.12, 0, scene, ridgeM).castShadow = false;
+    for (let a = a1 + 1; a < a2 - 0.8; a += ps) {
+      const p = alongX ? [a, b] : [b, a];
+      spots.push([fx(p[0] + rand(-0.15, 0.15)), fz(p[1] + rand(-0.15, 0.15))]);
+    }
+  }
+  if (crop === 'none' || !spots.length) return;
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const inst = (geo, mat, list, shadow = true) => {   // list: [pos, scale, euler]
+    const m = new THREE.InstancedMesh(geo, mat, list.length);
+    list.forEach(([p, s, r], i) => m.setMatrixAt(i, mtx.compose(p, r ? q.setFromEuler(e.set(...r)) : q.identity(), s)));
+    m.castShadow = shadow;
+    scene.add(m);
+  };
+  const blade = new THREE.BoxGeometry(0.05, 1, 0.006); blade.translate(0, 0.5, 0);
+  if (crop === 'vegetables') {
+    const leafs = [[], []];
+    spots.forEach(([x, z], i) => { const r = rand(0.14, 0.22); leafs[i % 2].push([V(x, 0.12 + r * 0.5, z), V(r, r * 0.7, r)]); });
+    inst(new THREE.SphereGeometry(1, 8, 6), paint(0x6f9a3a, 0.8), leafs[0]);
+    inst(new THREE.SphereGeometry(1, 8, 6), paint(0x3f7a34, 0.8), leafs[1]);
+    return;
+  }
+  const tall = crop === 'sugarcane', H = tall ? 2.4 : 1.6;
+  const stalks = [], leaves = [], heads = [];
+  spots.forEach(([x, z]) => {
+    const n = tall ? 3 : 1;
+    for (let k = 0; k < n; k++) {
+      const h = H * rand(0.85, 1.1), sx = x + rand(-0.08, 0.08), sz = z + rand(-0.08, 0.08), lean = [rand(-0.06, 0.06), 0, rand(-0.06, 0.06)];
+      stalks.push([V(sx, 0.1 + h / 2, sz), V(1, h, 1), lean]);
+      for (let l = 0; l < (tall ? 3 : 4); l++) {   // long blades arching out from the stalk
+        const yaw = rand(0, Math.PI * 2), tilt = rand(0.5, 1.0);
+        leaves.push([V(sx, 0.1 + h * (tall ? rand(0.6, 0.95) : rand(0.2, 0.75)), sz), V(1, tall ? 1.1 : 0.7, 1), [Math.cos(yaw) * tilt, yaw, Math.sin(yaw) * tilt]]);
+      }
+      if (!tall) heads.push([V(sx, 0.1 + h + 0.1, sz), V(0.07, 0.16, 0.07)]);
+    }
+  });
+  inst(new THREE.CylinderGeometry(tall ? 0.025 : 0.015, tall ? 0.03 : 0.02, 1, 5), paint(tall ? 0x9aa84a : 0x7f9a45, 0.8), stalks);
+  inst(blade, new THREE.MeshStandardMaterial({ color: tall ? 0x5e9a3a : 0x6a9a40, roughness: 0.8, side: THREE.DoubleSide }), leaves);
+  if (heads.length) inst(new THREE.SphereGeometry(1, 7, 5), paint(0xa8843f, 0.8), heads);
+}
+
+// ---------- Field bund (shetacha bandh): a raised, rounded ridge of packed earth with sparse grass on its sides ----------
+// { "points": [[x, z], ...] (centre line, ft), "width" (ft at the base, default 3), "height" (m, default 0.45) }
+const bundTex = () => makeTexture(128, 128, (ctx, w, h) => {
+  ctx.fillStyle = '#7d5f47'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 120; i++) {   // lumps and cracks of dry soil
+    ctx.fillStyle = rand(0, 1) < 0.5 ? 'rgba(60,42,30,0.18)' : 'rgba(160,130,100,0.15)';
+    ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, rand(2, 7), 0, 7); ctx.fill();
+  }
+  speckle(ctx, w, h, 2500, 2, 0.2);
+});
+export function bund(c) {
+  const pts = c.points, W = (c.width ?? 3) * S, H = c.height ?? 0.45;
+  const prof = [[-0.5, 0], [-0.32, 0.6], [-0.15, 0.93], [0, 1], [0.15, 0.93], [0.32, 0.6], [0.5, 0]];   // rounded cross-section
+  const mat = textured(bundTex(), 1, 1, 0.5);
+  ghostMats.push(mat);
+  const tufts = [];
+  for (let p = 0; p < pts.length - 1; p++) {
+    const a = new THREE.Vector3(fx(pts[p][0]), 0, fz(pts[p][1])), b = new THREE.Vector3(fx(pts[p + 1][0]), 0, fz(pts[p + 1][1]));
+    const dir = b.clone().sub(a), len = dir.length();
+    dir.normalize();
+    const side = new THREE.Vector3(-dir.z, 0, dir.x), steps = Math.max(2, Math.round(len / 0.4));
+    const pos = [], uv = [], idx = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps, wob = 1 + rand(-0.08, 0.08), hh = H * (i === 0 || i === steps ? 0.6 : rand(0.88, 1.08));   // uneven, ends slump
+      prof.forEach(([u, v]) => {
+        const p0 = a.clone().lerp(b, t).addScaledVector(side, u * W * wob);
+        pos.push(p0.x, v * hh, p0.z);
+        uv.push(t * len, (u + 0.5) * W * 1.6);
+      });
+      if (i < steps) for (let k = 0; k < prof.length - 1; k++) {
+        const r0 = i * prof.length + k, r1 = r0 + prof.length;
+        idx.push(r0, r1, r0 + 1, r0 + 1, r1, r1 + 1);
+      }
+      if (Math.random() < 0.55) [-1, 1].forEach((s) => {   // grass along the foot of each side
+        if (Math.random() < 0.6) tufts.push(a.clone().lerp(b, t).addScaledVector(side, s * W * rand(0.3, 0.52)).setY(rand(0.02, 0.12)));
+      });
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    if (geo.attributes.normal.getY(Math.floor(prof.length / 2)) < 0) { geo.setIndex(idx.map((_, i) => idx[i - (i % 3) + [0, 2, 1][i % 3]])); geo.computeVertexNormals(); }   // keep the top facing up
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = m.receiveShadow = true;
+    scene.add(m);
+  }
+  // Grass tufts: a few thin blades each, olive to dry yellow-green
+  const blade = new THREE.BoxGeometry(0.02, 1, 0.004); blade.translate(0, 0.5, 0);
+  const grass = new THREE.InstancedMesh(blade, new THREE.MeshStandardMaterial({ color: 0x7f9a45, roughness: 0.85, side: THREE.DoubleSide }), tufts.length * 4);
+  const mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+  tufts.forEach((p, i) => {
+    for (let k = 0; k < 4; k++) {
+      const yaw = rand(0, Math.PI * 2), tilt = rand(0.15, 0.6), h = rand(0.12, 0.3);
+      grass.setMatrixAt(i * 4 + k, mtx.compose(p, q.setFromEuler(e.set(Math.cos(yaw) * tilt, yaw, Math.sin(yaw) * tilt)), new THREE.Vector3(1, h, 1)));
+    }
+  });
+  scene.add(grass);
 }

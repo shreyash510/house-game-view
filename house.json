@@ -1,6 +1,7 @@
 {
   "name": "Bungalow",
   "units": "Plan positions are in FEET: x runs west -> east, z runs north (back) -> south (porch/road). Heights (y, h) are in METRES above the plinth top.",
+  "ground": "dry",
   "wallHeight": 3.6,
 
   "plinth": {
@@ -124,6 +125,19 @@
   ],
 
   "fixtures": [
+    { "type": "sink", "name": "Bungalow 2 kitchen sink under the window", "rect": [62.9,236.2,66.3,237.9], "lift": 1.2 },
+    { "type": "counter", "name": "Bungalow 2 kitchen counter with the gas stove", "rect": [66.3,236.2,70.4,237.9], "lift": 1.2 },
+    { "type": "stove", "name": "Bungalow 2 kitchen 3-burner gas stove", "at": [66.9,236.45], "lift": 1.2 },
+    { "type": "counter", "name": "Bungalow 2 kitchen counter on the west wall", "rect": [60.9,232,62.9,236.2], "lift": 1.2 },
+    { "type": "fridge", "name": "Bungalow 2 kitchen fridge", "rect": [60.9,230.2,62.8,232], "face": "+x", "height": 1.52, "color": "#8d9298", "badge": "Fridge", "lift": 1.2 },
+    { "type": "washBasin", "name": "Bungalow 2 bathroom wash basin", "x": 60.88, "z": 226, "face": "+x", "label": false, "lift": 1.2 },
+    { "type": "item", "name": "Bungalow 2 bathroom WC cistern", "rect": [60.9,227.3,61.45,228.7], "h": 0.75, "color": "#f4f4f2", "lift": 1.2 },
+    { "type": "item", "name": "Bungalow 2 bathroom WC pan", "rect": [61.45,227.3,62.8,228.7], "h": 0.4, "color": "#f4f4f2", "lift": 1.2 },
+    { "type": "sink", "name": "1BHK kitchen sink under the window", "rect": [-27.9,-36.8,-24.1,-35.13], "ground": true },
+    { "type": "counter", "name": "1BHK kitchen counter next to the sink", "rect": [-24.1,-36.8,-21.7,-35.13], "ground": true },
+    { "type": "washBasin", "name": "1BHK bathroom wash basin on the west wall", "x": -19.27, "z": -40.3, "face": "+x", "label": false, "ground": true },
+    { "type": "item", "name": "1BHK bathroom WC cistern", "rect": [-13.3,-36.8,-12.73,-35.6], "h": 0.75, "color": "#f4f4f2", "ground": true },
+    { "type": "item", "name": "1BHK bathroom WC pan", "rect": [-14.8,-36.9,-13.3,-35.5], "h": 0.4, "color": "#f4f4f2", "ground": true },
     { "type": "counter", "group": "kitchen", "rect": [0.4, 24.4, 2.5, 32.8] },
     { "type": "counter", "group": "kitchen", "rect": [5.9, 30.6, 13.25, 32.8] },
     { "type": "sink", "group": "kitchen", "rect": [2.5, 30.6, 5.9, 32.8] },
@@ -137,6 +151,39 @@
   ],
 
   "furniture": [
+    { "type": "bedSet", "name": "Bungalow 2 bedroom double bed", "x": 65.9, "z": 214.6, "length": 6.2, "width": 5.5, "headboard": "walnut", "headboardH": 0.9, "quilt": "#8f9a74", "cushions": ["#8f9a74", "#d9c7a8"], "lift": 1.2 },
+    { "type": "wardrobe", "name": "Bungalow 2 bedroom wardrobe on the west wall", "rect": [60.9,215,62.8,222.6], "face": "+x", "h": 2, "top": 2.4, "material": "walnut", "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 bedroom bedside table, east", "rect": [68.9,214.4,70.1,215.6], "h": 0.45, "material": "walnut", "solid": true, "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 bedroom bedside table, west", "rect": [63.4,214.4,64.6,215.6], "h": 0.45, "material": "walnut", "solid": true, "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 kitchen overhead cabinets", "rect": [60.9,232.2,61.6,236], "y0": 1.55, "h": 0.7, "material": "oak", "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 bathroom anti-skid floor tiles", "rect": [60.88,225.13,67.88,229.13], "y0": 0.1, "h": 0.012, "color": "#7d8a90", "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 bathroom shower tray", "rect": [65.4,225.13,67.88,227.2], "y0": 0.112, "h": 0.01, "color": "#5f6e75", "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 bathroom shower kerb", "rect": [65.3,225.13,65.45,227.2], "y0": 0.1, "h": 0.06, "color": "#d8d8d4", "lift": 1.2 },
+    { "type": "piece", "name": "Bungalow 2 bathroom shower head", "at": [67.6,2.05,225.6], "size": [0.16,0.03,0.16], "material": "steel", "lift": 1.2 },
+    { "type": "rug", "name": "Bungalow 2 hall rug", "rect": [74.1,229.2,80.3,235.6], "color": "#b8a58a", "lift": 1.2 },
+    { "type": "sofa", "name": "Bungalow 2 hall 3-seater sofa on the west wall", "rect": [71.8,230.3,74,236.3], "face": "+x", "seats": 3, "fabric": "#9a9488", "cushions": ["#6f7f5c", "#d9b45a"], "lift": 1.2 },
+    { "type": "sofa", "name": "Bungalow 2 hall 2-seater sofa, the L of the set", "rect": [74.3,234.9,76.9,237], "face": "-z", "seats": 2, "fabric": "#9a9488", "lift": 1.2 },
+    { "type": "table", "name": "Bungalow 2 hall centre table", "rect": [76.1,231,79.1,233.2], "h": 0.42, "top": "walnut", "base": "#2b2420", "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 hall TV unit on the east wall", "rect": [81.4,225.5,82.63,232.5], "h": 0.5, "material": "walnut", "solid": true, "lift": 1.2 },
+    { "type": "ibox", "name": "Bungalow 2 hall TV", "rect": [82.3,226.6,82.55,231.4], "y0": 0.75, "h": 0.62, "color": "#0e0e10", "lift": 1.2 },
+    { "type": "plant", "name": "Bungalow 2 hall plant by the stairs", "at": [81.8,222.2], "h": 1.1, "kind": "palm", "lift": 1.2 },
+    { "type": "plant", "name": "Bungalow 2 hall plant by the door", "at": [81.8,236.2], "h": 0.9, "kind": "bush", "lift": 1.2 },
+    { "type": "bedSet", "name": "1BHK bedroom double bed", "x": -25.5, "z": -62.3, "length": 6, "width": 5.5, "headboard": "walnut", "headboardH": 0.9, "quilt": "#d9c7a8", "cushions": ["#a34a3a", "#d9b45a"], "ground": true },
+    { "type": "wardrobe", "name": "1BHK bedroom wardrobe on the south wall", "rect": [-30.5,-51,-24.5,-49.3], "face": "-z", "h": 2, "top": 2.4, "ground": true },
+    { "type": "ibox", "name": "1BHK bedroom bedside table", "rect": [-22.5,-62.6,-21.3,-61.4], "h": 0.45, "material": "walnut", "solid": true, "ground": true },
+    { "type": "ibox", "name": "1BHK kitchen overhead cabinets above the ota", "rect": [-31,-48.65,-24.3,-47.95], "y0": 1.55, "h": 0.7, "material": "oak", "ground": true },
+    { "type": "rug", "name": "1BHK hall rug", "rect": [-12.7,-49.3,-5.9,-42.6], "color": "#b8a58a", "ground": true },
+    { "type": "sofa", "name": "1BHK hall 3-seater sofa facing the TV", "rect": [-15.5,-48.4,-13.3,-42.5], "face": "+x", "seats": 3, "fabric": "#6f7f8c", "cushions": ["#d9b45a", "#a34a3a"], "ground": true },
+    { "type": "sofa", "name": "1BHK hall single sofa", "rect": [-11.5,-50.5,-9.1,-48.3], "face": "+z", "seats": 1, "fabric": "#6f7f8c", "ground": true },
+    { "type": "sofa", "name": "1BHK hall 2-seater sofa", "rect": [-8.7,-50.5,-6.1,-48.3], "face": "+z", "seats": 2, "fabric": "#6f7f8c", "ground": true },
+    { "type": "table", "name": "1BHK hall centre table", "rect": [-10.9,-46.3,-8.1,-44.1], "h": 0.42, "top": "walnut", "base": "#2b2420", "ground": true },
+    { "type": "ibox", "name": "1BHK hall TV unit on the east wall", "rect": [-4.9,-47.9,-3.73,-43.3], "h": 0.5, "material": "walnut", "solid": true, "ground": true },
+    { "type": "ibox", "name": "1BHK hall TV", "rect": [-4.1,-47.1,-3.8,-44.1], "y0": 0.75, "h": 0.62, "color": "#0e0e10", "ground": true },
+    { "type": "ibox", "name": "1BHK bathroom anti-skid floor tiles", "rect": [-19.27,-41.67,-12.73,-35.12], "y0": 0.1, "h": 0.012, "color": "#7d8a90", "ground": true },
+    { "type": "ibox", "name": "1BHK bathroom shower tray", "rect": [-19.27,-38.3,-16.9,-35.12], "y0": 0.112, "h": 0.01, "color": "#5f6e75", "ground": true },
+    { "type": "ibox", "name": "1BHK bathroom shower kerb", "rect": [-16.9,-38.3,-16.75,-35.12], "y0": 0.1, "h": 0.06, "color": "#d8d8d4", "ground": true },
+    { "type": "piece", "name": "1BHK bathroom shower pipe on the west wall", "at": [-19.2,1.5,-36.7], "size": [0.04,1.2,0.04], "material": "steel", "ground": true },
+    { "type": "piece", "name": "1BHK bathroom shower head", "at": [-19,2.05,-36.7], "size": [0.16,0.03,0.16], "material": "steel", "ground": true },
     { "type": "bed", "x": 7.1, "sideTables": false },
     { "type": "bed", "x": 28.9, "sideTables": false, "width": 6.5, "length": 8 },
     { "type": "fridge", "group": "kitchen", "name": "Whirlpool single-door fridge, brown, 5 ft", "rect": [15.15, 20.9, 17.25, 22.65], "face": "-x", "height": 1.52, "color": "#8a4a2c" },
@@ -240,9 +287,14 @@
     { "type": "road", "skip": true, "z": 56.5, "width": 15, "pavement": { "z": 47, "width": 4 }, "lamps": { "x": [-57.5, -17.5, 67.5, 92.5], "z": 45.5 } },
     { "type": "openShed", "name": "farm shed, 25 x 32 ft", "rect": [70.4, 1.7, 95.4, 33.7], "eave": 3.0, "rise": 1.5, "ridge": "z", "bays": 4,
       "wall": { "height": 1.22, "door": { "side": "S", "width": 4 } } },
+    { "type": "openShed", "name": "poultry (hen) farm shed, 6 x 50 ft, long side north-south along the sand road (was 9 x 81: [92.4, 52, 101.4, 133]; first east-west: [13.4, 95, 94.4, 104])", "rect": [95.4, 83, 101.4, 133], "eave": 2.4, "rise": 0.9, "ridge": "z", "bays": 6,
+      "wall": { "height": 0.6, "door": { "side": "E", "width": 3 } } },
     { "type": "concreteRoad", "name": "cement concrete road behind the houses", "z": -72, "width": 12 },
     { "type": "coconutTree", "name": "coconut tree 1", "at": [56.3, 65.5], "height": 7.5, "lean": 7, "leanDir": 70 },
     { "type": "coconutTree", "name": "coconut tree 2", "at": [48.7, 65.2], "height": 6.8, "lean": 5, "leanDir": 120 },
+    { "type": "fruitTree", "name": "front yard mango tree 1", "kind": "mango", "at": [40.3, 64.5] },
+    { "type": "fruitTree", "name": "front yard mango tree 2", "kind": "mango", "at": [36.8, 53.5] },
+    { "type": "fruitTree", "name": "front yard mango tree 3", "kind": "mango", "at": [38.0, 44.3] },
     { "type": "cementTank", "name": "ground water tank, cement, 10,000 L (2.5 m across inside, 2.05 m deep)", "at": [-40.6, 0.8], "y0": 0, "radius": 1.4, "height": 2.05, "ground": true },
     { "type": "wireFence", "name": "barbed-wire compound of the neighbours' property, behind the houses up to the concrete road",
       "rect": [-40.2, -65.5, 112.3, -7.8], "height": 1.5, "spacing": 8, "strands": 4, "gaps": [["N", 101.4, 111.4], ["S", 101.4, 111.4]] },
@@ -250,17 +302,310 @@
     { "type": "compound", "future": true, "name": "compound wall round the plot (house, tin-roof house, shed, coconut trees), 12 ft main gate at the east end of the front sand road, facing the village sand road, centred at z 77 (earlier: east side from 49.8; first on the south side in front of the porch steps: side S, from 28.5)", "rect": [-7, -2.5, 100, 84], "height": 1.5, "gate": { "side": "E", "from": 73.5, "width": 12 } },
     { "type": "sandRoad", "future": true, "name": "front sand road inside the compound, from the main gate west along the front wall (z 71-83)", "along": "x", "at": 77, "from": -6, "to": 106.4, "width": 12 },
     { "type": "sandRoad", "name": "sand road, 6 ft east of the shed", "along": "z", "at": 106.4, "from": -285, "to": 315, "width": 10 },
+    { "type": "hedge", "future": true, "name": "garden hedge, north side (back of the house)", "rect": [37, -0.5, 68, 0.5] },
+    { "type": "hedge", "future": true, "name": "garden hedge, east side (towards the farm shed)", "rect": [67, 0.5, 68, 33] },
+    { "type": "hedge", "future": true, "name": "garden hedge, south side (opening at the west end, by the porch)", "rect": [42, 32, 67, 33] },
+    { "type": "lawn", "future": true, "name": "garden lawn", "rect": [45, 9, 61, 22] },
+    { "type": "flowerBed", "future": true, "name": "garden flower bed along the bungalow east wall", "rect": [37, 8, 40, 26] },
+    { "type": "flowerBed", "future": true, "name": "garden flower bed on the shed side", "rect": [63, 9, 66, 27], "colors": ["#f39a1e", "#d42a2a", "#f5d12e"] },
+    { "type": "steppingStones", "future": true, "name": "garden stone path from the porch side", "points": [[39.5, 32.5], [42, 28], [48, 24.5], [53, 22]] },
+    { "type": "steppingStones", "future": true, "name": "garden stone path to the jhula", "points": [[53, 22], [56, 25.5], [58, 27]] },
+    { "type": "fruitTree", "future": true, "name": "garden mango tree", "kind": "mango", "at": [41.5, 4.5] },
+    { "type": "fruitTree", "future": true, "name": "garden banana 1", "kind": "banana", "at": [49.5, 3.5] },
+    { "type": "fruitTree", "future": true, "name": "garden banana 2", "kind": "banana", "at": [52.5, 4.5], "height": 2.5 },
+    { "type": "fruitTree", "future": true, "name": "garden banana 3", "kind": "banana", "at": [55.5, 3.5], "height": 3 },
+    { "type": "fruitTree", "future": true, "name": "garden papaya", "kind": "papaya", "at": [63.5, 4.5] },
+    { "type": "tulsi", "future": true, "name": "tulsi vrindavan near the porch", "at": [44.5, 28.5] },
+    { "type": "plant", "future": true, "name": "garden pot 1", "at": [47, 29.5], "h": 0.8, "r": 0.2, "kind": "bush", "pot": "#b5653f", "ground": true },
+    { "type": "plant", "future": true, "name": "garden pot 2", "at": [49, 28.5], "h": 1, "r": 0.2, "pot": "#b5653f", "ground": true },
+    { "type": "plant", "future": true, "name": "garden pot 3", "at": [51, 29.5], "h": 0.8, "r": 0.2, "kind": "bush", "pot": "#b5653f", "ground": true },
+    { "type": "swing", "future": true, "name": "garden jhula", "at": [60, 28], "along": "x" },
+    { "type": "bench", "future": true, "name": "garden bench on the lawn, facing south", "at": [53, 11], "face": "+z" },
+
+    { "type": "orchard", "skip": true, "name": "mango orchard north of the houses, inside the barbed-wire compound", "kind": "mango", "spacing": 13, "scale": 0.95, "vary": 0.55, "rect": [10, -63, 100, -11] },
+    { "type": "orchard", "skip": true, "name": "mango trees between the 1BHK bungalow and the main bungalow", "kind": "mango", "spacing": 13, "scale": 0.95, "vary": 0.55, "rect": [-38, -34, 9, -9.5] },
+    { "type": "orchard", "skip": true, "name": "mango orchard south of the front road, west of Bungalow 2", "kind": "mango", "spacing": 13, "scale": 0.95, "vary": 0.55, "rect": [61, 85, 102, 136], "avoid": [[92, 80, 104, 135]] },
+    { "type": "farm", "skip": true, "name": "farm west of the bungalow (vegetables, with the ground water tank)", "crop": "none", "cropWas": "vegetables", "rect": [-55, -5, -17, 83] },
+    { "type": "farm", "skip": true, "name": "farm south of the compound (sugarcane)", "crop": "none", "cropWas": "sugarcane", "rect": [-55, 85, 59, 137] },
+    { "type": "farm", "skip": true, "name": "farm south of Bungalow 2 (jowar)", "crop": "none", "cropWas": "jowar", "rect": [-55, 141, 58, 196] },
+
+    { "type": "label", "skip": true, "text": ["Fields, orchard and big trees below are traced from the Google Maps view (bungalow = 50 x 60 px, about 1.5 px per ft)"], "at": [0, 0] },
+    { "type": "farm", "name": "ploughed field beyond the concrete road (satellite, top-left)", "crop": "none", "points": [[114.2, -172.2], [110.8, -110.8], [-89.2, -152.2], [-92.5, -172.2]] },
+    { "type": "farm", "name": "ploughed field west of the 1BHK, between the concrete road and the long shed (satellite)", "crop": "none", "points": [[-41.2, -66], [-43.8, -38.8], [-133.8, -35.5], [-133.8, -66]] },
+    { "type": "farm", "future": true, "name": "big ploughed field, north part, with Interior on: stops at the compound wall (x -7, z 84)", "crop": "none", "rowAngle": 90, "points": [[-43.8, 64.5], [-7, 63], [-7, 84], [39, 84], [42.3, 133], [-101.8, 133], [-133.8, 121.2], [-133.8, -35.5], [-47.8, -35.5]] },
+    { "type": "farm", "future": true, "name": "farm section east of the big field, with Interior on: starts after the compound wall (z 84)", "crop": "none", "rowAngle": 0, "points": [[39.06, 84], [101.4, 84], [101.4, 133], [42.3, 133]] },
+    { "type": "farm", "current": true, "name": "big ploughed field west and south of the bungalow, north part up to divider 2 (z 133) (was one field: [[37.5, 61.2], [45.5, 181.2], [14.2, 175.8], [-133.8, 121.2], [-133.8, -35.5], [-47.8, -35.5], [-43.8, 64.5]])", "crop": "none", "points": [[37.5, 61.2], [42.3, 133], [-101.8, 133], [-133.8, 121.2], [-133.8, -35.5], [-47.8, -35.5], [-43.8, 64.5]] },
+    { "type": "farm", "name": "big ploughed field, south part after divider 2 (z 133)", "crop": "none", "rowAngle": 0, "points": [[42.3, 133], [45.5, 181.2], [14.2, 175.8], [-101.8, 133]] },
+    { "type": "farm", "current": true, "name": "farm section east of the big field, from the front yard to divider 2 (mango trees and poultry shed inside)", "crop": "none", "rowAngle": 0, "points": [[38, 68], [101.4, 68], [101.4, 133], [42.3, 133]] },
+    { "type": "farm", "name": "farm section north of divider 1 under the mango orchard (around the 1BHK)", "crop": "none", "rowAngle": 0, "points": [[8, -64], [17.5, -64], [94.2, -60.2], [89.5, -3.2], [-35.8, -3.2], [-39.2, -28.8], [-33, -31], [8, -31]] },
+    { "type": "farm", "name": "ploughed field south-west, beyond the diagonal track (satellite, bottom-right)", "crop": "none", "points": [[-25.8, 171.2], [-29.2, 221.2], [-55.8, 267.8], [-52.5, 341.2], [-133.8, 344.5], [-133.8, 124.5]] },
+    { "type": "farm", "name": "ploughed field far south (satellite, right edge)", "crop": "none", "points": [[44.2, 344.5], [47.5, 380.5], [-133.8, 380.5], [-133.8, 347.8]] },
+    { "type": "farm", "name": "ploughed field east of the sand road (satellite, top-right)", "crop": "none", "points": [[130.8, 168], [130.8, 334.5], [112, 333], [112, 178]] },
+    { "type": "orchard", "name": "mango orchard north of the bungalow, traced from the satellite view", "kind": "mango", "spacing": 13, "scale": 0.95, "vary": 0.55, "points": [[94.2, -60.2], [89.5, -11], [-35.8, -11], [-39.2, -28.8], [-32.5, -64], [17.5, -64]], "avoid": [[-31.5, -62.9, 4.5, -34.9]] },
+    { "type": "fruitTree", "skip": true, "name": "big tree from the satellite view (inside the 70-tree orchard now)", "kind": "mango", "at": [81, 91], "scale": 1.5 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [92.5, 228], "scale": 1.7 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [91, 288], "scale": 1.4 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [57.5, 351], "scale": 1.6 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [21, 348], "scale": 1.7 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [-109, -49], "scale": 1.8 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [-126, 261], "scale": 1.5 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [-99, 288], "scale": 1.4 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [34, 191], "scale": 1.3 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [-9, 268], "scale": 1.4 },
+    { "type": "fruitTree", "name": "big tree from the satellite view", "kind": "mango", "at": [14, 288], "scale": 1.5 },
+
+    { "type": "wireFence", "skip": true, "name": "divider 1: barbed wire just north of the bungalow, between the mango orchard and the plot", "rect": [-61, -3.2, 101.4, -3.2], "sides": ["N"], "height": 1.5, "spacing": 8, "strands": 4 },
+    { "type": "wireFence", "skip": true, "name": "divider 2: barbed wire across the big field, 5 ft north of Bungalow 2", "rect": [-52, 133, 101.4, 133], "sides": ["N"], "height": 1.5, "spacing": 8, "strands": 4 },
+
+    { "type": "bund", "name": "divider 1: earthen field bund (shetacha bandh) behind the bungalow, 4 ft clear of the house, orchard beyond", "points": [[-61, -5.7], [101.4, -5.7]], "width": 3, "height": 0.45 },
+    { "type": "bund", "skip": true, "name": "divider 2: earthen field bund across the big field, 4 ft clear of Bungalow 2", "points": [[-102, 132.5], [101.4, 132.5]], "width": 3, "height": 0.45 },
+
+    { "type": "bund", "name": "divider 2: earthen field bund along the red line (screenshot), from the sand road west across the big field, parallel to its south-west edge", "points": [[101.4, 178], [87, 179], [65, 179], [36, 171], [8, 161], [-15, 154], [-43, 144], [-66, 134], [-133.8, 112]], "width": 3, "height": 0.45 },
+    { "type": "orchard", "name": "mango orchard by the sand road, west of the poultry shed: 4 in a row, 10 rows = 40 trees, up to z 133 (was 70 trees, 18 rows to z 178; the south end is a farm now)", "kind": "mango", "rect": [50, 70, 94, 133], "cols": 4, "rows": 10, "count": 40, "scale": 0.65, "vary": 0.75 },
+    { "type": "farm", "name": "farm (red box 1): east of the big field, from z 133 to divider 2, by the sand road", "crop": "none", "rowAngle": 0, "points": [[43.3, 133], [101.4, 133], [101.4, 176.5], [87, 177.5], [65, 177.5], [45.2, 177]] },
+    { "type": "farm", "name": "farm (red box 2): west of the bungalow, from divider 1 to the big field, round the ground water tank", "crop": "none", "rowAngle": 0, "points": [[-8, -3.5], [-8, 63], [-43.8, 64.5], [-46.3, -3.5]] },
     { "type": "fireflies", "count": 60 }
   ],
 
   "otherHouses": [
+    {
+      "name": "Bungalow 2 (1BHK, 1000 sq ft, 2 rooms on the terrace)",
+      "ota": { "height": 1.2, "depth": 0, "steps": { "from": 13, "width": 6, "tread": 1, "count": 6 } },
+      "at": [
+        60.5,
+        214
+      ],
+      "wall": 3,
+      "wallColor": "#d9d3c5",
+      "floorColor": "#d6cfc0",
+      "rooms": [
+        {
+          "name": "Bedroom",
+          "x": 0,
+          "z": 0,
+          "w": 10.75,
+          "d": 10.75
+        },
+        {
+          "name": "Bathroom",
+          "x": 0,
+          "z": 10.75,
+          "w": 7.75,
+          "d": 4.75
+        },
+        {
+          "name": "Passage",
+          "x": 7.75,
+          "z": 10.75,
+          "w": 3,
+          "d": 4.75,
+          "noLabel": true
+        },
+        {
+          "name": "Kitchen",
+          "x": 0,
+          "z": 15.5,
+          "w": 10.75,
+          "d": 8.75
+        },
+        {
+          "name": "Stairs",
+          "x": 10.75,
+          "z": 0,
+          "w": 11.75,
+          "d": 6.75,
+          "noLabel": true
+        },
+        {
+          "name": "Hall",
+          "x": 10.75,
+          "z": 6.75,
+          "w": 11.75,
+          "d": 16.75
+        },
+        {
+          "name": "Porch",
+          "x": 10.75,
+          "z": 23.5,
+          "w": 11.75,
+          "d": 6.75
+        }
+      ],
+      "openings": [
+        {
+          "room": "Bedroom",
+          "side": "N",
+          "from": 3,
+          "width": 3.5,
+          "type": "win"
+        },
+        {
+          "room": "Bedroom",
+          "side": "S",
+          "from": 8,
+          "width": 2.5,
+          "type": "door"
+        },
+        {
+          "room": "Bathroom",
+          "side": "W",
+          "from": 1.2,
+          "width": 2,
+          "type": "vent"
+        },
+        {
+          "room": "Bathroom",
+          "side": "E",
+          "from": 1.2,
+          "width": 2.4,
+          "type": "door"
+        },
+        {
+          "room": "Passage",
+          "side": "E",
+          "from": 0.5,
+          "width": 4,
+          "type": "open"
+        },
+        {
+          "room": "Kitchen",
+          "side": "N",
+          "from": 8,
+          "width": 2.5,
+          "type": "door"
+        },
+        {
+          "room": "Kitchen",
+          "side": "S",
+          "from": 3,
+          "width": 4,
+          "type": "win"
+        },
+        {
+          "room": "Stairs",
+          "side": "E",
+          "from": 1.5,
+          "width": 3,
+          "type": "win"
+        },
+        {
+          "room": "Stairs",
+          "side": "S",
+          "from": 0.5,
+          "width": 10.75,
+          "type": "open"
+        },
+        {
+          "room": "Hall",
+          "side": "S",
+          "from": 5,
+          "width": 3,
+          "type": "win"
+        },
+        {
+          "room": "Hall",
+          "side": "S",
+          "from": 8.3,
+          "width": 3,
+          "type": "door"
+        },
+        {
+          "room": "Porch",
+          "side": "W",
+          "from": 1.2,
+          "width": 5.3,
+          "type": "open"
+        },
+        {
+          "room": "Porch",
+          "side": "E",
+          "from": 0.5,
+          "width": 5.75,
+          "type": "open"
+        },
+        {
+          "room": "Porch",
+          "side": "S",
+          "from": 0.5,
+          "width": 10.75,
+          "type": "open"
+        }
+      ],
+      "roof": {
+        "type": "flat"
+      },
+      "stairTower": {
+        "room": "Stairs",
+        "height": 2.3,
+        "color": "#8c8a7e",
+        "flip": true
+      },
+      "terraceRooms": [
+        {
+          "name": "Terrace room 1",
+          "x": 0,
+          "z": 0,
+          "w": 10.75,
+          "d": 10.75,
+          "wall": 2.9,
+          "openings": [
+            {
+              "side": "N",
+              "from": 3,
+              "width": 3.5,
+              "type": "win"
+            },
+            {
+              "side": "W",
+              "from": 3,
+              "width": 3.5,
+              "type": "win"
+            },
+            {
+              "side": "E",
+              "from": 7.5,
+              "width": 2.5,
+              "type": "door"
+            }
+          ]
+        },
+        {
+          "name": "Terrace room 2",
+          "x": 0,
+          "z": 13.5,
+          "w": 10.75,
+          "d": 10.75,
+          "wall": 2.9,
+          "openings": [
+            {
+              "side": "W",
+              "from": 3,
+              "width": 3.5,
+              "type": "win"
+            },
+            {
+              "side": "S",
+              "from": 3,
+              "width": 3.5,
+              "type": "win"
+            },
+            {
+              "side": "E",
+              "from": 4,
+              "width": 2.5,
+              "type": "door"
+            }
+          ]
+        }
+      ]
+    },
     { "name": "1BHK bungalow (900 sq ft)", "at": [-31.5, -62.9], "wall": 3.0, "wallColor": "#e2dccf",
       "rooms": [
         { "name": "Bedroom", "x": 0, "z": 0, "w": 12, "d": 14 },
         { "name": "Kitchen", "x": 0, "z": 14, "w": 12, "d": 14 },
         { "name": "Hall", "x": 12, "z": 0, "w": 16, "d": 21 },
         { "name": "Bathroom", "x": 12, "z": 21, "w": 7, "d": 7 },
-        { "name": "Hall corner", "x": 19, "z": 21, "w": 9, "d": 7 },
+        { "name": "Hall corner", "x": 19, "z": 21, "w": 9, "d": 7, "noLabel": true },
         { "name": "Porch", "x": 28, "z": 0, "w": 8, "d": 14 }
       ],
       "openings": [
@@ -273,14 +618,15 @@
         { "room": "Hall", "side": "N", "from": 5, "width": 5, "type": "win" },
         { "room": "Hall", "side": "E", "from": 9, "width": 3.5, "type": "door" },
         { "room": "Hall", "side": "S", "from": 7, "width": 9, "type": "open" },
-        { "room": "Bathroom", "side": "E", "from": 2.5, "width": 2.5, "type": "door" },
+        { "room": "Bathroom", "side": "N", "from": 2.5, "width": 2.5, "type": "door" },
         { "room": "Bathroom", "side": "S", "from": 2.5, "width": 2, "type": "vent" },
         { "room": "Hall corner", "side": "S", "from": 3, "width": 3, "type": "win" },
         { "room": "Porch", "side": "N", "from": 1, "width": 6, "type": "open" },
         { "room": "Porch", "side": "E", "from": 1, "width": 12, "type": "open" }
       ],
       "roof": { "type": "flat" },
-      "stairs": { "x": 28, "z": 14, "w": 8, "d": 14, "up": "N", "steps": 16, "rail": "E" }
+      "kitchenOta": { "room": "Kitchen", "side": "N", "from": 0.6, "width": 7, "depth": 2, "height": 0.8 },
+      "stairTower": { "room": "Hall corner", "height": 2.3, "color": "#8c8a7e" }
     },
     { "name": "Tin-roof house", "at": [40.6, 35.9], "wall": 2.6, "wallColor": "#cfc6b4", "weathered": true,
       "ota": { "height": 0.45, "depth": 12, "steps": { "count": 0 }, "entry": "E", "entryWidth": 4, "compound": { "height": 1.2, "thickness": 0.75 },
