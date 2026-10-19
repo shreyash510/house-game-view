@@ -140,7 +140,8 @@ try {
 } catch (err) { console.warn('No environment map', err); }
 
 // ---------- Lights ----------
-realScene.add(new THREE.HemisphereLight(0x6f84b8, 0x1b2a1c, 0.5));
+const hemi = new THREE.HemisphereLight(0x6f84b8, 0x1b2a1c, 0.5);
+realScene.add(hemi);
 const moon = new THREE.DirectionalLight(0x9db0ff, 0.55);
 moon.position.set(-20, 35, 25);
 moon.castShadow = true;
@@ -157,6 +158,15 @@ export function warmLight(x, y, z, intensity = 1, distance = 10) {
   lamps.push(lamp);
   return lamp;
 }
+// Night mode (Settings > Night): almost no sky light, so the house is lit only by its own lamps, which are boosted a little
+let lampBoost = 1;
+export function setNight(on) {
+  hemi.intensity = on ? 0.04 : 0.5;
+  moon.intensity = on ? 0.05 : 0.55;
+  renderer.toneMappingExposure = on ? 0.85 : 1;
+  realScene.fog.color.setHex(on ? 0x010208 : 0x070b16);
+  lampBoost = on ? 2 : 1;
+}
 const LIGHT_POOL = 4;
 const lightPool = Array.from({ length: LIGHT_POOL }, () => {
   const light = new THREE.PointLight(0xffc27a, 0, 10, 1.5);
@@ -170,8 +180,8 @@ export function updateLamps(p) {
     .slice(0, LIGHT_POOL);
   lightPool.forEach((light, i) => {
     const lamp = near[i] && near[i].l;
-    light.intensity = lamp ? lamp.intensity : 0;
-    if (lamp) { light.position.set(lamp.x, lamp.y, lamp.z); light.distance = lamp.distance; }
+    light.intensity = lamp ? lamp.intensity * lampBoost : 0;
+    if (lamp) { light.position.set(lamp.x, lamp.y, lamp.z); light.distance = lamp.distance * (lampBoost > 1 ? 1.3 : 1); }
   });
 }
 

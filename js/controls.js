@@ -79,9 +79,12 @@ addEventListener('keydown', (e) => {
   if (e.code === 'KeyZ') plumbingSwitch.checked = !plumbingSwitch.checked;
 });
 export const devicesSwitch = document.getElementById('devicesSwitch');
-if (query('devices') === '1') devicesSwitch.checked = true;   // debug: ?devices=1 starts with the devices shown
+devicesSwitch.checked = query('devices') !== '0';   // on by default; ?devices=0 starts with the devices hidden
 addEventListener('keydown', (e) => { if (e.code === 'KeyE') devicesSwitch.checked = !devicesSwitch.checked; });
-export const laserSwitch = document.getElementById('laserSwitch');   // "Laser" switch: a laser pointer in the hand in eye view (see laser.js)
+export const nightSwitch = document.getElementById('nightSwitch');
+if (query('night') === '1') nightSwitch.checked = true;   // debug: ?night=1 starts in night mode
+addEventListener('keydown', (e) => { if (e.code === 'KeyN') { nightSwitch.checked = !nightSwitch.checked; nightSwitch.dispatchEvent(new Event('change')); } });
+export const laserSwitch =document.getElementById('laserSwitch');   // "Laser" switch: a laser pointer in the hand in eye view (see laser.js)
 export const furnitureSwitch = document.getElementById('furnitureSwitch');
 if (query('furniture') === '0') furnitureSwitch.checked = false;   // debug: ?furniture=0 starts with the rooms empty
 addEventListener('keydown', (e) => { if (e.code === 'KeyF') furnitureSwitch.checked = !furnitureSwitch.checked; });

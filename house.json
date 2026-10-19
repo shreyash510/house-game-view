@@ -111,7 +111,8 @@
     { "name": "living hall", "at": [26, 21], "y": 2.4, "intensity": 1.1, "distance": 11 },
     { "name": "kitchen", "at": [7, 26.5], "y": 2.4, "intensity": 1.0, "distance": 10 },
     { "name": "stairs", "at": [6.5, 16.5], "y": 2.4, "intensity": 0.8, "distance": 8 },
-    { "name": "porch", "at": [26, 33], "y": 2.6, "intensity": 1.0, "distance": 9 },
+    { "name": "porch, west bulb", "at": [23.4, 32.8], "y": 3.1, "intensity": 0.6, "distance": 8 },
+    { "name": "porch, east bulb", "at": [29.0, 32.8], "y": 3.1, "intensity": 0.6, "distance": 8 },
     { "name": "terrace", "at": [17, 16], "y": 5.5, "intensity": 0.6, "distance": 14 },
     { "name": "garden", "at": [17.5, 41.25], "y": 1.2, "intensity": 0.6, "distance": 9 },
     { "name": "storeroom", "at": [9, 15], "y": 2.5, "intensity": 0.8, "distance": 6 }
@@ -137,7 +138,7 @@
 
   "furniture": [
     { "type": "bed", "x": 7.1, "sideTables": false },
-    { "type": "bed", "x": 28.9, "sideTables": false },
+    { "type": "bed", "x": 28.9, "sideTables": false, "width": 6.5, "length": 8 },
     { "type": "fridge", "group": "kitchen", "name": "Whirlpool single-door fridge, brown, 5 ft", "rect": [15.15, 20.9, 17.25, 22.65], "face": "-x", "height": 1.52, "color": "#8a4a2c" },
     { "type": "item", "name": "sofa", "rect": [32.6, 18.3, 34.0, 25.2], "h": 0.5, "color": "#a0627f" },
     { "type": "item", "name": "sofa back", "rect": [34.0, 18.3, 34.6, 25.2], "h": 1.0, "color": "#86506a" },
@@ -188,6 +189,9 @@
     { "type": "piece", "name": "water filter machine: body, inside the kitchen, south wall, right of the window", "at": [11.9, 1.6, 32.38], "size": [0.38, 0.6, 0.2], "color": "#f4f4f2" },
     { "type": "piece", "name": "water filter machine: blue cartridge", "at": [11.9, 1.72, 31.92], "size": [0.2, 0.3, 0.08], "color": "#2a7fd4" },
     { "type": "piece", "name": "water filter machine: tap", "at": [11.9, 1.38, 31.885], "size": [0.05, 0.05, 0.1], "color": "#9aa0a6" },
+    { "type": "piece", "name": "inverter, storeroom north wall, left of the switchboard: body", "at": [10.9, 1.4, 13.86], "size": [0.5, 0.45, 0.16], "color": "#2e3238" },
+    { "type": "piece", "name": "inverter, storeroom: display", "at": [10.9, 1.5, 14.0], "size": [0.22, 0.1, 0.03], "color": "#6fd08a" },
+    { "type": "piece", "name": "inverter, storeroom: indicator", "at": [11.1, 1.28, 14.0], "size": [0.04, 0.04, 0.03], "color": "#ff7a2a" },
     { "type": "block", "name": "kitchen front wall carried down over the plinth", "rect": [-0.225, 33, 17.2, 33.225], "y0": 0, "h": 0.8, "material": "facade", "ground": true },
     { "type": "block", "name": "groove where the kitchen front wall meets the plinth top", "rect": [-0.225, 33.225, 17.2, 33.265], "y0": -0.0125, "h": 0.025, "color": "#8f887d" },
     { "type": "block", "name": "west wall carried down over the plinth", "rect": [-0.225, -0.225, 0, 33], "y0": 0, "h": 0.8, "material": "facade", "ground": true },
@@ -210,7 +214,7 @@
     { "type": "namePlate", "text": ["NAME", "HERE"], "at": [30.4, "H+0.75", 37.725], "size": [2.0, 1.0], "roof": true },
     { "type": "solid", "name": "porch top", "rect": [21.55, 36.9, 35.65, 37.7], "y0": "H", "h": 1.5 },
     { "type": "spots", "skip": true, "name": "porch ceiling lights", "grid": { "x": [20, 33, 3.25], "z": [30.8, 34.8] }, "y": "H-0.71" },
-    { "type": "spots", "name": "porch bulb (one light in the middle of the porch ceiling)", "points": [[26.2, 32.8]], "y": "H-0.71", "radius": 0.13, "color": "#fff1c8" },
+    { "type": "spots", "skip": true, "name": "porch bulb (one light in the middle of the porch ceiling)", "points": [[23.4, 32.8], [29.0, 32.8]], "y": "H-0.71", "radius": 0.13, "color": "#fff1c8" },
 
     { "type": "block", "skip": true, "name": "porch wall: cladding band", "rect": [17.9, 28.38, 35, 28.55], "y0": 2.25, "h": 0.65, "material": "porchClad" },
     { "type": "block", "skip": true, "name": "porch wall: panel under the window", "rect": [24, 28.38, 29.9, 28.55], "y0": 0.1, "h": 0.8, "material": "porchClad" },
@@ -317,6 +321,11 @@
     { "type": "bulb", "name": "living hall light point, south wall, under the ceiling", "at": [26.25, 3.25, 27.775], "face": "-z" },
     { "type": "bulb", "name": "kitchen light point, south wall, under the ceiling", "at": [6.5, 3.25, 32.775], "face": "-z" },
     { "type": "bulb", "name": "lobby light point", "at": [17.4, 10.5] },
+    { "type": "bulb", "name": "main porch: ceiling light, west", "at": [23.5, 34.5], "y": 2.89, "radius": 0.07, "halo": true },
+    { "type": "bulb", "name": "main porch: ceiling light, east", "at": [28.5, 34.4], "y": 2.89, "radius": 0.07, "halo": true },
+    { "type": "bulb", "name": "main porch: west bulb, batten holder on the slab", "at": [23.4, 32.8], "radius": 0.07, "halo": true },
+    { "type": "bulb", "name": "main porch: east bulb, batten holder on the slab", "at": [29.0, 32.8], "radius": 0.07, "halo": true },
+    { "type": "bulb", "name": "kitchen porch: ceiling light under the canopy, south end", "at": [-1.7, 29.9], "y": 2.3, "radius": 0.07, "halo": true },
     { "type": "bulb", "name": "kitchen porch: one bulb on a socket under the canopy, by the kitchen door", "at": [-1.5, 24], "y": 2.55, "radius": 0.08, "halo": true },
     { "type": "bulb", "name": "central passage light point", "at": [15.35, 16.5] },
     { "type": "bulb", "name": "staircase light 1, over the landing", "at": [1.9, 3.3, 19.575], "face": "-z" },
@@ -355,9 +364,9 @@
       "board": "DB",
       "junctions": {
         "DB": [31, 27.6], "LH": [26.2, 20.6], "PS": [15.35, 16.5], "LB": [17.4, 10.5], "BA": [15.35, 4.65], "WC": [19.7, 3.1],
-        "B1": [6.5, 6.65], "B2": [28.35, 6.65], "KI": [6.5, 26.4], "PO": [26.2, 32.8, 2.87]
+        "B1": [6.5, 6.65], "B2": [28.35, 6.65], "KI": [6.5, 26.4], "PO": [23.4, 32.8, 2.87], "PO2": [29.0, 32.8, 2.87]
       },
-      "links": [["DB", "LH"], ["LH", "PS"], ["PS", "LB"], ["LB", "BA"], ["LB", "WC"], ["LB", "B1"], ["LB", "B2"], ["PS", "KI", "zFirst"], ["DB", "PO"]],
+      "links": [["DB", "LH"], ["LH", "PS"], ["PS", "LB"], ["LB", "BA"], ["LB", "WC"], ["LB", "B1"], ["LB", "B2"], ["PS", "KI", "zFirst"], ["DB", "PO"], ["PO", "PO2"]],
       "powerLinks": [["DB", "LH"], ["LH", "PS"], ["PS", "LB"], ["LB", "BA"], ["LB", "B1"], ["LB", "B2"], ["PS", "KI", "zFirst"]],
       "switchboards": [
         { "from": "LH", "at": [21.75, 27.72], "wall": "z", "room": "Living hall", "items": [
@@ -473,7 +482,9 @@
       { "layer": "drain", "name": "WC", "r": 0.05, "points": [[19.7, 0.15, 1.6], [19.7, -0.35, 1.6], [16.5, -0.35, 1.6]] },
       { "layer": "drain", "name": "shower floor trap", "r": 0.032, "points": [[15.3, 0.12, 8.1], [15.3, -0.35, 8.1], [16.5, -0.35, 8.1]] },
       { "layer": "drain", "name": "wash basin", "r": 0.032, "points": [[20.75, 0.85, 8.4], [20.75, -0.35, 8.4], [16.5, -0.35, 8.4]] },
-      { "layer": "drain", "name": "to septic tank", "r": 0.05, "points": [[16.5, -1.0, -4], [16.5, -1.1, -7]] },
+      { "layer": "drain", "name": "to the two soak pits (shoshkhadde), behind the toilet", "r": 0.05, "points": [[16.5, -1.0, -4], [16.5, -1.1, -5.5]] },
+      { "layer": "drain", "name": "to soak pit 1", "r": 0.05, "points": [[16.5, -1.1, -5.5], [13, -1.1, -5.5], [13, -1.1, -7.5]] },
+      { "layer": "drain", "name": "to soak pit 2", "r": 0.05, "points": [[16.5, -1.1, -5.5], [20, -1.1, -5.5], [20, -1.1, -7.5]] },
       { "layer": "drain", "group": "kitchen", "name": "kitchen sink", "r": 0.032, "points": [[4.2, 0.6, 31.7], [4.2, -0.35, 31.7], [4.2, -0.35, 33.8], [7.1, -0.35, 33.8], [7.1, -1.0, 36.5]] },
       { "layer": "drain", "name": "to street drain", "r": 0.05, "points": [[7.1, -1.0, 36.5], [7.1, -1.4, 50]] },
       { "layer": "drain", "name": "municipal drain", "r": 0.09, "points": [[-40, -1.4, 50], [60, -1.4, 50]] }
@@ -508,7 +519,8 @@
     ],
     "chambers": [{ "at": [16.5, -4] }, { "at": [7.1, 36.5] }],
     "pits": [
-      { "layer": "drain", "name": "septic tank", "rect": [12, -12, 21, -7], "y0": -2.225, "h": 1.45, "color": "#8a8780", "opacity": 0.6 }
+      { "layer": "drain", "name": "soak pit 1 (shoshkhadda)", "rect": [11, -11.5, 15, -7.5], "y0": -2.225, "h": 1.45, "color": "#8a8780", "opacity": 0.6 },
+      { "layer": "drain", "name": "soak pit 2 (shoshkhadda)", "rect": [18, -11.5, 22, -7.5], "y0": -2.225, "h": 1.45, "color": "#8a8780", "opacity": 0.6 }
     ],
 
     "tags": [
@@ -522,7 +534,8 @@
       { "layer": "cold", "text": "Ground tank 10,000 L + pump", "at": [-38.5, 2.0, 0.8] },
       { "layer": "cold", "text": "Pump riser to overhead tanks", "at": [-0.6, 4.6, 13.0] },
       { "layer": "hot", "text": "Geyser", "at": [13.6, 2.8, 4.5] },
-      { "layer": "drain", "text": "Septic tank", "at": [16.5, -0.2, -9.5] },
+      { "layer": "drain", "text": "Soak pit 1", "at": [13, -0.2, -9.5] },
+      { "layer": "drain", "text": "Soak pit 2", "at": [20, -0.2, -9.5] },
       { "layer": "drain", "text": "Vent pipe", "at": [16.5, 5.2, -0.75] },
       { "layer": "drain", "text": "Municipal drain", "at": [2, -0.6, 50] }
     ]

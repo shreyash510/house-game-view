@@ -7,16 +7,16 @@ export function item(c) {
   furn(x1, z1, x2, z2, c.h ?? 0.5, hex(c.color ?? '#7c5a3a'), c.y0 ?? FLOOR_Y, c.solid ?? true);
 }
 
-// Double bed against the north wall, centred at plan x, with side tables and lamps: { "x", "z" (headboard line, default 0.9) }
+// Double bed against the north wall, centred at plan x, with side tables and lamps: { "x", "z" (headboard line, default 0.9), "length" (ft, headboard to foot, default 6), "width" (ft, default 5.5) }
 const wood = 0x6b4f3a;
 export function bed(c) {
-  const cx = c.x, z0 = c.z ?? 0.9;
-  furn(cx - 2.75, z0 - 0.45, cx + 2.75, z0, 1.0, 0x4a3224);                              // headboard
-  furn(cx - 2.75, z0, cx + 2.75, z0 + 6.5, 0.4, wood);                                   // frame
-  furn(cx - 2.4, z0 + 0.2, cx + 2.4, z0 + 6.3, 0.25, 0xd9d0e6, FLOOR_Y + 0.4, false);    // mattress
-  furn(cx - 2.4, z0 + 2.6, cx + 2.4, z0 + 6.3, 0.08, 0xe0b27a, FLOOR_Y + 0.65, false);   // blanket
-  furn(cx - 2.2, z0 + 0.4, cx - 0.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);   // pillows
-  furn(cx + 0.2, z0 + 0.4, cx + 2.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);
+  const cx = c.x, z0 = c.z ?? 0.9, len = c.length ?? 6, hw = (c.width ?? 5.5) / 2, hm = hw - 0.35;   // hw: half the bed width, hm: half the mattress width
+  furn(cx - hw, z0 - 0.45, cx + hw, z0, 1.0, 0x4a3224);                                  // headboard
+  furn(cx - hw, z0, cx + hw, z0 + len, 0.4, wood);                                       // frame
+  furn(cx - hm, z0 + 0.2, cx + hm, z0 + len - 0.2, 0.25, 0xd9d0e6, FLOOR_Y + 0.4, false);    // mattress
+  furn(cx - hm, z0 + 2.6, cx + hm, z0 + len - 0.2, 0.08, 0xe0b27a, FLOOR_Y + 0.65, false);   // blanket
+  furn(cx - hm + 0.2, z0 + 0.4, cx - 0.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);   // pillows
+  furn(cx + 0.2, z0 + 0.4, cx + hm - 0.2, z0 + 1.6, 0.15, 0xf5ead2, FLOOR_Y + 0.65, false);
   if (c.sideTables !== false) [cx - 3.9, cx + 3.0].forEach((x) => {                      // side tables (no lamps on them); "sideTables": false leaves them out
     furn(x, z0 - 0.1, x + 1.2, z0 + 1.1, 0.5, 0x6b2e22);
     if (c.lamps) glow([0.14, 0.14, 0.14], [fx(x + 0.6), FLOOR_Y + 0.62, fz(z0 + 0.5)]);   // "lamps": true puts them back

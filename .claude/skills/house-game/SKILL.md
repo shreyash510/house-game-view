@@ -67,7 +67,7 @@ URL options (from `js/controls.js` / `js/main.js`):
 | `at=x,z` | Player position in plan feet. Add `y=0.9` to stand inside the house (on the plinth), `y=4.5` on the terrace |
 | `yaw=deg` | Where the camera sits relative to the player: `0` = south of him looking north, `90` = east looking west, `-90` = west looking east, `180` = north looking south |
 | `dist=m`, `pitch=rad` | Camera distance and tilt (`pitch=1.2` with `dist=14` is a near top-down view) |
-| `xray=1`, `devices=1`, `furniture=0`, `settings=1`, `eye=1` | Start with Services X-ray on, devices shown, rooms empty, settings open, eye-level camera |
+| `xray=1`, `furniture=0`, `settings=1`, `eye=1` | Start with Services X-ray on, (devices are on by default; `devices=0` hides them), rooms empty, settings open, eye-level camera |
 
 Tips: if the player ends up somewhere else (pushed out by a wall), check the readout in the screenshot and move `at`. Inside the house the walls turn see-through, so thin parts look faint - that is normal. One or two screenshots are enough; the user does not like long exploratory screenshot runs.
 

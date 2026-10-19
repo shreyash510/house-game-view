@@ -12,11 +12,11 @@ npx http-server -c-1 .
 
 Then open `http://localhost:8080/`. To load a different house: `http://localhost:8080/?house=houses/small-house.json`.
 
-Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=1` (start with Devices on), `?eye=1` (start in eye view), `?laser=0` (start with the laser off).
+Debug URL options: `?at=26,20&y=0.9` (start at plan feet x,z), `?yaw=-90&dist=18&pitch=0.4` (camera), `?xray=1` (start with Electrical and Plumbing X-ray on), `?furniture=0` (start with empty rooms), `?settings=1` (start with the settings panel open), `?devices=0` (start with Devices off; they are on by default), `?eye=1` (start in eye view), `?laser=0` (start with the laser off).
 
-**Laser pointer** (eye view, camera button or key C; Settings > Laser): a red beam from the right hand to what it points at. It shows only while you move the hand (and for about a second after), then hides. The dot shows its plan position in feet (x, z) and height in m above the plinth top, next to the dot and in the readout box, so you can quote it when asking for a change. Move the hand with I / J / K / L, H = centre; on touch use the round pad left of the joystick (double tap = centre). Code: `js/laser.js`.
+**Laser pointer** (eye view, camera button or key C; Settings > Laser): a red beam from the right hand to what it points at. It stays visible the whole time you are in eye view; the Laser switch shows or hides it. The dot shows its plan position in feet (x, z) and height in m above the plinth top, next to the dot and in the readout box, so you can quote it when asking for a change. Move the hand with I / J / K / L, H = centre; on touch use the round pad left of the joystick (double tap = centre). Code: `js/laser.js`.
 
-Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring, with the fans and lights shown), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
+Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel to zoom, **X** Electrical X-ray (wiring, with the fans and lights shown), **Z** Plumbing X-ray (water and drains), **E** Devices (fans and lights), **F** Furniture on/off, **N** Night mode (sky light off, only the house's own lamps light it; `?night=1` starts in it), **M** minimap, **P** copy position. All switches are in the ⚙ settings panel (top right).
 
 ## Files
 
@@ -75,7 +75,7 @@ Keys: WASD / arrows to walk, Shift to run, mouse to look (click to lock), wheel 
 | `mumty` | Stair room on the terrace: `x1, x2, z1, z2, height, wall, door: [z1, z2], doorLeaf, window: { z1, z2, y0, height }, face, top` (`top: { hollow: true }` = open-topped pit on its roof for water tanks; `top: false` = plain roof) |
 | `towerWindow` | Framed window with a tower above: `along, at, outside, frame: [a1, a2], window: [a1, a2], ledge, lamps, grooves` (the wall opening must be `plain`) |
 | `shrine` | Pooja corner: `rect` |
-| `item`, `bed`, `counter`, `sink`, `stove`, `washBasin`, `fridge`, `marbleRack` | Furniture: `item` = `rect, h, color, y0, solid`; `bed` = `x`; `counter`/`sink` = `rect`; `stove` = `at`; `washBasin` = `x, z, face: "+x"|"-x"` (wall-side edge, which way it faces); `fridge` = `rect, face, height, color, badge`; `marbleRack` = `rect, shelves, height` |
+| `item`, `bed`, `counter`, `sink`, `stove`, `washBasin`, `fridge`, `marbleRack` | Furniture: `item` = `rect, h, color, y0, solid`; `bed` = `x`, `z`, `length` (ft, default 6); `counter`/`sink` = `rect`; `stove` = `at`; `washBasin` = `x, z, face: "+x"|"-x"` (wall-side edge, which way it faces); `fridge` = `rect, face, height, color, badge`; `marbleRack` = `rect, shelves, height` |
 | `waterTank`, `cementTank` | Round plastic / RCC tank: `at: [x, z], y0, radius, height, color, roof` |
 | `road`, `hedge`, `fireflies` | `road` = `z, width, pavement: { z, width }, lamps: { x: [...], z }`; `hedge` = `rect`; `fireflies` = `count` |
 | `concreteRoad`, `sandRoad` | `concreteRoad` = `z, width, x: [from, to], joint` (cement road along x); `sandRoad` = `along: "z"|"x", at, from, to, width` (kaccha road) |

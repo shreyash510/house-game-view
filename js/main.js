@@ -1,7 +1,7 @@
 // Entry point: load the house JSON (house.json, or ?house=other.json), build it, then run the game loop.
 import {
   realScene, camera, renderer, sky, H, PLINTH, FLOOR_Y, ROOF_REACH, S, fx, fz, toFtX, toFtZ, rand, box, textured, makeTexture,
-  obstacles, doors, wallMats, glassMat, ghostMats, ghost, updateLamps, updaters, walkables, col,
+  obstacles, doors, wallMats, glassMat, ghostMats, ghost, updateLamps, setNight, updaters, walkables, col,
 } from './core.js';
 import { buildHouse } from './house.js';
 import { buildCeilings, ceilingG } from './ceilings.js';
@@ -10,7 +10,7 @@ import { setupBoardInfo } from './boardInfo.js';
 import { buildDevices } from './devices.js';
 import { makeHouse, buildings } from './makeHouse.js';
 import { player, body, legs, arms } from './player.js';
-import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, view, buildLegend } from './controls.js';
+import { keys, cam, joy, query, transparentSwitch, electricalSwitch, plumbingSwitch, devicesSwitch, furnitureSwitch, nightSwitch, view, buildLegend } from './controls.js';
 import { setupHud, showCoords, drawMap } from './hud.js';
 import { updateLaser } from './laser.js';
 
@@ -52,6 +52,10 @@ versionSelect.addEventListener('change', () => {
   u.searchParams.set('v', versionSelect.value || 'current');
   location.href = u.href;
 });
+
+// Settings > Night (key N, ?night=1)
+nightSwitch.addEventListener('change', () => setNight(nightSwitch.checked));
+setNight(nightSwitch.checked);
 
 // ---------- Ground ----------
 const grassTex = makeTexture(256, 256, (ctx, w, h) => {

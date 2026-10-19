@@ -1,4 +1,4 @@
-// Laser pointer in the avatar's hand (eye view only): a red beam from the right hand to whatever it points at, with a dot
+// Laser pointer in the avatar's hand (eye view only, always visible while the Laser switch is on): a red beam from the right hand to whatever it points at, with a dot
 // and a label showing that spot on the plan (feet) and its height above the plinth top (m). The hand is moved with
 // I / J / K / L (up / left / down / right), H puts it back in the middle, or with the small round pad on touch screens.
 import { realScene, camera, sky, PLINTH, toFtX, toFtZ } from './core.js';
@@ -10,7 +10,7 @@ const pad = { x: 0, y: 0, id: null };
 const keyDown = {};
 addEventListener('keydown', (e) => {
   keyDown[e.code] = true;
-  if (e.code === 'KeyH') { hand.x = hand.y = 0; idle = 0; }
+  if (e.code === 'KeyH') { hand.x = hand.y = 0; }
 });
 addEventListener('keyup', (e) => (keyDown[e.code] = false));
 addEventListener('blur', () => Object.keys(keyDown).forEach((k) => (keyDown[k] = false)));
@@ -53,8 +53,7 @@ realScene.add(group);
 const raycaster = new THREE.Raycaster();
 const forward = new THREE.Vector3(0, 0, 1), origin = new THREE.Vector3(), target = new THREE.Vector3(), dir = new THREE.Vector3(), mid = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 const screen = new THREE.Vector2();
-let frameNo = 0, hit = null, idle = 99;   // idle: seconds since the hand last moved; the laser only shows while it moves (plus a moment to read it)
-const LINGER = 1.2;
+let frameNo = 0, hit = null;   // the laser stays visible in eye view for as long as the Laser switch is on
 
 const label = document.createElement('div');
 label.id = 'laserLabel';
@@ -70,9 +69,7 @@ function solid(o) {
 export function updateLaser(dt) {
   const on = view.eye && laserSwitch.checked;
   padEl.style.display = on && touchSwitch.checked ? 'grid' : 'none';   // the pad is always there in eye view; the laser is not
-  const moving = !!(keyDown.KeyI || keyDown.KeyJ || keyDown.KeyK || keyDown.KeyL || Math.hypot(pad.x, pad.y) > 0.05);
-  idle = moving ? 0 : idle + dt;
-  if (!on || idle > LINGER) { group.visible = false; label.style.display = 'none'; setLaserText(''); return; }
+  if (!on) { group.visible = false; label.style.display = 'none'; setLaserText(''); return; }
   group.visible = true;
 
   // Move the hand: keys and the pad
