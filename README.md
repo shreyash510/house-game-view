@@ -108,4 +108,5 @@ Shown with the **Devices** switch (key **E**). Fans spin while shown. Positions 
 | `ceilingLight` | Round LED panel on the ceiling: `at: [x, z]`, `y`, `radius` |
 | `tubeLight` | LED batten on a wall: `at: [x, y, z]` (on the wall face), `face: "+x"|"-x"|"+z"|"-z"` (into the room), `length`; or on the ceiling: `at: [x, z]`, `y` (default `"H-0.2"`), `along: "x"|"z"` |
 | `exhaustFan` | Exhaust fan in a wall: `at: [x, y, z]`, `face`, `size`, `speed` |
+| `footLamp` | Small foot lamp low on a wall (lit slot at the bottom): `at: [x, y, z]`, `face`, `size` |
 | `bulb` | Small bulb in a round holder: on the ceiling `at: [x, z]`, `y` (default `"H-0.2"`), or on a wall `at: [x, y, z]`, `face`; `radius` (m, default 0.05), `halo: true` (ceiling bulb only: a soft warm glow so it shows from a distance) |

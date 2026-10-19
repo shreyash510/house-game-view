@@ -32,7 +32,7 @@ export function buildDevices(list, houseG) {
   houseG.add(group);
   const lightsG = new THREE.Group();   // lights stay visible all the time
   houseG.add(lightsG);
-  const ALWAYS = new Set(['bulb', 'tubeLight', 'ceilingLight']);
+  const ALWAYS = new Set(['bulb', 'tubeLight', 'ceilingLight', 'footLamp']);
   let parent = group;                  // where the device being built goes
   const M = mats();
   const spinners = [];   // [object, axis, speed]
@@ -135,7 +135,14 @@ export function buildDevices(list, houseG) {
     }
   }
 
-  const TYPES = { fan, ceilingLight, tubeLight, exhaustFan, bulb };
+  // Foot lamp: small square plate low on a wall with a lit slot along its bottom edge, shining down onto the floor or step
+  function footLamp(c) {
+    const g = onWall(c), s = c.size ?? 0.1;
+    mesh(new THREE.BoxGeometry(s, s, 0.015), M.body, g, 0, 0, 0.0075);
+    mesh(new THREE.BoxGeometry(s * 0.7, s * 0.22, 0.006), M.light, g, 0, -s * 0.22, 0.017);
+  }
+
+  const TYPES = { fan, ceilingLight, tubeLight, exhaustFan, bulb, footLamp };
   (list || []).forEach((c, i) => {
     if (c.skip) return;
     const make = TYPES[c.type];
