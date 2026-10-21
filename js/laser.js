@@ -122,4 +122,4 @@ export function updateLaser(dt) {
   }
 }
 
-if (query('laser') === '0') laserSwitch.checked = false;   // debug: ?laser=0 starts with the laser off
+if (query('laser') === '1') laserSwitch.checked = true;   // the Laser switch starts off; debug: ?laser=1 starts with it on

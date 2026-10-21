@@ -149,7 +149,7 @@ export function buildServices(svc, houseG) {
   }
 
   // ---------- Pipes, fittings, tanks, chambers, pits and tags ----------
-  (svc.pipes || []).forEach((p) => pipe(p.layer, p.points, p.r ?? 0.018, !!p.always));
+  (svc.pipes || []).filter((p) => !p.skip).forEach((p) => pipe(p.layer, p.points, p.r ?? 0.018, !!p.always));
   // "always": true = a fitting you can see in the house (board, geyser, mixer); otherwise it shows only in X-ray
   (svc.fittings || []).forEach((f) => fitting(f.layer, f.size, f.at, matFor(f), !!f.always));
   // Cylindrical tank standing on y0: { "at": [xf, zf], "y0", "radius", "height" }

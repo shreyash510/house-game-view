@@ -1,5 +1,5 @@
 // Outdoor components (ground level): road with pavement and street lamps, hedges, fireflies, open farm shed.
-import { scene, box, glow, obstacle, textured, tileTex, makeTexture, speckle, paint, glowTex, ghostMats, updaters, fx, fz, S, rand, rect, rod, plasterTex, scaleUV, doors, walkables } from '../core.js';
+import { scene, hex, box, glow, obstacle, textured, tileTex, makeTexture, speckle, paint, glowTex, ghostMats, updaters, fx, fz, S, rand, rect, rod, plasterTex, scaleUV, doors, walkables } from '../core.js';
 import { tin } from '../makeHouse.js';
 
 // ---------- Road: asphalt with lane dashes, a pavement and street lamps, running along x ----------
@@ -792,4 +792,88 @@ export function bund(c) {
     }
   });
   scene.add(grass);
+}
+
+// ---------- Parking: white bay lines painted on the ground: { "rect": [x1, z1, x2, z2], "bays": 5, "along": "z" (bays side by side along x, cars nose to the south) } ----------
+export function parking(c) {
+  const [x1, z1, x2, z2] = c.rect, n = c.bays ?? 4, w = (x2 - x1) / n, line = paint(0xf2f2ee, 0.9), t = 0.12;
+  for (let i = 0; i <= n; i++) rect(x1 + i * w - t / 2, z1, x1 + i * w + t / 2, z2, 0.03, 0.036, 0, scene, line).castShadow = false;
+  rect(x1, z1 - t / 2, x2, z1 + t / 2, 0.03, 0.036, 0, scene, line).castShadow = false;
+}
+
+// Maruti Suzuki Swift (hatchback), about 3.85 x 1.7 x 1.5 m: { "at": [x, z] (centre), "face": "+z" | "-z" | "+x" | "-x" (way the nose points), "color" }
+export function car(c) {
+  const [xf, zf] = c.at, face = c.face ?? '+z';
+  const g = new THREE.Group();
+  g.position.set(fx(xf), 0, fz(zf));
+  g.rotation.y = { '+z': 0, '-z': Math.PI, '+x': Math.PI / 2, '-x': -Math.PI / 2 }[face];
+  scene.add(g);
+  const body = paint(hex(c.color ?? '#c7332b'), 0.3), glass = paint(0x1b2833, 0.08), dark = paint(0x1c1c1e, 0.6), chrome = paint(0xbfc3c7, 0.25);
+  const lampM = paint(0xfff6d6, 0.2), tailM = paint(0xb01820, 0.3);
+  const part = (size, pos, m, rotX = 0) => { const b = new THREE.Mesh(new THREE.BoxGeometry(...size), m); b.position.set(...pos); b.rotation.x = rotX; b.castShadow = true; g.add(b); return b; };
+  // local x = across, z = along (nose at +z)
+  part([1.66, 0.5, 3.85], [0, 0.57, 0], body);                  // lower body
+  part([1.6, 0.14, 1.0], [0, 0.88, 1.35], body);                 // bonnet
+  part([1.58, 0.52, 2.0], [0, 1.1, -0.45], body);                // cabin
+  part([1.5, 0.5, 0.06], [0, 1.1, 0.62], glass, -0.55);          // windscreen
+  part([1.5, 0.46, 0.06], [0, 1.12, -1.5], glass, 0.35);         // rear glass
+  [-1, 1].forEach((s) => part([0.03, 0.34, 1.6], [s * 0.8, 1.14, -0.4], glass));   // side windows
+  part([1.7, 0.18, 0.12], [0, 0.34, 1.9], dark);                 // front bumper
+  part([1.7, 0.18, 0.12], [0, 0.34, -1.9], dark);                // rear bumper
+  part([0.9, 0.12, 0.03], [0, 0.5, 1.93], dark);                 // grille
+  [-1, 1].forEach((s) => {
+    part([0.34, 0.12, 0.05], [s * 0.6, 0.66, 1.93], lampM);      // headlights
+    part([0.3, 0.14, 0.05], [s * 0.62, 0.7, -1.93], tailM);      // tail lights
+    [1.2, -1.2].forEach((z) => {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.22, 16), dark);
+      w.rotation.z = Math.PI / 2; w.position.set(s * 0.8, 0.3, z); w.castShadow = true; g.add(w);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.235, 12), chrome);
+      hub.rotation.z = Math.PI / 2; hub.position.copy(w.position); g.add(hub);
+    });
+  });
+  const along = face[1] === 'z';
+  obstacle(fx(xf), fz(zf), along ? 1.8 : 3.9, along ? 3.9 : 1.8, 0, 1.5);
+}
+
+// ---------- Farshi: square stone floor slabs (Shahabad / Kota) laid on the ground with mortar joints ----------
+// { "rect", "size" (ft, one slab, default 2), "colors": ["#hex", ...] (slab tones), "joint" (mortar colour) }
+export function farshi(c) {
+  const n = 4, colors = c.colors ?? ['#8d8f86', '#7f827a', '#959a8f', '#868a80', '#9a9788'];
+  const tex = makeTexture(256, 256, (ctx, w, h) => {
+    const s = w / n;
+    ctx.fillStyle = c.joint ?? '#5d5c56'; ctx.fillRect(0, 0, w, h);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+      ctx.fillRect(i * s + 2, j * s + 2, s - 4, s - 4);
+    }
+    speckle(ctx, w, h, 5000, 1.5, 0.12);
+    for (let i = 0; i < n * n; i++) {   // faint chisel marks and stains
+      ctx.fillStyle = 'rgba(40,40,35,0.08)';
+      ctx.beginPath(); ctx.arc(Math.random() * w, Math.random() * h, rand(3, 10), 0, 7); ctx.fill();
+    }
+  });
+  const m = textured(tex, n * (c.size ?? 2) * S, 0.7, 0.15);
+  ghostMats.push(m);
+  const [x1, z1, x2, z2] = c.rect;
+  rect(x1, z1, x2, z2, 0, 0.06, 0, scene, m).castShadow = false;
+}
+
+// Car shade: steel posts and a gently sloping sheet roof over a parking spot: { "rect": [x1, z1, x2, z2], "height" (m, high side), "drop" (m, fall towards +z), "color" }
+export function carShade(c) {
+  const [x1, z1, x2, z2] = c.rect, H = c.height ?? 2.5, drop = c.drop ?? 0.3;
+  const steel = paint(0x2f3a44, 0.5), sheet = paint(hex(c.color ?? '#3f6f8f'), 0.45);
+  const X1 = fx(x1), X2 = fx(x2), Z1 = fz(z1), Z2 = fz(z2), W = X2 - X1, D = Z2 - Z1, ang = Math.atan2(drop, D);
+  const mk = (size, pos, m) => { const b = box(size, pos, 0, scene, m); b.castShadow = true; return b; };
+  [[X1, Z1, H], [X2, Z1, H], [X1, Z2, H - drop], [X2, Z2, H - drop]].forEach(([x, z, h]) => {
+    mk([0.1, h, 0.1], [x, h / 2, z], steel);
+    obstacle(x, z, 0.1, 0.1, 0, h);
+  });
+  [Z1, Z2].forEach((z, i) => mk([W + 0.2, 0.08, 0.08], [(X1 + X2) / 2, (i ? H - drop : H) - 0.04, z], steel));
+  for (let i = 0; i <= 4; i++) mk([0.06, 0.06, D + 0.2], [X1 + (W * i) / 4, H - drop / 2 + 0.02, (Z1 + Z2) / 2], steel).rotation.x = ang;
+  const roof = mk([W + 0.4, 0.04, Math.hypot(D, drop) + 0.4], [(X1 + X2) / 2, H - drop / 2 + 0.08, (Z1 + Z2) / 2], sheet);
+  roof.rotation.x = ang;
+  for (let i = 1; i < 12; i++) {   // ribs of the sheet
+    const r = mk([0.03, 0.03, Math.hypot(D, drop) + 0.4], [X1 - 0.2 + ((W + 0.4) * i) / 12, H - drop / 2 + 0.11, (Z1 + Z2) / 2], sheet);
+    r.rotation.x = ang;
+  }
 }

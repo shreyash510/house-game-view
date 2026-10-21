@@ -53,6 +53,7 @@ let buildOff = 0;   // height of the house plinth while the house is being built
 export const obstacle = (cx, cz, w, d, bottom, top) => obstacles.push([cx, cz, w, d, bottom === 0 ? 0 : bottom + buildOff, top + buildOff]);
 // Build into another group from now on; off = how high that group is raised (the plinth for the house group)
 export function useScene(group, off = 0) { scene = group; buildOff = off; }
+export const currentScene = () => [scene, buildOff];   // so a builder can switch away and come back to the same group
 // Components register here: per-frame animation (fn(t, dt)), and floors you can stand on
 // (fn(xf, zf, y) -> height in metres, or null when (xf, zf) is not on them; y is the player's current height)
 export const updaters = [];
