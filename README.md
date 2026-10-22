@@ -1,7 +1,7 @@
 # House game view
 
 A walkable 3D house (three.js) built entirely from a JSON description. The bungalow is `house.json`; another house is just another JSON file.
-
+site is live at `https://shreyash510.github.io/house-game-view/`
 ## Run
 
 The game loads JSON with `fetch`, so open it through a local web server, not as a file. Easiest: double-click `start.bat` (starts the server on port 8080 and opens the browser). Or run it by hand:
